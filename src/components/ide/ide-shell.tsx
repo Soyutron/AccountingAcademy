@@ -21,6 +21,7 @@ import { ClassifyBoard } from "./classify-board";
 import { TweakPanel } from "./tweak-panel";
 import { LedgerTab } from "./ledger-tab";
 import { type Flight, FlyingAmounts } from "./flying-amounts";
+import { type Burst, Celebration } from "./celebration";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TutorialTour } from "./tutorial-tour";
 import { HelpDialog } from "./help-dialog";
@@ -118,6 +119,11 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   // 取引の流れのアニメーション。記帳が成功した仕訳を次の描画で測って飛ばす
   const [pendingFlight, setPendingFlight] = useState<JournalEntry | null>(null);
   const [flights, setFlights] = useState<Flight[]>([]);
+  // 正解の祝福。セッション中に初めてそのステップに正解したときだけ出す(復元や再正解では出さない)
+  const [bursts, setBursts] = useState<Burst[]>([]);
+  const [pulseNext, setPulseNext] = useState(false);
+  const celebratedSteps = useRef(new Set<number>());
+  const bottomBar = useRef<HTMLDivElement>(null);
   const tutorial = useTutorialState();
   const forceTour = useSyncExternalStore(noop, readForceTour, () => false);
   const isTutorialUnit = unit.id === TUTORIAL_UNIT_ID;
@@ -193,6 +199,16 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   }, [viewUpto, posted, balancesNow, diff, unit.opening, accountMap]);
 
   const save = (fn: () => Promise<void>) => fn().catch((e: Error) => setSaveError(e.message));
+  const celebrate = () => {
+    if (celebratedSteps.current.has(stepIndex)) return;
+    celebratedSteps.current.add(stepIndex);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const bar = bottomBar.current?.getBoundingClientRect();
+    const from = bar ? { x: bar.left + bar.width / 2, y: bar.top } : { x: window.innerWidth / 2, y: window.innerHeight * 0.7 };
+    setBursts((prev) => [...prev, { id: `${stepIndex}-${Date.now()}`, from, big: isLast }]);
+    setPulseNext(true);
+  };
+
   const record = (r: GradeResult, answer: unknown) =>
     save(() => recordAttempt({ unitId: unit.id, exerciseId: `${unit.id}#${stepIndex}`, correct: r.correct, misconceptionId: r.misconception, answer }));
 
@@ -210,6 +226,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       setTweakDone(true);
       setResult(r);
       record(r, values);
+      celebrate();
     }
   };
 
@@ -320,6 +337,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           // 「← 前へ」で戻って再記帳しても、そのステップの仕訳は 1 件のまま
           setPosted((prev) => (prev.some((p) => p.step === stepIndex) ? prev : [...prev, { step: stepIndex, memo: task.transaction, entry: entryDraft }]));
           setPendingFlight(entryDraft);
+          celebrate();
         }
         setPane(r.correct ? "result" : "work");
         break;
@@ -332,6 +350,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         record(r, effect);
         setPosted((prev) => (prev.some((p) => p.step === stepIndex) ? prev : [...prev, { step: stepIndex, memo: task.transaction, entry: task.entry }]));
         setPendingFlight(task.entry);
+        if (r.correct) celebrate();
         setPane("result");
         break;
       }
@@ -343,6 +362,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         setResult(r);
         setAttempts((k) => k + 1);
         record(r, n);
+        if (r.correct) celebrate();
         break;
       }
       case "classify": {
@@ -352,6 +372,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         setResult(r);
         setAttempts((k) => k + 1);
         record(r, placed);
+        if (r.correct) celebrate();
         break;
       }
     }
@@ -627,6 +648,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       </div>
 
       <FlyingAmounts flights={flights} onDone={(id) => setFlights((prev) => prev.filter((f) => f.id !== id))} />
+      <Celebration bursts={bursts} onDone={(id) => setBursts((prev) => prev.filter((b) => b.id !== id))} />
       {tourActive && (
         <TutorialTour
           key={tourKey}
@@ -634,11 +656,12 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           onExit={() => setTourExited(true)}
         />
       )}
-      <div className="border-t bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm space-y-2 sticky bottom-0 max-h-[50dvh] overflow-y-auto">
+      <div ref={bottomBar} className="border-t bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm space-y-2 sticky bottom-0 max-h-[50dvh] overflow-y-auto">
         {result && (
           <div role="status" aria-live="polite" className={`rounded-md p-3 space-y-2 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 ${result.correct ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-900"}`}>
-            <p className="font-semibold flex items-center gap-1.5">
-              {result.correct ? <CheckCircle2 className="size-4" aria-hidden /> : <CircleAlert className="size-4" aria-hidden />}
+            {/* 正解はアイコンと見出しを大きくして、色だけに頼らず「もう一歩」と見分けられるようにする */}
+            <p className={`flex items-center gap-1.5 ${result.correct ? "text-base font-bold" : "font-semibold"}`}>
+              {result.correct ? <CheckCircle2 className="size-5" aria-hidden /> : <CircleAlert className="size-4" aria-hidden />}
               {result.correct ? "できました" : "もう一歩"}
             </p>
             <p className="whitespace-pre-wrap">{result.feedback}</p>
@@ -695,7 +718,13 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
             </Button>
           )}
           {!isLast ? (
-            <Button aria-disabled={!done} className={done ? "" : "opacity-50"} onClick={() => done && goTo(stepIndex + 1)} data-tour="next-button">
+            <Button
+              aria-disabled={!done}
+              className={done ? (pulseNext ? "animate-next-pulse" : "") : "opacity-50"}
+              onAnimationEnd={() => setPulseNext(false)}
+              onClick={() => done && goTo(stepIndex + 1)}
+              data-tour="next-button"
+            >
               次へ →
             </Button>
           ) : unit.next ? (
