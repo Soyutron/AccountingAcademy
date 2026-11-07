@@ -216,6 +216,7 @@ Monkey の人格は「前回起票した領域を避ける」ような賢さは�
 | ⑤ 継続 | `scripts/quality-night.sh`(seed 付き Monkey → 人格型 Monkey → トリアージ → 修正) | `QUALITY_UNTIL=06:00 scripts/quality-night.sh` |
 
 - ログは `logs/`(gitignore): `logs/monkey/<日時>-<人格>/`(history.md、step-NN.mjs、shots/、oracle.jsonl、trace)、`logs/monkey-scripted/<seed>.log`、`logs/triage/<n>/`、`logs/issue-agent/<n>/`。
+- 人格型 Monkey は `MONKEY_PARALLEL=3` で 3 人格まで同時に走らせられる(人格ごとに別ブラウザ。同じ人格は同時に走らない。起票直前の重複確認を人格側にも求めている)。
 - 状況の確認は `scripts/issue-agent.sh status`。止めるのは `scripts/monkey-loop.sh stop` / `scripts/issue-loop.sh stop`。
 - 人が見るもの: `ready-for-human` と `agent:needs-human` の Issue(`gh issue list --label ready-for-human,agent:needs-human`)、
   統合後の Issue コメント(残った should / nit)、週 1 回の `pnpm db:reset`(夜間に匿名ユーザーが増えるため)。

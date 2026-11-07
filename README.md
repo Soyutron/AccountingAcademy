@@ -72,7 +72,7 @@ E2E(`pnpm exec playwright test`)はコンテンツや UI を変えたときに�
 
 ```bash
 scripts/services.sh up                       # Supabase + pnpm dev
-MONKEY_UNTIL=23:00 scripts/monkey-loop.sh   # 人格型 Monkey(Claude Code が学習者として操作し、再現したものを起票)
+MONKEY_UNTIL=23:00 MONKEY_PARALLEL=3 scripts/monkey-loop.sh  # 人格型 Monkey(Claude Code が学習者として操作し、再現したものを起票。3 人格まで同時)
 MONKEY=1 pnpm exec playwright test e2e/monkey.spec.ts  # seed 付き Monkey(LLM 不要)
 scripts/triage-agent.sh loop                 # needs-triage を再現して振り分け
 ISSUE_UNTIL=06:00 scripts/issue-loop.sh     # ready-for-agent を worktree で実装 → レビュー → main へ統合 → push
