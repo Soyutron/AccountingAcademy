@@ -240,7 +240,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         setAttempts((n) => n + 1);
         record(r, entryDraft);
         if (r.correct) {
-          setPosted((prev) => [...prev, { step: stepIndex, memo: task.transaction, entry: entryDraft }]);
+          // 「← 前へ」で戻って再記帳しても、そのステップの仕訳は 1 件のまま
+          setPosted((prev) => (prev.some((p) => p.step === stepIndex) ? prev : [...prev, { step: stepIndex, memo: task.transaction, entry: entryDraft }]));
           setPendingFlight(entryDraft);
         }
         setPane(r.correct ? "result" : "work");
