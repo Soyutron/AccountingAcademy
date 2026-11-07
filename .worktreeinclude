@@ -1,0 +1,2 @@
+# claude --worktree / EnterWorktree が新しい worktree に写す gitignore 対象のファイル
+.env.local

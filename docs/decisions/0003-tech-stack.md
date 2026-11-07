@@ -17,7 +17,7 @@
 - コンテンツは Velite で zod 検証し、横断検査を `complete` フックで行う。用語参照は remark-wiki-link、仕訳ブロックは自作 rehype プラグイン 1 つ。MDX は使わない。
 - 概念マップは React Flow + elkjs。用語集の検索はライブラリなし。
 - テストは Vitest / React Testing Library / Playwright。Supabase はローカルスタックで検証する。Lint は ESLint(eslint-config-next)+ Prettier。CI は GitHub Actions。
-- ホスティングは未決。フェーズ 6(β)の前に決める。それまで特定ホストの固有機能に依存しない。
+- ホスティングは当初未決。2026-11-07 に VPS 1 台(さくらの VPS + Coolify)へ決定(ADR 0006)。
 - Skills / MCP: next-devtools-mcp、vercel-labs の React / Next.js Skills、shadcn MCP、Context7、Playwright MCP、Chrome DevTools MCP、Supabase MCP(read_only 既定)。Vercel MCP はホスト決定後。
 
 ## 検討した代替

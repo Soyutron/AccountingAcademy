@@ -1,13 +1,13 @@
 # アーキテクチャ(v0.1)
 
 更新日: 2026-11-07
-状態: 採用(ADR 0003)。決定済み: Next.js、Supabase(DB・認証)を MVP から使う。未決: ホスティング先(フェーズ 6 の β 開始までに決める)。
+状態: 採用(ADR 0003)。決定済み: Next.js、Supabase(DB・認証)を MVP から使う。ホスティング: VPS 1 台(さくらの VPS 4GB + Coolify)に Next.js と Supabase を同居(ADR 0006)。
 
 ## 1. 設計原則
 1. **採点と解説はコンテンツだけで完結させる。** 正誤判定に DB や API を挟まない。
 2. **学習者の行動(回答・進捗)は最初の 1 回目から DB に残す。** ゲストも匿名ユーザーとして同じ経路で保存する。誤解の検出とコンテンツ改善の材料になるため。
 3. **コンテンツはリポジトリで管理し、ビルド時に検査する。** DB には置かない。
-4. **ホスティング中立。** Next.js の標準出力(Node ランタイム)で動かし、特定ホストの固有機能に依存しない。
+4. **ホスティング中立。** Next.js の標準出力(Node ランタイム)を Docker で動かし、特定ホストの固有機能に依存しない。ホストは VPS + Coolify(ADR 0006)。
 5. 各機能に必要な仕組みだけを入れる。将来の拡張は「妨げない」ことで担保し、先回りして作らない。
 
 ## 2. 全体構成
@@ -152,10 +152,9 @@ create table attempts (
 - 勘定科目は 5 要素と「なぜその要素か」を持ち、仕訳エディタの影響表示と要素分類の演習の両方がこれを参照する。
 
 ## 7. ホスティング
-未決でよい。条件は「Node ランタイムで Next.js の標準出力が動く」だけで、Vercel、Cloudflare(OpenNext)、Fly.io、Railway、任意の Docker ホストが候補。
-守ること: `output: 'standalone'`、ISR や Vercel 固有 API に依存しない、環境変数は `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` の 2 つだけ。
-Supabase のリージョンは東京(ap-northeast-1)で作る(ホストがどこでも変えない)。
-決める時期: フェーズ 6(外部テスターに URL を渡す)の前。
+決定: さくらの VPS 4GB(東京)1 台に Coolify を置き、Next.js(GHCR のイメージを pull)と、Postgres / GoTrue / PostgREST / Kong に削った Supabase を同居させる(ADR 0006)。
+守ること: `output: 'standalone'`、ISR や特定ホストの API に依存しない、環境変数は `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` の 2 つだけ。
+外部バックアップは置かない(β 中の DB は匿名ユーザーの進捗と回答ログだけ)。本登録(フェーズ 7)の前に再検討する。
 
 ## 8. 開発環境
 - Supabase CLI のローカルスタック(Docker)で開発・テストする。本番プロジェクトへはマイグレーションを CLI で適用する。

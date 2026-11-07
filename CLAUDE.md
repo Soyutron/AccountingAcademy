@@ -4,7 +4,7 @@
 ビジョンは `docs/vision.md`、ロードマップは `docs/roadmap.md`、要件は `docs/requirements.md`、学習体験(会計 IDE)は `docs/ide-design.md`、コンテンツ構造は `docs/content-model.md`、構成は `docs/architecture.md`、設計判断の理由は `docs/decisions/`、開発プロセスと現在のフェーズは `README.md` を見る。
 
 ## 現在のフェーズ
-ロードマップ M1(学習ループの検証。docs/roadmap.md)。スタックは Next.js 16 + Supabase(ADR 0003)。ホスティングは未決なので特定ホストの固有機能に依存しない。
+ロードマップ M1(学習ループの検証。docs/roadmap.md)。スタックは Next.js 16 + Supabase(ADR 0003)。ホスティングは VPS 1 台 + Coolify(ADR 0006)。Docker で動く standalone 出力を維持し、特定ホストの固有機能に依存しない。
 新しい機能や課題の種類は、まず 1 単元で試してから量産する(roadmap.md 1 章)。
 Next.js の API は学習データと異なる可能性があるので、書く前に `node_modules/next/dist/docs/` の該当ガイドを読む(AGENTS.md)。
 
