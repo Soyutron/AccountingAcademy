@@ -106,6 +106,10 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [tweakDone, setTweakDone] = useState(false);
   // 回答を確定したステップ。同一ティックの連打では state が更新前なので、ref で同期的に弾く
   const answeredStep = useRef<number | null>(null);
+  // このセッションで最も先まで進んだステップ。これより前は達成済みなので、見直しから「次へ」で戻れる
+  const [reached, setReached] = useState(0);
+  // 保存済みの step。見直しや案内前の「次へ」で保存する step を下げないために持つ
+  const savedStep = useRef(0);
   // 帳簿をさかのぼる: 何件目までの記帳で財務諸表を見るか(null は最新)
   const [viewUpto, setViewUpto] = useState<number | null>(null);
   // 取引の流れのアニメーション。記帳が成功した仕訳を次の描画で測って飛ばす
@@ -120,6 +124,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const restartTour = () => {
     setPosted(replayEntries(unit.steps, 0));
     goTo(0);
+    setReached(0);
     setTourExited(false);
     setTourKey((k) => k + 1);
   };
@@ -161,6 +166,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     fetchProgress()
       .then((p) => {
         const saved = p?.units[unit.id];
+        if (saved) savedStep.current = saved.step;
         if (saved && saved.step > 0 && saved.step < unit.steps.length) {
           setResumeStep(saved.step);
           setResumeSolved(p.solved[unit.id]?.includes(saved.step) ?? false);
@@ -212,7 +218,6 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     setShowHint(false);
     setTweakDone(false);
     answeredStep.current = null;
-    setResumeStep(null);
     setViewUpto(null);
     setPane("guide");
     // observe の仕訳はステップに入った時点で自動的に記帳する
@@ -220,8 +225,11 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       const entries = target.task.entries;
       setPosted((prev) => (prev.some((p) => p.step === index) ? prev : [...prev, ...entries.map((e) => ({ step: index, memo: e.memo ?? target.title, entry: e }))]));
     }
-    const last = index === unit.steps.length - 1;
-    save(() => setUnitProgress(unit.id, last ? "completed" : "started", index));
+    const top = Math.max(index, reached, savedStep.current);
+    setReached(Math.max(index, reached));
+    savedStep.current = top;
+    const last = top === unit.steps.length - 1;
+    save(() => setUnitProgress(unit.id, last ? "completed" : "started", top));
   };
 
   // 再開するステップを正解済みなら、その答えで達成状態まで戻す(離脱前の「できました」を保つ)
@@ -229,6 +237,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     if (resumeStep === null) return;
     setPosted(replayEntries(unit.steps, resumeSolved ? resumeStep + 1 : resumeStep));
     goTo(resumeStep);
+    setReached(resumeStep);
+    setResumeStep(null);
     if (!resumeSolved) return;
     const t = unit.steps[resumeStep].task;
     answeredStep.current = resumeStep;
@@ -322,6 +332,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
 
   const done =
     task.type === "observe" ||
+    stepIndex < reached ||
     (task.type === "tweak" && tweakDone) ||
     (task.type === "predict" && result !== null) ||
     (result?.correct ?? false);
@@ -385,7 +396,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               </Button>
             </div>
           )}
-          {resumeStep !== null && stepIndex === 0 && (
+          {resumeStep !== null && stepIndex < resumeStep && (
             <div className="mb-3 rounded-md bg-muted/60 p-2 text-sm flex items-center justify-between gap-2">
               <span>前回はステップ {resumeStep + 1} まで進みました。</span>
               <Button size="sm" variant="outline" onClick={resume}>

@@ -1,0 +1,59 @@
+import { expect, type Page, test } from "@playwright/test";
+
+// Issue #4: 「← 前へ」で見直すと unit_progress.step が戻り、達成済みのステップでも「次へ →」が無効になっていた
+
+/** unit_progress への upsert(POST)で保存された step を記録する */
+function recordSavedSteps(page: Page): number[] {
+  const saved: number[] = [];
+  page.on("request", (r) => {
+    if (r.method() === "POST" && r.url().includes("/rest/v1/unit_progress")) saved.push(r.postDataJSON()?.step);
+  });
+  return saved;
+}
+
+async function reachStep3(page: Page) {
+  const work = page.getByRole("region", { name: "ワークスペース" });
+  await page.goto("/units/bookkeeping-basics/five-elements");
+  await page.getByRole("button", { name: "次へ →" }).click();
+  await expect(page.getByText("ステップ 2 / 10")).toBeVisible();
+  await work.getByLabel("借方の科目 1").fill("現金");
+  await work.getByLabel("借方の金額 1").fill("1000000");
+  await work.getByLabel("貸方の科目 1").fill("資本金");
+  await work.getByLabel("貸方の金額 1").fill("1000000");
+  await work.getByRole("button", { name: "記帳する" }).click();
+  await expect(page.getByText("できました", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "次へ →" }).click();
+  await expect(page.getByText("ステップ 3 / 10")).toBeVisible();
+}
+
+test("達成済みのステップに前へで戻っても次へは有効で、保存される step は戻らない", async ({ page }) => {
+  const saved = recordSavedSteps(page);
+  await reachStep3(page);
+  await expect.poll(() => saved.at(-1)).toBe(2);
+
+  await page.getByRole("button", { name: "← 前へ" }).click();
+  await expect(page.getByText("ステップ 2 / 10")).toBeVisible();
+  await expect.poll(() => saved.length).toBe(3);
+  expect(saved.at(-1)).toBe(2);
+  const next = page.getByRole("button", { name: "次へ →" });
+  await expect(next).not.toHaveAttribute("aria-disabled", "true");
+  await next.click();
+  await expect(page.getByText("ステップ 3 / 10")).toBeVisible();
+});
+
+test("開き直して案内を押さずに次へを押しても、保存される step は戻らず続きからの案内が残る", async ({ page }) => {
+  const saved = recordSavedSteps(page);
+  await reachStep3(page);
+  await expect.poll(() => saved.at(-1)).toBe(2);
+
+  await page.reload();
+  // 進捗の取得が終わるまで待ってから、案内ではなく「次へ →」を押す
+  await expect(page.getByRole("button", { name: "続きから" })).toBeVisible();
+  const before = saved.length;
+  await page.getByRole("button", { name: "次へ →" }).click();
+  await expect(page.getByText("ステップ 2 / 10")).toBeVisible();
+  await expect.poll(() => saved.length).toBe(before + 1);
+  expect(saved.at(-1)).toBe(2);
+  await page.getByRole("button", { name: "続きから" }).click();
+  await expect(page.getByText("ステップ 3 / 10")).toBeVisible();
+});
