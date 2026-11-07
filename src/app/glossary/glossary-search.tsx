@@ -6,7 +6,7 @@ import type { GlossaryEntry } from "@/lib/content";
 import { ElementBadge } from "@/components/element-badge";
 import { Input } from "@/components/ui/input";
 
-// 用語集の検索。名前・short の部分一致。規模が小さいので配列のフィルタで足りる
+// 用語集の検索。名前・別名・short の部分一致。規模が小さいので配列のフィルタで足りる
 
 export function GlossarySearch({
   entries,
@@ -19,7 +19,7 @@ export function GlossarySearch({
 }) {
   const [query, setQuery] = useState("");
   const q = query.trim();
-  const hits = q ? entries.filter((e) => e.name.includes(q) || e.short.includes(q)) : entries;
+  const hits = q ? entries.filter((e) => e.name.includes(q) || e.aliases.some((a) => a.includes(q)) || e.short.includes(q)) : entries;
   const concepts = hits.filter((e) => e.kind === "concept");
   const accounts = hits.filter((e) => e.kind === "account");
 
@@ -42,6 +42,7 @@ export function GlossarySearch({
                   {e.element && <ElementBadge element={e.element} contra={e.contra} size="xs" />}
                 </dt>
                 <dd className="mt-1 text-sm space-y-1">
+                  {e.aliases.length > 0 && <p className="text-xs text-muted-foreground">別名: {e.aliases.join("、")}</p>}
                   <p>{e.short}</p>
                   <p className="text-muted-foreground">{e.summary}</p>
                   {e.example && <p className="text-muted-foreground">例: {e.example}</p>}

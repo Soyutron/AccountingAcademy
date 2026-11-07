@@ -33,6 +33,8 @@ export interface GlossaryEntry {
   id: string;
   kind: "concept" | "account";
   name: string;
+  // 勘定科目の別名。概念は空
+  aliases: string[];
   short: string;
   summary: string;
   example?: string;
@@ -57,6 +59,7 @@ export const glossary: GlossaryEntry[] = [
       id: c.id,
       kind: "concept" as const,
       name: c.name,
+      aliases: account?.aliases ?? [],
       short: c.short,
       summary: c.summary,
       example: c.example,
@@ -76,6 +79,7 @@ export const glossary: GlossaryEntry[] = [
       id: a.id,
       kind: "account" as const,
       name: a.name,
+      aliases: a.aliases,
       short: a.short,
       summary: a.why,
       element: a.element,

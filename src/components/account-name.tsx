@@ -12,6 +12,7 @@ export function AccountName({ account }: { account: AccountInfo }) {
         id: account.id,
         kind: "account",
         name: account.name,
+        aliases: account.aliases,
         short: account.short,
         summary: account.why,
         element: account.element,
