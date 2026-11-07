@@ -27,23 +27,24 @@ export interface Progress {
 
 const supabase = createClient();
 
-// 同時に複数の書き込みが走っても匿名ユーザーを 1 人しか作らないよう、サインインは 1 つの Promise を共有する
-let userIdPromise: Promise<string> | null = null;
+// サインイン中だけ Promise を共有し、同時に複数の書き込みが走っても匿名ユーザーを 1 人しか作らない
+let signInPromise: Promise<string> | null = null;
 
-function ensureUserId(): Promise<string> {
-  if (!userIdPromise) {
-    userIdPromise = (async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) return data.session.user.id;
+// 書き込みのたびに現在のセッションを読む。user_id を持ち続けると、Cookie が消えた・別タブで別のゲストに
+// 入れ替わったときに古い user_id で書いて RLS に弾かれ続ける(Issue #14)
+async function ensureUserId(): Promise<string> {
+  const { data } = await supabase.auth.getSession();
+  if (data.session) return data.session.user.id;
+  if (!signInPromise) {
+    signInPromise = (async () => {
       const { data: signed, error } = await supabase.auth.signInAnonymously();
       if (error || !signed.user) throw new Error(`匿名サインインに失敗しました: ${error?.message}`);
       return signed.user.id;
-    })().catch((e: Error) => {
-      userIdPromise = null;
-      throw e;
+    })().finally(() => {
+      signInPromise = null;
     });
   }
-  return userIdPromise;
+  return signInPromise;
 }
 
 export async function recordAttempt(record: AttemptRecord): Promise<void> {
