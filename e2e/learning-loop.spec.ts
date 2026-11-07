@@ -24,7 +24,9 @@ async function fillEntry(page: Page, entry: Entry) {
   const work = page.getByRole("region", { name: "ワークスペース" });
   // 前の入力(わざと間違えた分)が残っていれば、余分な行を消して 1 行目を空にする
   const removable = work.getByRole("button", { name: "行を削除" });
-  while ((await removable.evaluateAll((els) => els.filter((e) => !(e as HTMLButtonElement).disabled).length)) > 0) {
+  for (let guard = 0; guard < 10; guard++) {
+    const enabled = await removable.evaluateAll((els) => els.filter((e) => !(e as HTMLButtonElement).disabled).length);
+    if (enabled === 0) break;
     await removable.filter({ hasNot: page.locator("[disabled]") }).first().click();
   }
   for (const side of ["借方", "貸方"]) {
