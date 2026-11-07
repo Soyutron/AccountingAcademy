@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { type ReactNode, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { type AccountInfo, type Change, type Element, type JournalEntry, ELEMENT_LABELS, ELEMENTS, computeImpact, toChange } from "@/lib/accounting";
+import { type AccountInfo, type Change, type Element, type JournalEntry, type Side, ELEMENT_LABELS, ELEMENTS, computeImpact, toChange } from "@/lib/accounting";
+import { splitAmounts } from "@/lib/task-text";
 import { ElementBadge } from "@/components/element-badge";
 import { AccountName } from "@/components/account-name";
 import { CheckCircle2, CircleAlert } from "lucide-react";
@@ -92,6 +93,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [stepIndex, setStepIndex] = useState(0);
   const [posted, setPosted] = useState<Posted[]>(() => replayEntries(unit.steps, 0));
   const [draft, setDraft] = useState<EditableEntry>(emptyEntry);
+  // 問題文の金額を挿入したあと、描画後にその金額欄へフォーカスとカーソルを戻す
+  const amountCaret = useRef<{ field: string; pos: number } | null>(null);
   const [effect, setEffect] = useState<Partial<EffectAnswer>>({});
   const [params, setParams] = useState<Record<string, number>>({});
   const [placed, setPlaced] = useState<Partial<Record<string, Element>>>({});
@@ -268,6 +271,39 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   };
 
   const entryDraft = toJournalEntry(draft, accounts);
+
+  // 問題文の金額を仕訳帳の金額欄に入れる(Issue #7)。フォーカス中の金額欄のカーソル位置に挿入し、
+  // どこにもフォーカスが無ければ最初の空の金額欄に入れる。空の欄が無ければ何もしない
+  const insertAmount = (digits: string) => {
+    const active = document.activeElement;
+    let target: { side: Side; index: number; start: number; end: number } | undefined;
+    if (active instanceof HTMLInputElement && active.dataset.amountField) {
+      const [side, index] = active.dataset.amountField.split("-");
+      const start = active.selectionStart ?? active.value.length;
+      target = { side: side as Side, index: Number(index), start, end: active.selectionEnd ?? start };
+    } else {
+      for (const side of ["debit", "credit"] as const) {
+        const index = draft[side].findIndex((l) => l.amount.trim() === "");
+        if (index >= 0) {
+          target = { side, index, start: 0, end: 0 };
+          break;
+        }
+      }
+    }
+    if (!target) return;
+    const { side, index, start, end } = target;
+    const lines = draft[side].map((l, i) => (i === index ? { ...l, amount: l.amount.slice(0, start) + digits + l.amount.slice(end) } : l));
+    amountCaret.current = { field: `${side}-${index}`, pos: start + digits.length };
+    setDraft({ ...draft, [side]: lines });
+  };
+  useEffect(() => {
+    const caret = amountCaret.current;
+    if (!caret) return;
+    amountCaret.current = null;
+    const input = document.querySelector<HTMLInputElement>(`[data-amount-field="${caret.field}"]`);
+    input?.focus();
+    input?.setSelectionRange(caret.pos, caret.pos);
+  }, [draft]);
   const draftReady = entryDraft.debit.length > 0 && entryDraft.credit.length > 0;
 
   const check = () => {
@@ -410,7 +446,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
             </div>
           )}
           <div className="prose prose-neutral prose-sm max-w-none">{narratives[stepIndex]}</div>
-          <TaskBox task={task} />
+          <TaskBox task={task} onAmount={task.type === "post" && !result?.correct ? insertAmount : undefined} />
           {hint && (
             <div className="mt-3 text-sm" data-tour="hint">
               {showHint ? (
@@ -677,7 +713,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   );
 }
 
-function TaskBox({ task }: { task: Task }) {
+function TaskBox({ task, onAmount }: { task: Task; onAmount?: (digits: string) => void }) {
   const content = (() => {
     switch (task.type) {
       case "post":
@@ -698,7 +734,30 @@ function TaskBox({ task }: { task: Task }) {
   return (
     <div className="mt-4 rounded-md border-l-4 border-primary bg-muted/40 p-3 text-sm">
       <div className="font-semibold">やること: {content.title}</div>
-      {content.body && <p className="mt-1">{content.body}</p>}
+      {content.body && (
+        <p className="mt-1">
+          {onAmount
+            ? splitAmounts(content.body).map((seg, i) =>
+                typeof seg === "string" ? (
+                  seg
+                ) : (
+                  <button
+                    key={i}
+                    type="button"
+                    aria-label={`${seg.text}を仕訳帳に入れる`}
+                    title="押すと仕訳帳の金額欄に入ります"
+                    className="rounded-sm border-b border-dashed border-primary/60 px-0.5 font-medium tabular-nums text-primary hover:bg-primary/10 focus-visible:outline-2 focus-visible:outline-ring"
+                    // 金額欄のフォーカスを奪わない(フォーカス中の欄のカーソル位置に入れるため)
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => onAmount(seg.digits)}
+                  >
+                    {seg.text}
+                  </button>
+                ),
+              )
+            : content.body}
+        </p>
+      )}
     </div>
   );
 }
