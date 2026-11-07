@@ -145,3 +145,114 @@ accounts:
     element: expense
     why: 売上を得るために使った犠牲で、純資産を減らす原因だから。仕入れるときの運賃(仕入諸掛)とは違い、仕入には含めない
     concepts: [expense, incidental_costs]
+  - id: cash_over_and_short
+    name: 現金過不足
+    short: 帳簿の現金と実際の現金が合わないとき、原因が分かるまで差額を置いておく科目
+    element: asset
+    why: 正体の分からない差額を一時的に預けておく「仮の置き場」で、原因が分かれば本来の科目へ移す。決算まで分からなければ雑損か雑益に振り替えて、財務諸表には残さない
+    concepts: [cash_over_and_short]
+  - id: miscellaneous_loss
+    name: 雑損
+    short: 原因が分からないまま決算を迎えた、現金の不足分などの小さな損
+    element: expense
+    why: 会社の財産が理由の分からないまま減った分で、純資産を減らす原因だから
+    concepts: [expense, miscellaneous_loss_gain]
+  - id: miscellaneous_gain
+    name: 雑益
+    short: 原因が分からないまま決算を迎えた、現金の超過分などの小さな得
+    element: revenue
+    why: 会社の財産が理由の分からないまま増えた分で、純資産を増やす原因だから
+    concepts: [revenue, miscellaneous_loss_gain]
+  - id: communication_expense
+    name: 通信費
+    aliases: [切手代]
+    short: 切手、はがき、電話やインターネットの代金
+    element: expense
+    why: 使ってしまえば財産として残らず、事業のために使った犠牲だから
+    concepts: [expense]
+  - id: travel_expense
+    name: 旅費交通費
+    aliases: [交通費]
+    short: 電車代やタクシー代、出張の宿泊費
+    element: expense
+    why: 移動や出張のために使った犠牲で、財産として残らないから
+    concepts: [expense]
+  - id: checking_account
+    name: 当座預金
+    short: 小切手で支払うための預金。利息は付かない
+    element: asset
+    why: 銀行に預けてある会社の財産で、小切手を振り出して支払いに使えるから
+    concepts: [asset, checking_account]
+  - id: bank_overdraft
+    name: 当座借越
+    short: 当座預金の残高を超えて小切手を振り出し、銀行に立て替えてもらっている金額
+    element: liability
+    why: 銀行が一時的に立て替えたお金で、返さなければならない義務だから。預金という名前が付いていても負債
+    concepts: [liability, bank_overdraft]
+  - id: petty_cash
+    name: 小口現金
+    short: 日々の細かい支払いのために担当者へ前もって渡してある現金
+    element: asset
+    why: 担当者の手元に移っただけで、まだ使っていない会社のお金だから。使った分だけが費用になる
+    concepts: [asset, petty_cash]
+  - id: loans_receivable
+    name: 貸付金
+    short: 他の人や会社に貸していて、後で返してもらうお金
+    element: asset
+    why: 後で返してもらう権利で、将来お金に変わる財産だから
+    concepts: [asset, loan]
+  - id: interest_income
+    name: 受取利息
+    short: 貸したお金や預金に対して受け取る利息
+    element: revenue
+    why: お金を貸したことで得られたもうけで、純資産を増やす原因だから。返してもらう元本とは別
+    concepts: [revenue, interest]
+  - id: accounts_receivable_other
+    name: 未収入金
+    short: 商品以外の物(備品など)を売って、まだ受け取っていない代金
+    element: asset
+    why: 後で現金を受け取る権利で、将来お金に変わる財産だから。商品の売上代金なら売掛金、それ以外なら未収入金
+    concepts: [asset, non_trade_receivable_payable]
+  - id: accounts_payable_other
+    name: 未払金
+    short: 商品以外の物(備品など)を買って、まだ支払っていない代金
+    element: liability
+    why: 後で現金を支払う義務だから。商品の仕入代金なら買掛金、それ以外なら未払金
+    concepts: [liability, non_trade_receivable_payable]
+  - id: advance_payment
+    name: 前払金
+    aliases: [前渡金]
+    short: 商品を受け取る前に払った手付金
+    element: asset
+    why: 商品を受け取る権利を先に買ってある状態で、将来商品に変わる財産だから。まだ仕入ではない
+    concepts: [asset, advance_payment_receipt]
+  - id: advance_received
+    name: 前受金
+    short: 商品を渡す前に受け取った手付金
+    element: liability
+    why: 商品を渡す義務(渡せなければ返す義務)を負っている状態だから。まだ売上ではない
+    concepts: [liability, advance_payment_receipt]
+  - id: advances_paid
+    name: 立替金
+    short: 従業員や取引先の代わりに一時的に払ってあげたお金
+    element: asset
+    why: 後で本人から返してもらう権利で、将来お金に変わる財産だから。会社の費用ではない
+    concepts: [asset, advances_and_deposits]
+  - id: deposits_received
+    name: 預り金
+    short: 従業員の給料から差し引いた税金など、後で代わりに納めるために一時的に預かっているお金
+    element: liability
+    why: 本人の代わりに納める義務を負っている他人のお金だから。会社のもうけではない
+    concepts: [liability, advances_and_deposits]
+  - id: suspense_payment
+    name: 仮払金
+    short: 出張の旅費など、いくら何に使うかが確定する前に渡しておいたお金
+    element: asset
+    why: 使い道と金額が決まるまでは、まだ会社のお金が手元を離れただけの状態だから。精算して初めて費用になる
+    concepts: [asset, suspense_accounts]
+  - id: suspense_receipt
+    name: 仮受金
+    short: 正体の分からない入金を、理由が分かるまで置いておく科目
+    element: liability
+    why: 何のお金か分からないうちは、返す必要があるかもしれないお金として扱うから。理由が分かれば本来の科目へ移す
+    concepts: [liability, suspense_accounts]

@@ -120,3 +120,111 @@ misconceptions:
     correct: 売れ残った商品の分は、まだ費用ではない。仕入の合計から期末の商品を引いた金額が売上原価で、売れ残りは繰越商品(資産)として次の期に持ち越す
     concepts: [cost_of_goods_sold, ending_inventory]
     remediation: merchandise/cost-of-goods-sold
+  - id: shortage_is_loss
+    name: 足りない分はすぐ費用
+    description: 金庫の現金が帳簿より少ないと分かった時点で、差額をそのまま雑損などの費用にしてしまう
+    correct: まず現金過不足という仮の置き場に差額を入れ、原因を調べる。記帳漏れが見つかれば本来の科目へ移し、決算まで分からなかった分だけが雑損になる
+    concepts: [cash_over_and_short, miscellaneous_loss_gain]
+    remediation: cash-and-deposits/cash-over-and-short
+  - id: check_is_cash
+    name: 小切手を渡したら現金が減る
+    description: 小切手を振り出して支払うと、手元の現金が減ると考えている
+    correct: 自分が振り出した小切手は当座預金から引き落とされるので、減るのは当座預金。逆に、他人が振り出した小切手を受け取ったときは、すぐ換金できるので現金として扱う
+    concepts: [check, checking_account]
+    remediation: cash-and-deposits/checking-account
+  - id: overdraft_is_deposit
+    name: 当座借越も預金の仲間
+    description: 当座借越に「当座」と付いているので、預金(資産)の一種だと考えている
+    correct: 当座借越は、残高を超えて振り出した小切手を銀行が立て替えた金額。返す義務なので負債
+    concepts: [bank_overdraft, liability]
+    remediation: cash-and-deposits/checking-account
+  - id: petty_cash_is_expense
+    name: 渡した時点で費用
+    description: 担当者に小口現金を渡したときに、その金額を費用として記録してしまう
+    correct: 渡しただけでは会社のお金が担当者の手元に移っただけ。実際に支払われた分の報告を受けたときに、使い道ごとの費用になる
+    concepts: [petty_cash, imprest_system]
+    remediation: cash-and-deposits/petty-cash
+  - id: interest_is_loan_return
+    name: 利息も貸したお金の戻り
+    description: 受け取った利息を、貸付金が戻ってきた分として貸付金を減らしてしまう
+    correct: 利息は貸したことで得られたもうけ(受取利息という収益)。元本の返済とは別に記録する
+    concepts: [interest, loan]
+    remediation: receivables-and-payables/loans
+  - id: interest_reduces_principal
+    name: 利息を払うと借入金が減る
+    description: 支払った利息の分だけ借入金(元本)が減ると考えている
+    correct: 利息は借りているための費用(支払利息)。元本は返済したときだけ減る
+    concepts: [interest, loan]
+    remediation: receivables-and-payables/loans
+  - id: principal_is_revenue
+    name: 返してもらったお金は収益
+    description: 貸付金の元本が返ってきたときに、入金を収益として記録してしまう
+    correct: 元本の返済は「返してもらう権利(貸付金)」が預金に形を変えただけで、もうけではない。収益になるのは利息だけ
+    concepts: [loan, revenue]
+    remediation: receivables-and-payables/loans
+  - id: repayment_is_expense
+    name: 返済は費用
+    description: 借入金を返したときに、出ていったお金を費用として記録してしまう
+    correct: 返済は「返す義務(借入金)」と預金が同じだけ減る取引で、もうけは変わらない。費用になるのは利息だけ
+    concepts: [loan, expense]
+    remediation: receivables-and-payables/loans
+  - id: nontrade_as_trade
+    name: 後払いなら何でも売掛金・買掛金
+    description: 商品以外の物(備品など)を後払いで売り買いしたときにも、売掛金や買掛金を使ってしまう
+    correct: 売掛金と買掛金は商品の売買専用。それ以外の物の代金は未収入金・未払金で記録し、本業の取引と区別する
+    concepts: [non_trade_receivable_payable, receivable, payable]
+    remediation: receivables-and-payables/other-receivables-and-payables
+  - id: asset_sale_is_sales
+    name: 備品を売ったら売上
+    description: 使っていた備品を売ったときに、代金を売上として記録してしまう
+    correct: 売上は商品を売ったときだけ。備品を売ったときは備品(資産)が減り、帳簿価額との差額があれば固定資産売却損益になる
+    concepts: [non_trade_receivable_payable, revenue]
+    remediation: receivables-and-payables/other-receivables-and-payables
+  - id: advance_is_expense
+    name: 手付金を払ったら仕入
+    description: 商品を受け取る前に払った手付金を、その時点で仕入(費用)にしてしまう
+    correct: 商品を受け取るまでは前払金(資産)。商品が届いたときに仕入へ振り替える
+    concepts: [advance_payment_receipt, purchase]
+    remediation: receivables-and-payables/other-receivables-and-payables
+  - id: advance_received_is_revenue
+    name: 手付金を受け取ったら売上
+    description: 商品を渡す前に受け取った手付金を、その時点で売上(収益)にしてしまう
+    correct: 商品を渡すまでは前受金(負債)。渡せなければ返す義務がある。商品を渡したときに売上へ振り替える
+    concepts: [advance_payment_receipt, revenue]
+    remediation: receivables-and-payables/other-receivables-and-payables
+  - id: net_pay_is_salary
+    name: 手取りが給料
+    description: 従業員に実際に振り込んだ手取り額を給料(費用)として記録してしまう
+    correct: 給料は税金などを差し引く前の総額。差し引いた分は預り金として、後で本人の代わりに納める
+    concepts: [advances_and_deposits, expense]
+    remediation: receivables-and-payables/temporary-and-deposits
+  - id: withholding_tax_is_expense
+    name: 納めた税金は会社の費用
+    description: 従業員から預かった税金を税務署に納めたときに、会社の費用として記録してしまう
+    correct: 納めたのは従業員のお金。預り金(負債)が減るだけで、会社の費用にはならない
+    concepts: [advances_and_deposits, liability]
+    remediation: receivables-and-payables/temporary-and-deposits
+  - id: advance_for_others_is_expense
+    name: 立て替えたお金は費用
+    description: 従業員や取引先の代わりに払ったお金を、会社の費用として記録してしまう
+    correct: 後で本人から返してもらうお金なので立替金(資産)。会社が使った犠牲ではない
+    concepts: [advances_and_deposits, asset]
+    remediation: receivables-and-payables/temporary-and-deposits
+  - id: suspense_is_expense
+    name: 仮払いした時点で旅費
+    description: 出張の前に渡した概算のお金を、渡した時点で旅費交通費にしてしまう
+    correct: 使い道と金額が確定するまでは仮払金(資産)。精算のときに、実際に使った分だけが費用になる
+    concepts: [suspense_accounts, expense]
+    remediation: receivables-and-payables/temporary-and-deposits
+  - id: suspense_receipt_is_revenue
+    name: 正体不明の入金は売上
+    description: 理由の分からない入金を、とりあえず売上として記録してしまう
+    correct: 理由が分かるまでは仮受金(負債)に置く。売掛金の回収だったのか、前受金だったのかが分かってから本来の科目へ移す
+    concepts: [suspense_accounts, revenue]
+    remediation: receivables-and-payables/temporary-and-deposits
+  - id: deposit_is_revenue
+    name: 預かったお金はもうけ
+    description: 給料から差し引いた税金など、預かっているだけのお金を収益として記録してしまう
+    correct: 預り金は他人のお金で、後で納める義務。会社のもうけではないので負債
+    concepts: [advances_and_deposits, liability]
+    remediation: receivables-and-payables/temporary-and-deposits

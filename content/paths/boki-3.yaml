@@ -1,6 +1,6 @@
 id: boki-3
 title: 簿記 3 級合格パス
-summary: 日商簿記 3 級の範囲を、概念の理解を軸に順に学ぶ。いまは簿記の仕組み、商品売買、減価償却まで。
+summary: 日商簿記 3 級の範囲を、概念の理解を軸に順に学ぶ。いまは簿記の仕組み、商品売買、現金・預金、債権・債務、減価償却まで。
 exam:
   name: 日商簿記検定 3 級
   format: ネット試験(CBT)または統一試験。60 分、3 題以内、商業簿記のみ、100 点満点中 70 点以上で合格
@@ -10,5 +10,9 @@ sections:
     units: [bookkeeping-basics/five-elements]
   - title: 商品売買
     units: [merchandise/three-account-method, merchandise/credit-transactions, merchandise/returns-and-costs, merchandise/cost-of-goods-sold]
+  - title: 現金・預金
+    units: [cash-and-deposits/cash-over-and-short, cash-and-deposits/checking-account, cash-and-deposits/petty-cash]
+  - title: 債権・債務
+    units: [receivables-and-payables/loans, receivables-and-payables/other-receivables-and-payables, receivables-and-payables/temporary-and-deposits]
   - title: 固定資産
     units: [depreciation/what-is-depreciation, depreciation/straight-line]

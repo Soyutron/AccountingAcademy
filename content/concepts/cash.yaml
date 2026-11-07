@@ -1,0 +1,60 @@
+id: cash
+title: 現金・預金
+order: 3
+concepts:
+  - id: cash_over_and_short
+    name: 現金過不足
+    short: 帳簿と金庫の現金が合わないときの差額を、原因が分かるまで置いておく仮の科目
+    summary: 帳簿の現金と実際に数えた現金が合わないとき、まず帳簿を実際の金額に直し、差額を現金過不足に入れる。原因が分かれば本来の科目へ移し、決算まで分からなければ雑損か雑益に振り替える。
+    example: 帳簿は 300,000 円なのに金庫には 297,000 円しかない。差額の 3,000 円をいったん現金過不足に置き、記帳漏れを探す。
+    requires: [asset, journal_entry]
+    related: [miscellaneous_loss_gain]
+    contrasts: []
+  - id: miscellaneous_loss_gain
+    name: 雑損・雑益
+    short: 原因が分からないまま決算を迎えた小さな差額を、費用(雑損)または収益(雑益)として片づけること
+    summary: 現金過不足のうち、決算日までに原因が分からなかった金額を、不足なら雑損(費用)、超過なら雑益(収益)に振り替える。現金過不足を財務諸表に残さないための処理。
+    example: 3,000 円の不足のうち 2,000 円は切手代の記帳漏れと分かったが、残り 1,000 円は分からないまま決算になった。1,000 円は雑損にする。
+    requires: [cash_over_and_short, expense, revenue]
+    related: []
+    contrasts: []
+  - id: checking_account
+    name: 当座預金
+    short: 小切手で支払うための、利息の付かない預金
+    summary: 銀行と当座取引の契約をして開く預金。小切手を振り出して支払いに使う。普通預金と違って利息は付かず、通帳ではなく当座勘定照合表で残高を確かめる。
+    example: 問屋への支払いを小切手で済ませるために、普通預金から 200,000 円を当座預金に移す。
+    requires: [asset]
+    related: [check, bank_overdraft]
+    contrasts: []
+  - id: check
+    name: 小切手
+    short: 「この紙を銀行に持っていけば、私の当座預金からお金を払います」という紙
+    summary: 自分が振り出した小切手は、相手が銀行に持ち込むと自分の当座預金から引き落とされる。他人が振り出した小切手を受け取ったときは、すぐに換金できるので現金として扱う。
+    example: 問屋に 25,000 円の小切手を渡すと、当座預金が 25,000 円減る。お客さんから小切手を受け取ったら、現金が増えたと記録する。
+    requires: [checking_account]
+    related: []
+    contrasts: []
+  - id: bank_overdraft
+    name: 当座借越
+    short: 当座預金の残高を超えて小切手を振り出したとき、銀行が立て替えてくれた金額
+    summary: 銀行と当座借越契約を結んでおくと、残高を超える小切手も決められた限度まで支払われる。超えた分は銀行からの借金なので負債。
+    example: 当座預金が 100,000 円しかないのに 150,000 円の小切手を振り出した。超えた 50,000 円が当座借越。
+    requires: [checking_account, liability]
+    related: []
+    contrasts: [checking_account]
+  - id: petty_cash
+    name: 小口現金
+    short: 細かい支払いのために担当者へ前もって渡しておく現金
+    summary: 切手代やお茶代のような小さな支払いを、担当者が手元の小口現金から払う仕組み。担当者が小口現金出納帳に記録し、まとめて報告する。渡しただけでは費用にならない。
+    example: 週の初めに担当者へ 30,000 円を渡す。担当者はそこから切手代や文房具代を払う。
+    requires: [asset]
+    related: [imprest_system]
+    contrasts: []
+  - id: imprest_system
+    name: 定額資金前渡法
+    short: 使った分だけを補給して、小口現金をいつも決まった金額に戻す方法
+    summary: 担当者から使った内訳の報告を受けたら、費用を記録すると同時に、使った分と同じ金額を補給する。小口現金はいつも定額に戻るので管理しやすい。インプレスト・システムとも呼ぶ。
+    example: 30,000 円渡したうち 12,500 円を使ったと報告があれば、12,500 円を補給して 30,000 円に戻す。
+    requires: [petty_cash]
+    related: []
+    contrasts: []
