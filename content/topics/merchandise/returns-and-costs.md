@@ -83,7 +83,11 @@ wrong_patterns:
   - match: { swapped: true }
     misconception: return_as_new_transaction
     feedback: それは新しく仕入れたときの仕訳です。返品は取り消しなので、左右を逆にします。
+  - match: { debit: [{ account: accounts_payable }], credit: [{ account: cash }] }
+    misconception: return_as_new_transaction
+    feedback: 左の買掛金は合っています。豆を返したので、現金は動きません。元の仕入を取り消すので、右に仕入を書きます。
   - match: { credit: [{ account: cash }] }
+    misconception: return_as_new_transaction
     feedback: 掛けで買った豆なので、お金は動きません。減るのは買掛金(払う義務)です。
   - match: { debit: [{ account: sales }] }
     misconception: return_as_new_transaction
