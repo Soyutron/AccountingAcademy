@@ -54,7 +54,8 @@ export const glossary: GlossaryEntry[] = [
     short: c.short,
     summary: c.summary,
     example: c.example,
-    related: [...c.requires, ...c.related, ...c.contrasts].map((id) => ({ id, name: nameOf(id) })),
+    // related と contrasts の両方に挙げる概念があるので、先に出た方だけ残す
+    related: [...new Set([...c.requires, ...c.related, ...c.contrasts])].map((id) => ({ id, name: nameOf(id) })),
     unit: (() => {
       const u = introducingUnit(c.id);
       return u ? { id: u.id, title: u.title } : undefined;
