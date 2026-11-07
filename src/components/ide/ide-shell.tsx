@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { type ReactNode, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { type AccountInfo, type Change, type Element, type JournalEntry, ELEMENT_LABELS, ELEMENTS, computeImpact, toChange } from "@/lib/accounting";
 import { ElementBadge } from "@/components/element-badge";
 import { AccountName } from "@/components/account-name";
@@ -103,6 +103,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [resumeStep, setResumeStep] = useState<number | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [tweakDone, setTweakDone] = useState(false);
+  // 回答を確定したステップ。同一ティックの連打では state が更新前なので、ref で同期的に弾く
+  const answeredStep = useRef<number | null>(null);
   // 帳簿をさかのぼる: 何件目までの記帳で財務諸表を見るか(null は最新)
   const [viewUpto, setViewUpto] = useState<number | null>(null);
   // 取引の流れのアニメーション。記帳が成功した仕訳を次の描画で測って飛ばす
@@ -205,6 +207,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     setAttempts(0);
     setShowHint(false);
     setTweakDone(false);
+    answeredStep.current = null;
     setResumeStep(null);
     setViewUpto(null);
     setPane("guide");
@@ -227,10 +230,12 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const draftReady = entryDraft.debit.length > 0 && entryDraft.credit.length > 0;
 
   const check = () => {
+    if (answeredStep.current === stepIndex) return;
     switch (task.type) {
       case "post": {
         if (!draftReady) return;
         const r = gradePost(task, entryDraft);
+        if (r.correct) answeredStep.current = stepIndex;
         setResult(r);
         setAttempts((n) => n + 1);
         record(r, entryDraft);
@@ -244,6 +249,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       case "predict": {
         if (!ELEMENTS.every((el) => effect[el])) return;
         const r = gradePredict(task, effect as EffectAnswer);
+        answeredStep.current = stepIndex;
         setResult(r);
         record(r, effect);
         setPosted((prev) => (prev.some((p) => p.step === stepIndex) ? prev : [...prev, { step: stepIndex, memo: task.transaction, entry: task.entry }]));
@@ -255,6 +261,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         const n = Number(calcValue.replaceAll(",", ""));
         if (calcValue.trim() === "" || Number.isNaN(n)) return;
         const r = gradeCalc(task, n);
+        if (r.correct) answeredStep.current = stepIndex;
         setResult(r);
         setAttempts((k) => k + 1);
         record(r, n);
@@ -263,6 +270,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       case "classify": {
         if (task.accounts.some((id) => !placed[id])) return;
         const r = gradeClassify(task, placed, accountMap);
+        if (r.correct) answeredStep.current = stepIndex;
         setResult(r);
         setAttempts((k) => k + 1);
         record(r, placed);
