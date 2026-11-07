@@ -219,5 +219,11 @@ Monkey の人格は「前回起票した領域を避ける」ような賢さは�
 - 状況の確認は `scripts/issue-agent.sh status`。止めるのは `scripts/monkey-loop.sh stop` / `scripts/issue-loop.sh stop`。
 - 人が見るもの: `ready-for-human` と `agent:needs-human` の Issue(`gh issue list --label ready-for-human,agent:needs-human`)、
   統合後の Issue コメント(残った should / nit)、週 1 回の `pnpm db:reset`(夜間に匿名ユーザーが増えるため)。
-- 初回の実測(impatient-learner、8 step): 約 9 分で Issue 3 件(連打で仕訳が重複、前へ戻って再記帳で二重、reload で正解が復元されない)。
-  seed 付き Monkey は 15 step 15 秒で用語集の重複キーを検出。
+- 初回の実測(2026-11-07、1 サイクル): 人格型 Monkey(impatient-learner、8 step × 2 反復、約 9 分 / 反復)で Issue 4 件、
+  seed 付き Monkey(15 step、15 秒)で 1 件。トリアージは 1 件 70〜100 秒・$0.7〜1.0、すべて再現して `ready-for-agent`。
+  issue-agent は 6 件すべてレビュー 1 ラウンドで統合、1 件 4〜7 分・$1.1〜2.4(実装 opus、レビュー fable)。再検証は全件通過。
+  発見から統合までの合計は $16、人手ゼロ。直した内容: 回答ボタンの連打(#1)、前へ戻っての再記帳(#2)、reload 後の達成復元(#3)、
+  前へ戻ったときの step 後退(#4)、用語集の重複(#5)、tweak の達成表示(#6)。
+- 運用で分かったこと: (1) `claude -p` は未信頼ワークスペース扱いで `settings.json` の allow が効かないので `--allowedTools` を明示する。
+  (2) 人が同時に編集していることがあるので、本体の汚れは統合で触るファイルと重なるときだけ止める。(3) 再検証は main をビルドし直してから回す。
+  (4) 開発サーバーの初回コンパイルでツアーの表示が数秒遅れるので、Monkey はチュートリアル単元で長めに待つ。
