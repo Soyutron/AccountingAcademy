@@ -1,0 +1,36 @@
+# 環境変数・認証情報(.env.example は雛形なので除外しない)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# 個人用の Claude Code 設定と worktree
+.claude/settings.local.json
+.claude/worktrees/
+
+# 依存とビルド成果物(技術選定後に見直す)
+node_modules/
+.venv/
+dist/
+build/
+__pycache__/
+*.pyc
+
+# Next.js / Velite / テスト
+/.next/
+/out/
+/.velite/
+/coverage
+/test-results/
+/playwright-report/
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
+
+# Supabase ローカルスタック
+supabase/.branches
+supabase/.temp
+
+# Velite が本文から参照された画像などを書き出す先
+/public/static/

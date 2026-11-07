@@ -1,0 +1,68 @@
+# よくある誤解。演習の誤答パターンから参照され、立ち止まり(remediation)の案内先になる
+misconceptions:
+  - id: debit_means_increase
+    name: 借方は常に増加
+    description: 「借方 = 増える、貸方 = 減る」と覚えている。資産と費用では正しいが、負債・純資産・収益では逆になる
+    correct: 増減の側は要素によって決まる。資産・費用は借方で増え、負債・純資産・収益は貸方で増える
+    concepts: [five_elements, debit_credit]
+    remediation: bookkeeping-basics/five-elements
+  - id: cash_is_only_asset
+    name: 資産は現金だけ
+    description: 現金や預金だけを資産と考え、建物や備品、売掛金のような形の違う財産を資産とみなしていない
+    correct: 資産とは会社が持つ財産や権利の全体。現金が形を変えて建物や備品になっても、資産の合計は変わらない
+    concepts: [asset, five_elements]
+    remediation: bookkeeping-basics/five-elements
+  - id: revenue_equals_cash_in
+    name: お金が入れば収益
+    description: 現金が入ってくれば収益、出ていけば費用だと思っている。借入による入金を収益と考えてしまう
+    correct: 収益は純資産を増やす原因、費用は純資産を減らす原因。借入は返す義務(負債)が同時に増えるので純資産は増えず、収益ではない
+    concepts: [revenue, liability, five_elements]
+    remediation: bookkeeping-basics/five-elements
+  - id: expense_as_liability
+    name: 費用と負債の混同
+    description: 「支払うもの」という共通点から、費用と負債を同じものだと考えている
+    correct: 負債は「将来支払う義務」で貸借対照表に残る。費用は「純資産を減らす原因」で損益計算書に載り、その期で消える
+    concepts: [expense, liability]
+    remediation: bookkeeping-basics/five-elements
+  - id: expense_at_payment
+    name: 支払った時に費用
+    description: 現金を支払った時点で費用になると思っている。支払いと費用の発生を区別していない
+    correct: 費用はお金を払った時ではなく、その効果が発生した期間に計上する(発生主義)。長く使う資産の購入は支払った時点では費用にならない
+    concepts: [accrual_basis, cost_allocation]
+    remediation: depreciation/what-is-depreciation
+  - id: no_cost_allocation
+    name: 購入時に全額費用
+    description: 長く使う資産の購入額を、買った期の費用に全額計上してしまう
+    correct: 使う期間にわたって費用を配分する(費用配分の原則)。購入した期は資産として記録し、各期の減価償却費として少しずつ費用にする
+    concepts: [cost_allocation, depreciation]
+    remediation: depreciation/what-is-depreciation
+  - id: contra_as_liability
+    name: 減価償却累計額は負債
+    description: 減価償却累計額が貸方に増えることから、負債だと思っている
+    correct: 減価償却累計額は資産のマイナスを表す評価勘定。誰かに支払う義務ではないので負債ではなく、貸借対照表では資産から控除して表示する
+    concepts: [contra_account, indirect_method]
+    remediation: depreciation/what-is-depreciation
+  - id: direct_writeoff_vs_contra
+    name: 資産を直接減らす
+    description: 間接法と指定されているのに、建物や備品の勘定科目を直接減らしてしまう
+    correct: 間接法では固定資産の金額は取得原価のまま残し、減った分は減価償却累計額に積み上げる。これで取得原価と減価の累計の両方が読み取れる
+    concepts: [indirect_method, contra_account]
+    remediation: depreciation/what-is-depreciation
+  - id: depreciation_as_cash_outflow
+    name: 減価償却費は支払い
+    description: 減価償却費を計上するときに現金や預金が減ると思っている
+    correct: 現金は資産を買った時点で減っている。減価償却はその支出を各期に配分する手続きであり、お金の動きを伴わない
+    concepts: [depreciation, cost_allocation]
+    remediation: depreciation/what-is-depreciation
+  - id: forgot_monthly_proration
+    name: 月割りを忘れる
+    description: 期の途中で取得した資産でも、1 年分の減価償却費を計上してしまう
+    correct: 使った期間に対応する費用だけを計上する。取得した月から決算月までの月数で 1 年分を按分する
+    concepts: [monthly_proration, straight_line_method]
+    remediation: depreciation/straight-line
+  - id: residual_value_ignored
+    name: 残存価額を無視する
+    description: 残存価額が与えられているのに、取得原価をそのまま耐用年数で割ってしまう
+    correct: 配分するのは取得原価から残存価額を引いた金額。残存価額は使い終わった後に残る価値なので費用にしない
+    concepts: [residual_value, straight_line_method]
+    remediation: depreciation/straight-line

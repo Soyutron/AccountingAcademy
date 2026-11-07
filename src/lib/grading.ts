@@ -1,0 +1,77 @@
+import type { Unit } from "#content";
+import { type AccountInfo, type Change, type Element, type JournalEntry, ELEMENT_LABELS, sameEntry } from "./accounting";
+
+// ステップの課題の採点(純粋関数)。正誤だけでなく「どの誤解か」を返す(docs/architecture.md 6 章)
+
+export type Task = Unit["steps"][number]["task"];
+export type TaskOf<T extends Task["type"]> = Extract<Task, { type: T }>;
+export type EffectAnswer = Record<Element, Change>;
+
+export interface GradeResult {
+  correct: boolean;
+  misconception?: string;
+  feedback: string;
+}
+
+const GENERIC_WRONG = "まだ合っていません。右の「結果」で何が動くはずかを考えて、もう一度試してみましょう。";
+
+function ok(task: { success?: string }): GradeResult {
+  return { correct: true, feedback: task.success ?? "できました。" };
+}
+function ng(feedback?: string, misconception?: string): GradeResult {
+  return { correct: false, misconception, feedback: feedback ?? GENERIC_WRONG };
+}
+
+export function gradePost(task: TaskOf<"post">, entry: JournalEntry): GradeResult {
+  if ([task.answer, ...task.alternatives].some((e) => sameEntry(e, entry))) return ok(task);
+  const sum = (lines: { amount: number }[]) => lines.reduce((t, l) => t + l.amount, 0);
+  const pattern = task.wrong_patterns.find((p) => {
+    const m = p.match;
+    if (m.swapped && !sameEntry(entry, { debit: task.answer.credit, credit: task.answer.debit })) return false;
+    if (m.unbalanced && sum(entry.debit) === sum(entry.credit)) return false;
+    const linesMatch = (wanted: { account?: string; amount?: number }[] | undefined, lines: JournalEntry["debit"]) =>
+      (wanted ?? []).every((w) => lines.some((l) => (w.account === undefined || l.account === w.account) && (w.amount === undefined || l.amount === w.amount)));
+    return linesMatch(m.debit, entry.debit) && linesMatch(m.credit, entry.credit);
+  });
+  return ng(pattern?.feedback, pattern?.misconception);
+}
+
+export function gradePredict(task: TaskOf<"predict">, effect: EffectAnswer): GradeResult {
+  const keys = Object.keys(task.answer) as Element[];
+  if (keys.every((k) => effect[k] === task.answer[k])) return ok(task);
+  const pattern = task.wrong_patterns.find((p) =>
+    (Object.entries(p.match) as [Element, Change | undefined][]).every(([k, v]) => v === undefined || effect[k] === v),
+  );
+  return ng(pattern?.feedback, pattern?.misconception);
+}
+
+export function gradeCalc(task: TaskOf<"calc">, value: number): GradeResult {
+  if (value === task.answer) return ok(task);
+  const pattern = task.wrong_patterns.find((p) => p.match === value);
+  return ng(pattern?.feedback, pattern?.misconception);
+}
+
+export function gradeTweak(task: TaskOf<"tweak">, outputs: Record<string, number>): GradeResult {
+  return outputs[task.goal.output] === task.goal.equals ? ok(task) : ng(`いまの${task.goal.label}は ${outputs[task.goal.output]?.toLocaleString("ja-JP")} 円です。条件を動かして ${task.goal.equals.toLocaleString("ja-JP")} 円にしてみましょう。`);
+}
+
+export interface ClassifyResult extends GradeResult {
+  // 間違えた科目ごとの説明
+  wrong: { account: string; feedback: string; misconception?: string }[];
+}
+
+export function gradeClassify(task: TaskOf<"classify">, placed: Partial<Record<string, Element>>, accounts: ReadonlyMap<string, AccountInfo>): ClassifyResult {
+  const wrong: ClassifyResult["wrong"] = [];
+  for (const id of task.accounts) {
+    const account = accounts.get(id);
+    const chosen = placed[id];
+    if (!account || chosen === account.element) continue;
+    wrong.push({
+      account: id,
+      misconception: chosen ? task.misconceptions[id]?.[chosen] : undefined,
+      feedback: `${account.name}は${ELEMENT_LABELS[account.element]}です。${account.why}`,
+    });
+  }
+  if (wrong.length === 0) return { ...ok(task), wrong };
+  return { ...ng(`${wrong.length} 個の科目が別の箱に入っています。`, wrong.find((w) => w.misconception)?.misconception), wrong };
+}

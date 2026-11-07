@@ -1,0 +1,116 @@
+id: basics
+title: 簿記の構造
+order: 1
+concepts:
+  - id: transaction
+    name: 取引
+    short: 会社の財産やもうけに変化を起こす出来事
+    summary: 簿記でいう取引は、会社の資産・負債・純資産・収益・費用のどれかを変化させる出来事のこと。日常語の「取引」より広く、火事で建物を失うことも取引に含まれる一方、契約を結んだだけでお金や物が動かなければ取引ではない。
+    example: 商品を売って現金を受け取るのは取引。得意先と来月納品する約束をしただけなら、まだ取引ではない。
+    requires: []
+    related: [journal_entry, five_elements]
+    contrasts: []
+  - id: five_elements
+    name: 5 要素
+    short: 会社のお金の動きを分類する 5 つの箱。資産・負債・純資産・収益・費用
+    summary: 簿記はすべての取引を、資産・負債・純資産(財産の状態を表す 3 つ)と収益・費用(もうけの中身を表す 2 つ)のどれかの変化として記録する。どの勘定科目もこの 5 つのどれかに属する。
+    example: 現金は資産、借入金は負債、資本金は純資産、売上は収益、給料は費用。
+    requires: []
+    related: [asset, liability, equity, revenue, expense, balance_sheet, income_statement]
+    contrasts: []
+  - id: asset
+    name: 資産
+    short: 会社が持っている財産や、将来お金を受け取る権利
+    summary: 現金や預金だけでなく、建物・備品・車両のような物、売掛金のような「後でお金を受け取る権利」も資産。会社が事業に使える経済的な価値の全体を指す。
+    example: 現金 100 万円でトラックを買うと、現金という資産が減ってトラックという資産が増える。資産の合計は変わらない。
+    requires: [five_elements]
+    related: [liability, equity, balance_sheet]
+    contrasts: [liability]
+  - id: liability
+    name: 負債
+    short: 将来、会社が支払わなければならない義務
+    summary: 借入金や買掛金のように、将来お金を支払う(または物を引き渡す)義務。お金を借りると現金という資産が増えるが、同時に返す義務が負債として増えるので、会社のもうけにはならない。
+    example: 銀行から 300 万円を借りると、普通預金(資産)が 300 万円増え、借入金(負債)が 300 万円増える。
+    requires: [five_elements]
+    related: [asset, equity]
+    contrasts: [asset, expense]
+  - id: equity
+    name: 純資産
+    short: 資産から負債を引いた残り。株主のものといえる正味の財産
+    summary: 資産の合計から負債の合計を引いた金額。株主が出した元手(資本金)と、会社が稼いで残した利益の積み上がり(繰越利益剰余金)からなる。収益と費用の差である当期純利益は、最終的に純資産を増減させる。
+    example: 資産 1,000 万円、負債 400 万円の会社の純資産は 600 万円。利益を 100 万円出すと純資産は 700 万円になる。
+    requires: [asset, liability]
+    related: [net_income, balance_sheet]
+    contrasts: [liability]
+  - id: revenue
+    name: 収益
+    short: 事業によって会社の純資産を増やす原因。売上など
+    summary: 商品を売る、サービスを提供するなどして、会社の純資産を増やす原因となるもの。現金を受け取ったかどうかではなく、純資産が増えたかどうかで判断する。借入による入金は負債も増えるので収益ではない。
+    example: 商品を 8 万円で売れば、代金が現金でも掛け(後払い)でも売上という収益が 8 万円発生する。
+    requires: [equity]
+    related: [expense, net_income, income_statement]
+    contrasts: [expense]
+  - id: expense
+    name: 費用
+    short: 収益を得るために使った犠牲。会社の純資産を減らす原因
+    summary: 給料や家賃のように、事業を行うために消費した価値。純資産を減らす原因であり、損益計算書に載ってその期で消える。「将来支払う義務」である負債とは別物。
+    example: 事務所の家賃 5 万円を払うと、現金(資産)が 5 万円減り、支払家賃(費用)が 5 万円発生する。
+    requires: [equity]
+    related: [revenue, net_income, income_statement]
+    contrasts: [revenue, liability]
+  - id: account_title
+    name: 勘定科目
+    short: 取引を記録するときに使う、決まった名前のラベル
+    summary: 現金、売掛金、売上のように、取引の内容を分類して記録するための名前。すべての勘定科目は 5 要素のどれかに属し、それによって借方・貸方のどちらで増えるかが決まる。
+    example: 「事務所の家賃を払った」は支払家賃という勘定科目(費用)で記録する。
+    requires: [five_elements]
+    related: [journal_entry]
+    contrasts: []
+  - id: debit_credit
+    name: 借方と貸方
+    short: 仕訳の左側(借方)と右側(貸方)。どちらで増えるかは要素ごとに決まっている
+    summary: 簿記ではすべての記録を左右 2 列に分けて書く。左を借方、右を貸方と呼ぶ。資産と費用は借方で増え、負債・純資産・収益は貸方で増える。これは貸借対照表で資産を左、負債と純資産を右に置く配置と同じ理屈に基づいている。
+    example: 現金(資産)が増えたら借方に、借入金(負債)が増えたら貸方に書く。
+    requires: [five_elements]
+    related: [journal_entry, balance_sheet]
+    contrasts: []
+  - id: journal_entry
+    name: 仕訳
+    short: 1 つの取引を、借方と貸方に勘定科目と金額で書き分けた記録
+    summary: 取引を「何がいくら増減したか」として、借方と貸方に勘定科目と金額を書く記録。1 つの取引には必ず 2 つ以上の側面があり、借方の合計と貸方の合計は常に一致する。
+    example: 家賃 5 万円を現金で払った → 借方に支払家賃 50,000、貸方に現金 50,000。
+    requires: [debit_credit, account_title, transaction]
+    related: [balance_sheet, income_statement]
+    contrasts: []
+  - id: balance_sheet
+    name: 貸借対照表
+    short: ある時点で会社が何を持ち、何を負っているかを一覧にした表
+    summary: 決算日時点の資産・負債・純資産を並べた表。左に資産、右に負債と純資産を置き、左右の合計は必ず一致する(資産 = 負債 + 純資産)。会社の財産の状態を表す。
+    example: 資産 1,000 万円、負債 400 万円、純資産 600 万円なら、左右とも 1,000 万円で一致する。
+    requires: [asset, liability, equity]
+    related: [income_statement]
+    contrasts: [income_statement]
+  - id: income_statement
+    name: 損益計算書
+    short: ある期間にどれだけもうけたかを、収益と費用で示した表
+    summary: 一定期間(通常 1 年)の収益と費用を並べ、その差として当期純利益を示す表。会社の成績を表す。ここで計算された利益は貸借対照表の純資産を増やす。
+    example: 売上 800 万円、費用の合計 700 万円なら、当期純利益は 100 万円。
+    requires: [revenue, expense]
+    related: [balance_sheet, net_income]
+    contrasts: [balance_sheet]
+  - id: net_income
+    name: 当期純利益
+    short: 1 年間の収益から費用を引いた、最終的なもうけ
+    summary: 収益の合計から費用の合計を引いた金額。損益計算書の結論であり、貸借対照表の純資産を同じ金額だけ増やす。費用が増えれば当期純利益は減り、純資産も減る。
+    example: 売上 80 万円、支払家賃 5 万円だけなら、当期純利益は 75 万円。
+    requires: [revenue, expense, equity]
+    related: [income_statement, balance_sheet]
+    contrasts: []
+  - id: accrual_basis
+    name: 発生主義
+    short: お金を払った時ではなく、その効果が生じた期間に収益や費用を記録する考え方
+    summary: 現金の出入りの時点ではなく、収益や費用の原因となる事実が発生した期間に記録する原則。長く使う資産を買った時に全額を費用にせず、使う期間に分けて費用にするのも発生主義から導かれる。
+    example: 3 月に働いてもらった給料を 4 月に払っても、給料という費用は 3 月の分として記録する。
+    requires: [expense, revenue]
+    related: [cost_allocation]
+    contrasts: []

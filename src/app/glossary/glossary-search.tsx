@@ -1,0 +1,80 @@
+"use client";
+
+import Link from "next/link";
+import { useState } from "react";
+import type { GlossaryEntry } from "@/lib/content";
+import { ELEMENT_LABELS } from "@/lib/accounting";
+import { Input } from "@/components/ui/input";
+
+// 用語集の検索。名前・short の部分一致。規模が小さいので配列のフィルタで足りる
+
+export function GlossarySearch({
+  entries,
+  domainTitles,
+  domainOf,
+}: {
+  entries: GlossaryEntry[];
+  domainTitles: Record<string, string>;
+  domainOf: Record<string, string>;
+}) {
+  const [query, setQuery] = useState("");
+  const q = query.trim();
+  const hits = q ? entries.filter((e) => e.name.includes(q) || e.short.includes(q)) : entries;
+  const concepts = hits.filter((e) => e.kind === "concept");
+  const accounts = hits.filter((e) => e.kind === "account");
+
+  const groups: { title: string; items: GlossaryEntry[] }[] = [
+    ...Object.entries(domainTitles).map(([id, title]) => ({ title, items: concepts.filter((c) => domainOf[c.id] === id) })),
+    { title: "勘定科目", items: accounts },
+  ].filter((g) => g.items.length > 0);
+
+  return (
+    <div className="space-y-6">
+      <Input placeholder="用語を検索" value={query} onChange={(e) => setQuery(e.target.value)} className="max-w-sm" aria-label="用語を検索" />
+      {groups.map((g) => (
+        <section key={g.title} className="space-y-3">
+          <h2 className="text-lg font-semibold">{g.title}</h2>
+          <dl className="space-y-3">
+            {g.items.map((e) => (
+              <div key={e.id} id={e.id} className="rounded-md border p-3 scroll-mt-20">
+                <dt className="font-medium">
+                  {e.name}
+                  {e.element && (
+                    <span className="ml-2 text-xs font-normal text-muted-foreground">
+                      {ELEMENT_LABELS[e.element]}
+                      {e.contra ? "の控除項目" : ""}
+                    </span>
+                  )}
+                </dt>
+                <dd className="mt-1 text-sm space-y-1">
+                  <p>{e.short}</p>
+                  <p className="text-muted-foreground">{e.summary}</p>
+                  {e.example && <p className="text-muted-foreground">例: {e.example}</p>}
+                  {e.related.length > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      関連:{" "}
+                      {e.related.map((r, i) => (
+                        <span key={r.id}>
+                          {i > 0 && "、"}
+                          <a href={`#${r.id}`} className="underline">
+                            {r.name}
+                          </a>
+                        </span>
+                      ))}
+                    </p>
+                  )}
+                  {e.unit && (
+                    <Link href={`/units/${e.unit.id}`} className="text-xs underline">
+                      詳しく: {e.unit.title}
+                    </Link>
+                  )}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      ))}
+      {hits.length === 0 && <p className="text-sm text-muted-foreground">該当する用語がありません。</p>}
+    </div>
+  );
+}

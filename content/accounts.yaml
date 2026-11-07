@@ -1,0 +1,134 @@
+# 勘定科目マスタ。要素分類の演習と仕訳エディタの影響表示の両方が参照する
+accounts:
+  - id: cash
+    name: 現金
+    short: 会社が手元に持っているお金
+    element: asset
+    why: 会社が持っていて、いつでも支払いに使える財産だから
+    concepts: [asset]
+  - id: bank_deposit
+    name: 普通預金
+    aliases: [預金]
+    short: 銀行に預けてあるお金
+    element: asset
+    why: 銀行に預けてある会社の財産で、いつでも引き出して使えるから
+    concepts: [asset]
+  - id: accounts_receivable
+    name: 売掛金
+    short: 商品を売ったが、まだ受け取っていない代金
+    element: asset
+    why: 後で現金を受け取る権利であり、将来お金に変わる財産だから
+    concepts: [asset]
+  - id: accounts_payable
+    name: 買掛金
+    short: 商品を仕入れたが、まだ支払っていない代金
+    element: liability
+    why: 後で現金を支払わなければならない義務だから
+    concepts: [liability]
+  - id: loans_payable
+    name: 借入金
+    short: 銀行などから借りていて、返さなければならないお金
+    element: liability
+    why: 将来返済しなければならない義務だから。受け取った現金は資産だが、返す義務は負債として別に記録する
+    concepts: [liability]
+  - id: building
+    name: 建物
+    short: 会社が持っている店舗や事務所などの建物
+    element: asset
+    why: 長い期間にわたって事業に使える会社の財産だから
+    concepts: [asset, tangible_fixed_assets]
+  - id: equipment
+    name: 備品
+    short: 机、パソコン、棚など、長く使う物品
+    element: asset
+    why: 1 年を超えて事業に使える会社の財産だから
+    concepts: [asset, tangible_fixed_assets]
+  - id: vehicle
+    name: 車両運搬具
+    aliases: [車両]
+    short: 会社が持っているトラックや営業車
+    element: asset
+    why: 長い期間にわたって事業に使える会社の財産だから
+    concepts: [asset, tangible_fixed_assets]
+  - id: capital_stock
+    name: 資本金
+    short: 会社の持ち主(株主)が出したお金
+    element: equity
+    why: 返す義務のない元手であり、資産から負債を引いた残りである純資産を構成するから
+    concepts: [equity]
+  - id: retained_earnings
+    name: 繰越利益剰余金
+    short: これまでに会社が稼いで、会社の中に残してある利益
+    element: equity
+    why: 過去の利益の積み上がりで、株主のものとして会社に残っている純資産だから
+    concepts: [equity, net_income]
+  - id: sales
+    name: 売上
+    short: 商品やサービスを売って得た金額
+    element: revenue
+    why: 事業によって会社の純資産を増やす原因だから。現金を受け取ったかどうかとは関係ない
+    concepts: [revenue]
+  - id: purchases
+    name: 仕入
+    short: 売るための商品を買った金額
+    element: expense
+    why: 売上を得るために使った犠牲であり、純資産を減らす原因だから
+    concepts: [expense]
+  - id: rent_expense
+    name: 支払家賃
+    aliases: [家賃]
+    short: 事務所や店舗を借りるために支払う家賃
+    element: expense
+    why: 事業を行うために使った犠牲で、純資産を減らす原因だから
+    concepts: [expense]
+  - id: salaries_expense
+    name: 給料
+    short: 従業員に支払う給料
+    element: expense
+    why: 事業を行うために使った犠牲で、純資産を減らす原因だから
+    concepts: [expense]
+  - id: supplies_expense
+    name: 消耗品費
+    short: 文房具やコピー用紙など、すぐに使い切る物の代金
+    element: expense
+    why: 短期間で使い切ってしまい財産として残らないので、買った時点で費用とするから
+    concepts: [expense]
+  - id: utilities_expense
+    name: 水道光熱費
+    aliases: [電気代]
+    short: お店で使った電気・ガス・水道の代金
+    element: expense
+    why: 使ってしまえば財産として残らず、もうけを得るために使った犠牲だから
+    concepts: [expense]
+  - id: interest_expense
+    name: 支払利息
+    short: 借りたお金に対して支払う利息
+    element: expense
+    why: お金を借りるために使った犠牲で、純資産を減らす原因だから
+    concepts: [expense]
+  - id: depreciation_expense
+    name: 減価償却費
+    short: 建物や備品などの購入代金のうち、今年の分として費用にした金額
+    element: expense
+    why: 固定資産の取得原価のうち、当期の使用によって消費された部分を費用として認識するため
+    concepts: [expense, depreciation, cost_allocation]
+  - id: accumulated_depreciation
+    name: 減価償却累計額
+    aliases: [建物減価償却累計額, 備品減価償却累計額, 車両運搬具減価償却累計額]
+    short: これまでに計上した減価償却費の合計。固定資産の価値がどれだけ減ったかを表す
+    element: asset
+    contra: true
+    why: 固定資産の帳簿価額を直接減らさず、取得原価と減価の累計を別々に見せるための「資産のマイナス」項目だから。支払う義務ではないので負債ではない
+    concepts: [contra_account, depreciation, indirect_method]
+  - id: gain_on_sale_of_fixed_assets
+    name: 固定資産売却益
+    short: 固定資産を帳簿価額より高く売ったときの差額
+    element: revenue
+    why: 売却によって純資産が増えた分だから
+    concepts: [revenue, book_value]
+  - id: loss_on_sale_of_fixed_assets
+    name: 固定資産売却損
+    short: 固定資産を帳簿価額より安く売ったときの差額
+    element: expense
+    why: 売却によって純資産が減った分だから
+    concepts: [expense, book_value]
