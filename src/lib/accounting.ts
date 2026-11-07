@@ -10,7 +10,8 @@ export interface AccountInfo {
   aliases: string[];
   element: Element;
   contra: boolean;
-  // なぜその要素に属するか。要素分類の演習のフィードバックに使う
+  // 一文の説明と、なぜその要素に属するか。ホバー解説と要素分類のフィードバックに使う
+  short: string;
   why: string;
 }
 

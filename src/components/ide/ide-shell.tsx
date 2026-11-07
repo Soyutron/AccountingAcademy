@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { type AccountInfo, type Change, type Element, type JournalEntry, ELEMENT_LABELS, ELEMENTS, computeImpact, toChange } from "@/lib/accounting";
+import { ElementBadge } from "@/components/element-badge";
+import { AccountName } from "@/components/account-name";
+import { CheckCircle2, CircleAlert } from "lucide-react";
 import { type EditableEntry, emptyEntry, fromJournalEntry, toJournalEntry } from "@/lib/journal-editable";
 import { type ClassifyResult, type EffectAnswer, type GradeResult, type Task, gradeCalc, gradeClassify, gradePost, gradePredict, gradeTweak } from "@/lib/grading";
 import { evaluateFormula } from "@/lib/formulas";
@@ -88,6 +91,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [resumeStep, setResumeStep] = useState<number | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [tweakDone, setTweakDone] = useState(false);
+  // 帳簿をさかのぼる: 何件目までの記帳で財務諸表を見るか(null は最新)
+  const [viewUpto, setViewUpto] = useState<number | null>(null);
 
   const step = unit.steps[stepIndex];
   const task = step.task;
@@ -109,6 +114,13 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   );
   const balancesNow = useMemo(() => computeBalances(unit.opening, posted.map((p) => p.entry), accountMap), [unit.opening, posted, accountMap]);
   const diff = useMemo(() => diffBalances(balancesBefore, balancesNow), [balancesBefore, balancesNow]);
+  // さかのぼり表示中は、その時点の残高と、その 1 件で動いた差分を見せる
+  const view = useMemo(() => {
+    if (viewUpto === null || viewUpto >= posted.length) return { balances: balancesNow, diff };
+    const upto = computeBalances(unit.opening, posted.slice(0, viewUpto).map((p) => p.entry), accountMap);
+    const prev = computeBalances(unit.opening, posted.slice(0, Math.max(0, viewUpto - 1)).map((p) => p.entry), accountMap);
+    return { balances: upto, diff: viewUpto === 0 ? new Map<string, number>() : diffBalances(prev, upto) };
+  }, [viewUpto, posted, balancesNow, diff, unit.opening, accountMap]);
 
   const save = (fn: () => Promise<void>) => fn().catch((e: Error) => setSaveError(e.message));
   const record = (r: GradeResult, answer: unknown) =>
@@ -139,6 +151,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     setShowHint(false);
     setTweakDone(false);
     setResumeStep(null);
+    setViewUpto(null);
     setPane("guide");
     // observe の仕訳はステップに入った時点で自動的に記帳する
     if (target.task.type === "observe" && target.task.entries.length > 0) {
@@ -314,7 +327,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
                 <legend className="text-sm font-semibold mb-1">記帳すると、それぞれどう動くと思いますか</legend>
                 {ELEMENTS.map((el) => (
                   <label key={el} className="text-sm space-y-1">
-                    <span className="font-medium">{ELEMENT_LABELS[el]}</span>
+                    <ElementBadge element={el} />
                     <select aria-label={`${ELEMENT_LABELS[el]}の予想`} className="block w-full rounded-md border bg-background px-2 py-1" value={effect[el] ?? ""} onChange={(e) => setEffect({ ...effect, [el]: e.target.value as Change })}>
                       <option value="">選ぶ</option>
                       {(Object.keys(CHANGE_LABELS) as Change[]).map((c) => (
@@ -383,11 +396,29 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
             ) : (
               <ol className="space-y-1 text-xs">
                 {posted.map((p, i) => (
-                  <li key={i} className={`rounded border px-2 py-1 ${p.step === stepIndex ? "border-primary/50 bg-primary/5" : ""}`}>
+                  <li key={i} className={`rounded border px-2 py-1 ${p.step === stepIndex ? "border-primary/50 bg-primary/5 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1" : ""}`}>
                     <div className="text-muted-foreground truncate">{p.memo}</div>
                     <div className="grid grid-cols-2 gap-2 tabular-nums">
-                      <div>{p.entry.debit.map((l) => `${accountMap.get(l.account)?.name ?? l.account} ${l.amount.toLocaleString("ja-JP")}`).join(" / ")}</div>
-                      <div className="text-right">{p.entry.credit.map((l) => `${accountMap.get(l.account)?.name ?? l.account} ${l.amount.toLocaleString("ja-JP")}`).join(" / ")}</div>
+                      <div className="space-x-1">
+                        {p.entry.debit.map((l, j) => {
+                          const a = accountMap.get(l.account);
+                          return (
+                            <span key={j}>
+                              {a ? <AccountName account={a} /> : l.account} {l.amount.toLocaleString("ja-JP")}
+                            </span>
+                          );
+                        })}
+                      </div>
+                      <div className="text-right space-x-1">
+                        {p.entry.credit.map((l, j) => {
+                          const a = accountMap.get(l.account);
+                          return (
+                            <span key={j}>
+                              {a ? <AccountName account={a} /> : l.account} {l.amount.toLocaleString("ja-JP")}
+                            </span>
+                          );
+                        })}
+                      </div>
                     </div>
                   </li>
                 ))}
@@ -397,14 +428,44 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         </section>
 
         <section id="pane-result" role="region" aria-label="結果" className={paneClass("result")}>
-          <StatementsPane accounts={accountMap} balances={balancesNow} diff={diff} company={unit.company} />
+          {posted.length > 1 && (
+            <div className="mb-3 rounded-md border p-2 text-xs space-y-1">
+              <label className="flex items-center justify-between gap-2">
+                <span className="font-medium">帳簿をさかのぼる</span>
+                <span className="text-muted-foreground tabular-nums">
+                  {viewUpto === null || viewUpto >= posted.length ? "最新" : viewUpto === 0 ? "記帳前" : `${viewUpto} 件目まで`}
+                </span>
+                <input
+                  type="range"
+                  min={0}
+                  max={posted.length}
+                  value={viewUpto ?? posted.length}
+                  onChange={(e) => setViewUpto(Number(e.target.value) >= posted.length ? null : Number(e.target.value))}
+                  className="flex-1"
+                  aria-valuetext={viewUpto === null || viewUpto >= posted.length ? "最新" : `${viewUpto} 件目まで`}
+                />
+              </label>
+              {viewUpto !== null && viewUpto < posted.length && (
+                <p className="text-muted-foreground">
+                  {viewUpto === 0 ? "まだ何も記帳していない状態です。" : `「${posted[viewUpto - 1].memo}」を記帳した直後の姿です。`}
+                  <button type="button" className="ml-2 underline" onClick={() => setViewUpto(null)}>
+                    最新に戻る
+                  </button>
+                </p>
+              )}
+            </div>
+          )}
+          <StatementsPane accounts={accountMap} balances={view.balances} diff={view.diff} company={unit.company} />
         </section>
       </div>
 
       <div className="border-t bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm space-y-2 sticky bottom-0 max-h-[50dvh] overflow-y-auto">
         {result && (
-          <div role="status" aria-live="polite" className={`rounded-md p-3 space-y-2 ${result.correct ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-900"}`}>
-            <p className="font-semibold">{result.correct ? "できました" : "もう一歩"}</p>
+          <div role="status" aria-live="polite" className={`rounded-md p-3 space-y-2 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 ${result.correct ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-900"}`}>
+            <p className="font-semibold flex items-center gap-1.5">
+              {result.correct ? <CheckCircle2 className="size-4" aria-hidden /> : <CircleAlert className="size-4" aria-hidden />}
+              {result.correct ? "できました" : "もう一歩"}
+            </p>
             <p className="whitespace-pre-wrap">{result.feedback}</p>
             {task.type === "post" && !result.correct && draftReady && (
               <div className="rounded bg-background/70 p-2">
@@ -520,7 +581,7 @@ function PredictCompare({ predicted, entry, accounts }: { predicted: EffectAnswe
           const differs = predicted[el] !== actual;
           return (
             <tr key={el} className={differs ? "bg-rose-50 font-medium" : ""}>
-              <td>{ELEMENT_LABELS[el]}</td>
+              <td className="py-0.5"><ElementBadge element={el} size="xs" /></td>
               <td className="text-right">{CHANGE_LABELS[predicted[el]]}</td>
               <td className="text-right">{CHANGE_LABELS[actual]}</td>
             </tr>

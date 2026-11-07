@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { GlossaryEntry } from "@/lib/content";
-import { ELEMENT_LABELS } from "@/lib/accounting";
+import { ElementBadge } from "@/components/element-badge";
 import { Input } from "@/components/ui/input";
 
 // 用語集の検索。名前・short の部分一致。規模が小さいので配列のフィルタで足りる
@@ -37,14 +37,9 @@ export function GlossarySearch({
           <dl className="space-y-3">
             {g.items.map((e) => (
               <div key={e.id} id={e.id} className="rounded-md border p-3 scroll-mt-20">
-                <dt className="font-medium">
+                <dt className="font-medium flex items-center gap-2">
                   {e.name}
-                  {e.element && (
-                    <span className="ml-2 text-xs font-normal text-muted-foreground">
-                      {ELEMENT_LABELS[e.element]}
-                      {e.contra ? "の控除項目" : ""}
-                    </span>
-                  )}
+                  {e.element && <ElementBadge element={e.element} contra={e.contra} size="xs" />}
                 </dt>
                 <dd className="mt-1 text-sm space-y-1">
                   <p>{e.short}</p>

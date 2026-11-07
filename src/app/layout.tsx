@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import { Noto_Sans_JP } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
+
+const notoSansJp = Noto_Sans_JP({ subsets: ["latin"], weight: ["400", "500", "700"], variable: "--font-noto-sans-jp", display: "swap" });
 
 export const metadata: Metadata = {
   title: "AccountingAcademy",
@@ -9,8 +12,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ja">
-      <body className="min-h-dvh bg-background text-foreground antialiased">
+    <html lang="ja" className={notoSansJp.variable}>
+      <body className="min-h-dvh bg-background text-foreground antialiased font-sans">
         <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-background focus:p-2">
           本文へ移動
         </a>

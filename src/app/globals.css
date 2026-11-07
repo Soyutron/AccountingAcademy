@@ -8,7 +8,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-noto-sans-jp), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -137,4 +137,17 @@
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* 財務諸表で動いた行を一瞬光らせる */
+@keyframes highlight {
+  0% {
+    background-color: var(--color-amber-200);
+  }
+  100% {
+    background-color: var(--color-amber-50);
+  }
+}
+.animate-highlight {
+  animation: highlight 900ms ease-out;
 }

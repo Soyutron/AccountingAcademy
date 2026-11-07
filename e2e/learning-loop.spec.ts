@@ -87,9 +87,10 @@ for (const unit of units) {
           break;
         }
         case "classify": {
+          const board = work.getByRole("group", { name: "仕分けボード" });
           for (const id of task.accounts) {
-            await work.getByRole("button", { name: nameOf(id), exact: true }).click();
-            await work.getByRole("button", { name: `${ELEMENT_LABELS[accounts.find((a) => a.id === id)!.element]} ← ここに入れる`, exact: true }).click();
+            await board.getByRole("button", { name: nameOf(id), exact: true }).click();
+            await board.getByRole("button", { name: `${ELEMENT_LABELS[accounts.find((a) => a.id === id)!.element]} ← ここに入れる`, exact: true }).click();
           }
           await work.getByRole("button", { name: "確認する" }).click();
           await expect(page.getByText("できました", { exact: true })).toBeVisible();

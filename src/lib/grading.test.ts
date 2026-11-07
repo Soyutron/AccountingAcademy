@@ -7,13 +7,13 @@ import { gradeCalc, gradeClassify, gradePost, gradePredict, gradeTweak, type Tas
 const accounts = new Map<string, AccountInfo>(
   (
     [
-      { id: "cash", name: "現金", aliases: [], element: "asset", contra: false, why: "手元にある財産だから" },
-      { id: "building", name: "建物", aliases: [], element: "asset", contra: false, why: "長く使える財産だから" },
-      { id: "depreciation_expense", name: "減価償却費", aliases: [], element: "expense", contra: false, why: "当期に消費した価値だから" },
-      { id: "accumulated_depreciation", name: "減価償却累計額", aliases: ["建物減価償却累計額"], element: "asset", contra: true, why: "資産の控除項目だから" },
-      { id: "loans_payable", name: "借入金", aliases: [], element: "liability", contra: false, why: "返す義務だから" },
-      { id: "capital_stock", name: "資本金", aliases: [], element: "equity", contra: false, why: "株主が出した元手だから" },
-      { id: "sales", name: "売上", aliases: [], element: "revenue", contra: false, why: "もうけの元だから" },
+      { id: "cash", name: "現金", aliases: [], element: "asset", contra: false, short: "手元のお金", why: "手元にある財産だから" },
+      { id: "building", name: "建物", aliases: [], element: "asset", contra: false, short: "店舗や事務所", why: "長く使える財産だから" },
+      { id: "depreciation_expense", name: "減価償却費", aliases: [], element: "expense", contra: false, short: "今年分の目減り", why: "当期に消費した価値だから" },
+      { id: "accumulated_depreciation", name: "減価償却累計額", aliases: ["建物減価償却累計額"], element: "asset", contra: true, short: "目減りの累計", why: "資産の控除項目だから" },
+      { id: "loans_payable", name: "借入金", aliases: [], element: "liability", contra: false, short: "借りたお金", why: "返す義務だから" },
+      { id: "capital_stock", name: "資本金", aliases: [], element: "equity", contra: false, short: "元手", why: "株主が出した元手だから" },
+      { id: "sales", name: "売上", aliases: [], element: "revenue", contra: false, short: "売った金額", why: "もうけの元だから" },
     ] as AccountInfo[]
   ).map((a) => [a.id, a]),
 );

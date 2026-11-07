@@ -1,6 +1,7 @@
 "use client";
 
-import { type AccountInfo, type JournalEntry, ELEMENT_LABELS, ELEMENTS, computeImpact, formatAmount } from "@/lib/accounting";
+import { type AccountInfo, type JournalEntry, ELEMENTS, computeImpact, formatAmount } from "@/lib/accounting";
+import { ElementBadge } from "@/components/element-badge";
 
 // 不正解のとき、学習者の仕訳の影響と期待される影響を 5 要素で並べる(docs/ide-design.md 3 章「誤りの見せ方」)
 
@@ -25,7 +26,7 @@ export function ImpactCompare({ yours, expected, accounts }: { yours: JournalEnt
           const differs = ya !== ex;
           return (
             <tr key={el} className={differs ? "bg-rose-50 font-medium" : ""}>
-              <td>{ELEMENT_LABELS[el]}</td>
+              <td className="py-0.5"><ElementBadge element={el} size="xs" /></td>
               <td className="text-right tabular-nums">{fmt(ya)}</td>
               <td className="text-right tabular-nums">{differs ? fmt(ex) : "同じ"}</td>
             </tr>

@@ -1,14 +1,16 @@
 "use client";
 
-import { type AccountInfo, type Element, ELEMENT_LABELS, ELEMENTS, formatAmount } from "@/lib/accounting";
+import { type AccountInfo, type Element, ELEMENTS, formatAmount } from "@/lib/accounting";
 import { type Balances, type StatementLine, buildStatements } from "@/lib/ledger";
+import { ELEMENT_STYLE } from "@/lib/elements";
+import { AccountName } from "@/components/account-name";
+import { ElementBadge } from "@/components/element-badge";
 
-// 結果ペイン: 貸借対照表と損益計算書。前のステップからの差分を ▲▼ で示す(docs/ide-design.md 2 章)
+// 結果ペイン: 会社のかたち(資産 vs 負債 + 純資産の帯)、貸借対照表、損益計算書。前のステップからの差分を ▲▼ で示す
 
 interface Props {
   accounts: ReadonlyMap<string, AccountInfo>;
   balances: Balances;
-  // 現在のステップで動いた科目 → 増減額(要素が増える側を正とする)
   diff: Map<string, number>;
   company: string;
 }
@@ -21,40 +23,46 @@ export function StatementsPane({ accounts, balances, diff, company }: Props) {
     const a = accounts.get(id);
     if (a) changedElements.set(a.element, (changedElements.get(a.element) ?? 0) + d);
   }
-  // 資産の中で入れ替わっただけ(差し引きゼロ)の要素は「動いた」とは言わない
   for (const [el, d] of [...changedElements]) if (d === 0) changedElements.delete(el);
   const empty = balances.size === 0 || [...balances.values()].every((v) => v === 0);
 
   return (
-    <div className="space-y-4 text-sm">
+    <div className="space-y-5 text-sm">
       {empty && <p className="text-muted-foreground">まだ何も記録されていません。記帳すると、ここに会社の姿が現れます。</p>}
+
+      {!empty && <ShapeBars st={st} />}
+
       <section aria-label="貸借対照表">
-        <h3 className="font-semibold mb-1">貸借対照表 <span className="text-xs font-normal text-muted-foreground">{company}</span></h3>
-        <div className="grid grid-cols-2 gap-3 rounded-md border p-2">
-          <div>
-            <Group title="資産" lines={st.assets} diff={diff} />
+        <h3 className="font-semibold mb-1">
+          貸借対照表 <span className="text-xs font-normal text-muted-foreground">{company}</span>
+        </h3>
+        <div className="grid grid-cols-2 rounded-md border divide-x">
+          <div className="flex flex-col p-2">
+            <Group element="asset" lines={st.assets} diff={diff} accounts={accounts} />
             <Total label="資産合計" amount={st.totalAssets} />
           </div>
-          <div>
-            <Group title="負債" lines={st.liabilities} diff={diff} />
-            <Total label="負債合計" amount={st.totalLiabilities} />
-            <Group title="純資産" lines={st.equity} diff={diff} />
-            {st.netIncome !== 0 && (
-              <Row name="当期純利益" amount={st.netIncome} delta={changedElements.has("revenue") || changedElements.has("expense") ? (changedElements.get("revenue") ?? 0) - (changedElements.get("expense") ?? 0) : 0} />
-            )}
+          <div className="flex flex-col p-2">
+            <Group element="liability" lines={st.liabilities} diff={diff} accounts={accounts} />
+            <Group element="equity" lines={st.equity} diff={diff} accounts={accounts}>
+              {st.netIncome !== 0 && (
+                <Row
+                  name={<span>{st.netIncome >= 0 ? "当期純利益" : "当期純損失"}</span>}
+                  amount={st.netIncome}
+                  delta={(changedElements.get("revenue") ?? 0) - (changedElements.get("expense") ?? 0)}
+                />
+              )}
+            </Group>
             <Total label="負債・純資産合計" amount={st.totalLiabilities + st.totalEquity} />
           </div>
         </div>
-        <p className={`mt-1 text-xs ${balanced ? "text-muted-foreground" : "text-rose-700"}`}>
-          {balanced ? "左右の合計は一致しています。" : "左右の合計が一致していません。"}
-        </p>
+        <p className={`mt-1 text-xs ${balanced ? "text-muted-foreground" : "text-rose-700"}`}>{balanced ? "左右の合計は一致しています。" : "左右の合計が一致していません。"}</p>
       </section>
 
       <section aria-label="損益計算書">
         <h3 className="font-semibold mb-1">損益計算書</h3>
         <div className="rounded-md border p-2">
-          <Group title="収益" lines={st.revenues} diff={diff} />
-          <Group title="費用" lines={st.expenses} diff={diff} />
+          <Group element="revenue" lines={st.revenues} diff={diff} accounts={accounts} />
+          <Group element="expense" lines={st.expenses} diff={diff} accounts={accounts} />
           <Total label={st.netIncome >= 0 ? "当期純利益" : "当期純損失"} amount={Math.abs(st.netIncome)} />
         </div>
       </section>
@@ -62,12 +70,17 @@ export function StatementsPane({ accounts, balances, diff, company }: Props) {
       {changedElements.size > 0 && (
         <section aria-label="このステップの影響">
           <h3 className="font-semibold mb-1">このステップで動いた要素</h3>
-          <ul className="flex flex-wrap gap-2">
+          <ul className="flex flex-wrap gap-1.5">
             {ELEMENTS.filter((el) => changedElements.has(el)).map((el) => {
               const d = changedElements.get(el)!;
+              const s = ELEMENT_STYLE[el];
               return (
-                <li key={el} className={`rounded-full px-2 py-0.5 text-xs ${d > 0 ? "bg-emerald-100 text-emerald-900" : "bg-rose-100 text-rose-900"}`}>
-                  {ELEMENT_LABELS[el]} {d > 0 ? "▲" : "▼"} {formatAmount(Math.abs(d))}
+                <li key={el} className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs motion-safe:animate-in motion-safe:fade-in ${s.bg} ${s.border} ${s.text}`}>
+                  <span aria-hidden>{s.symbol}</span>
+                  {s.label}
+                  <span aria-hidden>{d > 0 ? "▲" : "▼"}</span>
+                  <span className="sr-only">{d > 0 ? "増加" : "減少"}</span>
+                  <span className="tabular-nums">{formatAmount(Math.abs(d))}</span>
                 </li>
               );
             })}
@@ -78,23 +91,54 @@ export function StatementsPane({ accounts, balances, diff, company }: Props) {
   );
 }
 
-function Group({ title, lines, diff }: { title: string; lines: StatementLine[]; diff: Map<string, number> }) {
+/** 会社のかたち: 左に資産、右に負債と純資産を同じ幅で並べ、割合を帯で見せる。記帳のたびに幅がなめらかに変わる */
+function ShapeBars({ st }: { st: ReturnType<typeof buildStatements> }) {
+  const left = Math.max(st.totalAssets, 0);
+  const right = Math.max(st.totalLiabilities, 0) + Math.max(st.totalEquity, 0);
+  const scale = Math.max(left, right, 1);
+  const pct = (n: number) => `${Math.max(0, (n / scale) * 100)}%`;
+  const seg = (label: string, amount: number, cls: string) =>
+    amount > 0 && (
+      <div className={`h-full ${cls} motion-safe:transition-[width] motion-safe:duration-500 flex items-center overflow-hidden`} style={{ width: pct(amount) }} title={`${label} ${formatAmount(amount)}`}>
+        <span className="px-1 text-[10px] text-white whitespace-nowrap">{label}</span>
+      </div>
+    );
+  return (
+    <section aria-label="会社のかたち" className="space-y-1">
+      <h3 className="font-semibold">会社のかたち</h3>
+      <div className="grid grid-cols-2 gap-1">
+        <div className="h-6 rounded-l bg-muted/60 flex overflow-hidden">{seg("資産", left, ELEMENT_STYLE.asset.bar)}</div>
+        <div className="h-6 rounded-r bg-muted/60 flex overflow-hidden">
+          {seg("負債", st.totalLiabilities, ELEMENT_STYLE.liability.bar)}
+          {seg("純資産", st.totalEquity, ELEMENT_STYLE.equity.bar)}
+        </div>
+      </div>
+      <p className="text-[11px] text-muted-foreground">左の資産は、右の「返すお金(負債)」と「自分のもの(純資産)」でまかなわれています。</p>
+    </section>
+  );
+}
+
+function Group({ element, lines, diff, accounts, children }: { element: Element; lines: StatementLine[]; diff: Map<string, number>; accounts: ReadonlyMap<string, AccountInfo>; children?: React.ReactNode }) {
   return (
     <div className="mb-2">
-      <div className="text-xs font-semibold text-muted-foreground">{title}</div>
-      {lines.length === 0 && <div className="text-xs text-muted-foreground/60">—</div>}
-      {lines.map((l) => (
-        <Row key={l.account} name={l.contra ? `${l.name}` : l.name} amount={l.amount} delta={diff.get(l.account) ?? 0} />
-      ))}
+      <div className="mb-0.5">
+        <ElementBadge element={element} size="xs" />
+      </div>
+      {lines.length === 0 && !children && <div className="text-xs text-muted-foreground/60 px-1">—</div>}
+      {lines.map((l) => {
+        const account = accounts.get(l.account);
+        return <Row key={l.account} name={account ? <AccountName account={account} /> : l.name} amount={l.amount} delta={diff.get(l.account) ?? 0} />;
+      })}
+      {children}
     </div>
   );
 }
 
-function Row({ name, amount, delta }: { name: string; amount: number; delta: number }) {
+function Row({ name, amount, delta }: { name: React.ReactNode; amount: number; delta: number }) {
   const changed = delta !== 0;
   return (
-    <div className={`flex items-baseline justify-between gap-2 rounded px-1 ${changed ? "bg-amber-50" : ""}`}>
-      <span className="truncate">{name}</span>
+    <div className={`flex items-baseline justify-between gap-2 rounded px-1 ${changed ? "bg-amber-50 motion-safe:animate-highlight" : ""}`}>
+      <span className="min-w-0 break-keep">{name}</span>
       <span className="tabular-nums whitespace-nowrap">
         {amount < 0 ? (
           <>
@@ -119,7 +163,7 @@ function Row({ name, amount, delta }: { name: string; amount: number; delta: num
 
 function Total({ label, amount }: { label: string; amount: number }) {
   return (
-    <div className="flex justify-between border-t mt-1 pt-1 font-medium">
+    <div className="mt-auto flex justify-between border-t pt-1 font-medium">
       <span>{label}</span>
       <span className="tabular-nums">{formatAmount(amount)}</span>
     </div>

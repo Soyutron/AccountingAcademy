@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { GlossaryEntry } from "@/lib/content";
-import { ELEMENT_LABELS } from "@/lib/accounting";
+import { ElementBadge } from "./element-badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 // 本文中の用語。ホバーまたはタップで short → summary / example → 単元へ、と段階的に掘れる(要件 1 章)
@@ -55,14 +55,9 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
         onMouseEnter={() => timer.current && clearTimeout(timer.current)}
         onMouseLeave={() => schedule(false, 250)}
       >
-        <div className="font-semibold">
+        <div className="font-semibold flex items-center gap-2">
           {entry.name}
-          {entry.element && (
-            <span className="ml-2 text-xs font-normal text-muted-foreground">
-              {ELEMENT_LABELS[entry.element]}
-              {entry.contra ? "の控除項目" : ""}
-            </span>
-          )}
+          {entry.element && <ElementBadge element={entry.element} contra={entry.contra} size="xs" />}
         </div>
         <p>{entry.short}</p>
         {expanded ? (
