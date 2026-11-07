@@ -453,7 +453,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const canReveal = attempts >= 2 && (task.type === "post" || task.type === "calc" || task.type === "classify") && !result?.correct;
   const mis = result?.misconception ? misconceptions[result.misconception] : undefined;
 
-  const paneClass = (p: Pane) => `${pane === p ? "block" : "hidden"} lg:block min-h-0 lg:overflow-y-auto p-4`;
+  // min-w-0: スマホ幅(1 列の grid)で、仕訳帳の摘要(truncate の nowrap)の min-content 幅が列を押し広げないようにする(Issue #28)
+  const paneClass = (p: Pane) => `${pane === p ? "block" : "hidden"} lg:block min-h-0 min-w-0 lg:overflow-y-auto p-4`;
 
   return (
     <div className="flex flex-col lg:h-[calc(100dvh-49px)]">
