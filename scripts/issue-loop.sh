@@ -29,7 +29,8 @@ UNTIL="${ISSUE_UNTIL:?ISSUE_UNTIL を指定してください(例: ISSUE_UNTIL=0
 LABEL="${ISSUE_LABEL:-ready-for-agent}"
 MAX_FAILS="${ISSUE_MAX_FAILS:-3}"
 PAUSE="${ISSUE_PAUSE:-20}"
-MARGIN="${ISSUE_PHASE_TIMEOUT:-3600}"
+# 1 件の実測は 4〜7 分なので、残りがこれを切ったら新しい Issue を始めない(処理中のものは最後まで行う)
+MARGIN="${ISSUE_MARGIN:-900}"
 mkdir -p "$LOG_DIR"; rm -f "$STOP_FILE"
 
 deadline=$(date -d "$UNTIL" +%s) || exit 1
