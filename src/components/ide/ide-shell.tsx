@@ -101,6 +101,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [showHint, setShowHint] = useState(false);
   const [pane, setPane] = useState<Pane>("guide");
   const [resumeStep, setResumeStep] = useState<number | null>(null);
+  const [resumeSolved, setResumeSolved] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [tweakDone, setTweakDone] = useState(false);
   // 回答を確定したステップ。同一ティックの連打では state が更新前なので、ref で同期的に弾く
@@ -160,7 +161,10 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     fetchProgress()
       .then((p) => {
         const saved = p?.units[unit.id];
-        if (saved && saved.step > 0 && saved.step < unit.steps.length) setResumeStep(saved.step);
+        if (saved && saved.step > 0 && saved.step < unit.steps.length) {
+          setResumeStep(saved.step);
+          setResumeSolved(p.solved[unit.id]?.includes(saved.step) ?? false);
+        }
       })
       .catch((e: Error) => console.error(e));
   }, [unit.id, unit.steps.length]);
@@ -220,10 +224,32 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     save(() => setUnitProgress(unit.id, last ? "completed" : "started", index));
   };
 
+  // 再開するステップを正解済みなら、その答えで達成状態まで戻す(離脱前の「できました」を保つ)
   const resume = () => {
     if (resumeStep === null) return;
-    setPosted(replayEntries(unit.steps, resumeStep));
+    setPosted(replayEntries(unit.steps, resumeSolved ? resumeStep + 1 : resumeStep));
     goTo(resumeStep);
+    if (!resumeSolved) return;
+    const t = unit.steps[resumeStep].task;
+    answeredStep.current = resumeStep;
+    if (t.type === "post") {
+      setDraft(fromJournalEntry(t.answer, accountMap));
+      setResult(gradePost(t, t.answer));
+    }
+    if (t.type === "predict") {
+      setEffect(t.answer);
+      setResult(gradePredict(t, t.answer as EffectAnswer));
+    }
+    if (t.type === "calc") {
+      setCalcValue(String(t.answer));
+      setResult(gradeCalc(t, t.answer));
+    }
+    if (t.type === "classify") {
+      const placement = Object.fromEntries(t.accounts.map((id) => [id, accountMap.get(id)!.element]));
+      setPlaced(placement);
+      setResult(gradeClassify(t, placement, accountMap));
+    }
+    if (t.type === "tweak") setTweakDone(true);
   };
 
   const entryDraft = toJournalEntry(draft, accounts);
