@@ -21,6 +21,8 @@ export interface Progress {
   solved: Record<string, number[]>;
   // 単元 → ステップ index → 最後の回答(正誤を問わない)。predict は間違えても進めるので、再開時の復元に使う
   answers: Record<string, Record<number, unknown>>;
+  // 単元 → ステップ index → 誤答の回数。再開時に「答えを見る」の条件(2 回誤答)を引き継ぐ(Issue #21)
+  wrong: Record<string, Record<number, number>>;
   // 誤解 ID ごとの発生回数(立ち止まりの判断に使う)
   misconceptions: Record<string, number>;
 }
@@ -85,6 +87,7 @@ export async function fetchProgress(): Promise<Progress | null> {
   const misconceptions: Record<string, number> = {};
   const solved: Progress["solved"] = {};
   const answers: Progress["answers"] = {};
+  const wrong: Progress["wrong"] = {};
   for (const row of attemptsRes.data) {
     const id = row.misconception_id as string | null;
     if (id) misconceptions[id] = (misconceptions[id] ?? 0) + 1;
@@ -93,6 +96,7 @@ export async function fetchProgress(): Promise<Progress | null> {
     if (!Number.isInteger(index)) continue;
     (answers[unitId] ??= {})[index] = row.answer;
     if (row.correct && !solved[unitId]?.includes(index)) (solved[unitId] ??= []).push(index);
+    if (!row.correct) (wrong[unitId] ??= {})[index] = (wrong[unitId][index] ?? 0) + 1;
   }
-  return { userId, isAnonymous: data.session.user.is_anonymous ?? false, units, misconceptions, solved, answers };
+  return { userId, isAnonymous: data.session.user.is_anonymous ?? false, units, misconceptions, solved, answers, wrong };
 }

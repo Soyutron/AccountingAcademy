@@ -108,6 +108,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [resumeSolved, setResumeSolved] = useState(false);
   // 再開するステップの最後の回答。predict は誤答でも進めるので、その予想を復元する(Issue #10)
   const [resumeAnswer, setResumeAnswer] = useState<unknown>(undefined);
+  // 再開するステップの保存済みの誤答回数。未正解なら引き継いで「答えを見る」を離脱前と揃える(Issue #21)
+  const [resumeWrong, setResumeWrong] = useState(0);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [tweakDone, setTweakDone] = useState(false);
   // 回答を確定したステップ。同一ティックの連打では state が更新前なので、ref で同期的に弾く
@@ -187,6 +189,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           const answer = p.answers[unit.id]?.[saved.step];
           setResumeStep(saved.step);
           setResumeAnswer(answer);
+          setResumeWrong(p.wrong[unit.id]?.[saved.step] ?? 0);
           setResumeSolved((p.solved[unit.id]?.includes(saved.step) ?? false) || (unit.steps[saved.step].task.type === "predict" && answer !== undefined));
         }
       })
@@ -316,7 +319,10 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     goTo(resumeStep);
     setReached(resumeStep);
     setResumeStep(null);
-    if (!resumeSolved) return;
+    if (!resumeSolved) {
+      setAttempts(resumeWrong);
+      return;
+    }
     // predict 以外は正解の保存値が無くても模範解答で戻せる。predict は保存した予想(誤答でも)で戻す
     restoreStep(resumeStep, unit.steps[resumeStep].task.type === "predict" ? resumeAnswer : undefined);
   };
