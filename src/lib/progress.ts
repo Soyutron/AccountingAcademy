@@ -17,6 +17,8 @@ export interface Progress {
   userId: string;
   isAnonymous: boolean;
   units: Record<string, { status: UnitStatus; step: number }>;
+  // 単元ごとの正解済みステップ index(attempts の correct 行の exercise_id = `${unitId}#${index}`)
+  solved: Record<string, number[]>;
   // 誤解 ID ごとの発生回数(立ち止まりの判断に使う)
   misconceptions: Record<string, number>;
 }
@@ -71,16 +73,22 @@ export async function fetchProgress(): Promise<Progress | null> {
   const userId = data.session.user.id;
   const [unitsRes, attemptsRes] = await Promise.all([
     supabase.from("unit_progress").select("unit_id,status,step"),
-    supabase.from("attempts").select("misconception_id").not("misconception_id", "is", null),
+    supabase.from("attempts").select("unit_id,exercise_id,correct,misconception_id"),
   ]);
   if (unitsRes.error) throw new Error(unitsRes.error.message);
   if (attemptsRes.error) throw new Error(attemptsRes.error.message);
   const units: Progress["units"] = {};
   for (const row of unitsRes.data) units[row.unit_id] = { status: row.status as UnitStatus, step: row.step as number };
   const misconceptions: Record<string, number> = {};
+  const solved: Progress["solved"] = {};
   for (const row of attemptsRes.data) {
-    const id = row.misconception_id as string;
-    misconceptions[id] = (misconceptions[id] ?? 0) + 1;
+    const id = row.misconception_id as string | null;
+    if (id) misconceptions[id] = (misconceptions[id] ?? 0) + 1;
+    if (!row.correct) continue;
+    const index = Number((row.exercise_id as string).split("#")[1]);
+    const unitId = row.unit_id as string;
+    if (!Number.isInteger(index) || solved[unitId]?.includes(index)) continue;
+    (solved[unitId] ??= []).push(index);
   }
-  return { userId, isAnonymous: data.session.user.is_anonymous ?? false, units, misconceptions };
+  return { userId, isAnonymous: data.session.user.is_anonymous ?? false, units, misconceptions, solved };
 }
