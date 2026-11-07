@@ -1,19 +1,20 @@
 "use client";
 
-import { useId, useMemo } from "react";
+import { useMemo } from "react";
 import { type AccountInfo, type Side, computeImpact, ELEMENTS, findAccountByName, formatAmount } from "@/lib/accounting";
 import { type EditableEntry, type EditableLine, toJournalEntry } from "@/lib/journal-editable";
 import { ELEMENT_STYLE } from "@/lib/elements";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ElementBadge } from "@/components/element-badge";
+import { AccountCombobox } from "@/components/account-combobox";
 
 // 仕訳エディタ。入力に応じて 5 要素の増減と当期純利益への影響をその場で表示する(要件 4.1)
 
-// 入力途中(科目名の先頭に一致)の間は「科目がない」と言わない
-function isPrefixOfAccount(text: string, accounts: AccountInfo[]): boolean {
+// 入力途中(候補の絞り込みと同じ部分一致で科目が残る)の間は「科目がない」と言わない
+function matchesSomeAccount(text: string, accounts: AccountInfo[]): boolean {
   const t = text.trim();
-  return accounts.some((a) => a.name.startsWith(t) || a.aliases.some((x) => x.startsWith(t)));
+  return accounts.some((a) => a.name.includes(t) || a.aliases.some((x) => x.includes(t)));
 }
 
 interface Props {
@@ -24,7 +25,6 @@ interface Props {
 }
 
 export function JournalEditor({ accounts, value, onChange, readOnly = false }: Props) {
-  const listId = useId();
   const accountMap = useMemo(() => new Map(accounts.map((a) => [a.id, a])), [accounts]);
   const entry = useMemo(() => toJournalEntry(value, accounts), [value, accounts]);
   const impact = useMemo(() => computeImpact(entry, accountMap), [entry, accountMap]);
@@ -52,15 +52,18 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false }: P
           return (
             <div key={i} data-journal-line={`${side}-${i}`} className={`rounded-md border p-1.5 transition-colors ${style ? `${style.border} ${style.bg}` : "bg-background"}`}>
               <div className="flex gap-1 items-center">
-                <Input
-                  list={readOnly ? undefined : listId}
-                  aria-label={`${label}の科目 ${i + 1}`}
-                  placeholder="科目"
-                  value={line.accountName}
-                  readOnly={readOnly}
-                  onChange={(e) => update(side, i, { accountName: e.target.value })}
-                  className="min-w-24 flex-[3] bg-background"
-                />
+                {readOnly ? (
+                  <Input aria-label={`${label}の科目 ${i + 1}`} placeholder="科目" value={line.accountName} readOnly className="min-w-24 flex-[3] bg-background" />
+                ) : (
+                  <AccountCombobox
+                    accounts={accounts}
+                    aria-label={`${label}の科目 ${i + 1}`}
+                    placeholder="科目"
+                    value={line.accountName}
+                    onChange={(accountName) => update(side, i, { accountName })}
+                    className="min-w-24 flex-[3] bg-background"
+                  />
+                )}
                 <Input
                   inputMode="numeric"
                   aria-label={`${label}の金額 ${i + 1}`}
@@ -88,7 +91,7 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false }: P
                     </span>
                     <span className="text-muted-foreground truncate">{account.short}</span>
                   </>
-                ) : line.accountName.trim() && !isPrefixOfAccount(line.accountName, accounts) ? (
+                ) : line.accountName.trim() && !matchesSomeAccount(line.accountName, accounts) ? (
                   <span className="text-rose-700">この名前の科目はありません</span>
                 ) : null}
               </div>
@@ -106,15 +109,6 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false }: P
 
   return (
     <div className="rounded-lg border bg-card p-3 space-y-3 not-prose">
-      {!readOnly && (
-        <datalist id={listId}>
-          {accounts.map((a) => (
-            <option key={a.id} value={a.name}>
-              {ELEMENT_STYLE[a.element].label}
-            </option>
-          ))}
-        </datalist>
-      )}
       <div className="flex flex-col sm:flex-row gap-3">
         {renderSide("debit", "借方")}
         {renderSide("credit", "貸方")}
