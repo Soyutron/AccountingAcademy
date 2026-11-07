@@ -114,6 +114,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const answeredStep = useRef<number | null>(null);
   // このセッションで最も先まで進んだステップ。これより前は達成済みなので、見直しから「次へ」で戻れる
   const [reached, setReached] = useState(0);
+  // このセッションで正解(predict は回答)したステップとその答え。「← 前へ」で戻ってから戻ってきたときに達成状態を復元する(Issue #16)
+  const answered = useRef(new Map<number, unknown>());
   // 保存済みの step。見直しや案内前の「次へ」で保存する step を下げないために持つ
   const savedStep = useRef(0);
   // 帳簿をさかのぼる: 何件目までの記帳で財務諸表を見るか(null は最新)
@@ -134,6 +136,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const tourActive = isTutorialUnit && !tourExited && (tutorial.status !== "done" || forceTour || tourKey > 0);
   const restartTour = () => {
     setPosted(replayEntries(unit.steps, 0));
+    answered.current.clear();
     goTo(0);
     setReached(0);
     setTourExited(false);
@@ -235,7 +238,42 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       setTweakDone(true);
       setResult(r);
       record(r, values);
+      answered.current.set(stepIndex, values);
       celebrate();
+    }
+  };
+
+  // 正解済み(predict は回答済み)のステップを、その答えで達成状態まで戻す。answer が無ければ模範解答を使う
+  const restoreStep = (index: number, answer?: unknown) => {
+    const t = unit.steps[index].task;
+    answeredStep.current = index;
+    if (t.type === "post") {
+      const entry = (answer as JournalEntry | undefined) ?? t.answer;
+      setDraft(fromJournalEntry(entry, accountMap));
+      setResult(gradePost(t, entry));
+    }
+    if (t.type === "predict") {
+      const predicted = (answer as EffectAnswer | undefined) ?? (t.answer as EffectAnswer);
+      setEffect(predicted);
+      setResult(gradePredict(t, predicted));
+    }
+    if (t.type === "calc") {
+      const n = (answer as number | undefined) ?? t.answer;
+      setCalcValue(String(n));
+      setResult(gradeCalc(t, n));
+    }
+    if (t.type === "classify") {
+      const placement = (answer as Record<string, Element> | undefined) ?? Object.fromEntries(t.accounts.map((id) => [id, accountMap.get(id)!.element]));
+      setPlaced(placement);
+      setResult(gradeClassify(t, placement, accountMap));
+    }
+    if (t.type === "tweak") {
+      setTweakDone(true);
+      const values = answer as Record<string, number> | undefined;
+      if (values) {
+        setParams(values);
+        setResult(gradeTweak(t, evaluateFormula(t.formula, values).outputs));
+      }
     }
   };
 
@@ -259,6 +297,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       const entries = target.task.entries;
       setPosted((prev) => (prev.some((p) => p.step === index) ? prev : [...prev, ...entries.map((e) => ({ step: index, memo: e.memo ?? target.title, entry: e }))]));
     }
+    const sessionAnswer = answered.current.get(index);
+    if (sessionAnswer !== undefined) restoreStep(index, sessionAnswer);
     const top = Math.max(index, reached, savedStep.current);
     setReached(Math.max(index, reached));
     savedStep.current = top;
@@ -274,27 +314,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     setReached(resumeStep);
     setResumeStep(null);
     if (!resumeSolved) return;
-    const t = unit.steps[resumeStep].task;
-    answeredStep.current = resumeStep;
-    if (t.type === "post") {
-      setDraft(fromJournalEntry(t.answer, accountMap));
-      setResult(gradePost(t, t.answer));
-    }
-    if (t.type === "predict") {
-      const predicted = (resumeAnswer as EffectAnswer | undefined) ?? (t.answer as EffectAnswer);
-      setEffect(predicted);
-      setResult(gradePredict(t, predicted));
-    }
-    if (t.type === "calc") {
-      setCalcValue(String(t.answer));
-      setResult(gradeCalc(t, t.answer));
-    }
-    if (t.type === "classify") {
-      const placement = Object.fromEntries(t.accounts.map((id) => [id, accountMap.get(id)!.element]));
-      setPlaced(placement);
-      setResult(gradeClassify(t, placement, accountMap));
-    }
-    if (t.type === "tweak") setTweakDone(true);
+    // predict 以外は正解の保存値が無くても模範解答で戻せる。predict は保存した予想(誤答でも)で戻す
+    restoreStep(resumeStep, unit.steps[resumeStep].task.type === "predict" ? resumeAnswer : undefined);
   };
 
   const entryDraft = toJournalEntry(draft, accounts);
@@ -339,7 +360,10 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       case "post": {
         if (!draftReady) return;
         const r = gradePost(task, entryDraft);
-        if (r.correct) answeredStep.current = stepIndex;
+        if (r.correct) {
+          answeredStep.current = stepIndex;
+          answered.current.set(stepIndex, entryDraft);
+        }
         setResult(r);
         setAttempts((n) => n + 1);
         record(r, entryDraft);
@@ -356,6 +380,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         if (!ELEMENTS.every((el) => effect[el])) return;
         const r = gradePredict(task, effect as EffectAnswer);
         answeredStep.current = stepIndex;
+        answered.current.set(stepIndex, effect);
         setResult(r);
         record(r, effect);
         setPosted((prev) => (prev.some((p) => p.step === stepIndex) ? prev : [...prev, { step: stepIndex, memo: task.transaction, entry: task.entry }]));
@@ -368,7 +393,10 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         const n = Number(calcValue.replaceAll(",", ""));
         if (calcValue.trim() === "" || Number.isNaN(n)) return;
         const r = gradeCalc(task, n);
-        if (r.correct) answeredStep.current = stepIndex;
+        if (r.correct) {
+          answeredStep.current = stepIndex;
+          answered.current.set(stepIndex, n);
+        }
         setResult(r);
         setAttempts((k) => k + 1);
         record(r, n);
@@ -378,7 +406,10 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       case "classify": {
         if (task.accounts.some((id) => !placed[id])) return;
         const r = gradeClassify(task, placed, accountMap);
-        if (r.correct) answeredStep.current = stepIndex;
+        if (r.correct) {
+          answeredStep.current = stepIndex;
+          answered.current.set(stepIndex, placed);
+        }
         setResult(r);
         setAttempts((k) => k + 1);
         record(r, placed);
