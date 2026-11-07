@@ -6,6 +6,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* 正解した直後に「次へ →」を 1 回だけ目立たせる(リングのパルス) */
+  --animate-next-pulse: next-pulse 900ms ease-out;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-noto-sans-jp), ui-sans-serif, system-ui, sans-serif;
@@ -150,4 +152,17 @@
 }
 .animate-highlight {
   animation: highlight 900ms ease-out;
+}
+
+/* 拡大は使わない: 位置やサイズが動くと E2E(Playwright)がクリック前に静止を待ち、全ステップで遅くなる */
+@keyframes next-pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--color-emerald-300);
+  }
+  40% {
+    box-shadow: 0 0 0 7px var(--color-emerald-300);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
 }
