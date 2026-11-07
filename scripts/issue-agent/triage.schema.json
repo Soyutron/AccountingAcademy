@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "properties": {
+    "verdict": { "type": "string", "enum": ["ready_for_agent", "ready_for_human", "needs_info", "duplicate", "wontfix"] },
+    "priority": { "type": "string", "enum": ["p1", "p2", "p3"] },
+    "reason": { "type": "string" },
+    "brief": { "type": "string" },
+    "duplicate_of": { "type": "integer" }
+  },
+  "required": ["verdict", "priority", "reason", "brief", "duplicate_of"]
+}

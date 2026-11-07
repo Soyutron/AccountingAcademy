@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "properties": {
+    "status": { "type": "string", "enum": ["done", "needs_human", "blocked"] },
+    "plan": { "type": "string" },
+    "summary": { "type": "string" },
+    "verified": { "type": "array", "items": { "type": "string" } }
+  },
+  "required": ["status", "plan", "summary", "verified"]
+}

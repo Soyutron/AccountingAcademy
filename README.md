@@ -40,6 +40,17 @@ pnpm exec playwright test  # E2E(開発サーバーとローカル Supabase を�
 品質確認はローカルで完結させる(ADR 0005)。初回に `git config core.hooksPath .githooks` を実行すると、push の前に lint・型・単体テストが自動で走る。
 E2E(`pnpm exec playwright test`)はコンテンツや UI を変えたときにローカルで回す。GitHub Actions は lint・型・単体テスト・ビルドの 1 ジョブ(約 45 秒)だけ。
 
+不具合の発見から修正までを無人で回す品質改善ループ(Monkey テスト → Issue → 自動トリアージ → 修正 → 再検証)は `docs/quality-loop.md`。
+
+```bash
+scripts/services.sh up                       # Supabase + pnpm dev
+MONKEY_UNTIL=23:00 scripts/monkey-loop.sh   # 人格型 Monkey(Claude Code が学習者として操作し、再現したものを起票)
+MONKEY=1 pnpm exec playwright test e2e/monkey.spec.ts  # seed 付き Monkey(LLM 不要)
+scripts/triage-agent.sh loop                 # needs-triage を再現して振り分け
+ISSUE_UNTIL=06:00 scripts/issue-loop.sh     # ready-for-agent を worktree で実装 → レビュー → main へ統合 → push
+QUALITY_UNTIL=06:00 scripts/quality-night.sh # 上の 3 つを順に(夜間)
+```
+
 ## ディレクトリ
 
 ```
@@ -50,6 +61,7 @@ docs/ide-design.md      会計 IDE の画面構成・ステップの種類・学
 docs/visual-guidelines.md 図解・イラスト・アニメーションの方針と図解ブロックの仕様
 docs/assets-ledger.md   外部素材の台帳
 docs/testing-guide.md   自分でテストするときの見るポイントと指標の集計 SQL
+docs/quality-loop.md    品質改善ループ(Monkey → Issue → トリアージ → 修正 → 再検証)の設計と運用
 docs/content-model.md   コンテンツ構造・記述形式・ステップの課題・用語集
 docs/tech-stack.md      技術選定の比較(記録)、Skills / MCP 一覧
 docs/architecture.md    採用した構成、責務の配置、データモデル、誤解検出の仕組み
@@ -57,4 +69,6 @@ docs/decisions/         ADR(設計判断の理由)
 content/                学習コンテンツ(Markdown + YAML)。velite.config.ts で検査
 src/                    Next.js アプリ(app: ページ、components: UI、lib: 採点・会計計算・進捗保存)
 supabase/               ローカルスタック設定とマイグレーション
+scripts/                無人ループ(Monkey、トリアージ、issue-agent)と品質確認(check.sh)
+e2e/                    E2E(学習ループ、チュートリアル、seed 付き Monkey、repro/ に Issue の回帰テスト)
 ```

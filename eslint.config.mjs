@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // 無人ループが書く操作スクリプトとログ
+    "logs/**",
   ]),
 ]);
 

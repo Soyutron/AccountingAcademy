@@ -34,3 +34,6 @@ supabase/.temp
 
 # Velite が本文から参照された画像などを書き出す先
 /public/static/
+
+# 無人ループ(Monkey / issue-agent)のログ
+logs/

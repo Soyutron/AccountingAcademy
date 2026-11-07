@@ -12,6 +12,8 @@ Next.js の API は学習データと異なる可能性があるので、書く�
 - `pnpm dev`(Velite の監視 + Next.js 開発サーバー)/ `pnpm build` / `pnpm start`
 - `pnpm content`(コンテンツ検査。`.velite/` に型付き JSON を出す)/ `pnpm typecheck` / `pnpm lint` / `pnpm test` / `pnpm exec playwright test`(E2E。コンテンツを変えたら必ずローカルで回す。CI では回さない)
 - `pnpm db:start` / `pnpm db:stop` / `pnpm db:reset`(Supabase ローカルスタック。Docker が要る。キーは `.env.local` に)
+- `scripts/check.sh`(lint / 型 / テスト / ビルド / E2E を一括。E2E は 3100 番で本番ビルド)
+- 品質改善ループ(docs/quality-loop.md): `scripts/services.sh up` → `MONKEY_UNTIL=… scripts/monkey-loop.sh`(人格型 Monkey)/ `MONKEY=1 pnpm exec playwright test e2e/monkey.spec.ts`(seed 付き Monkey)→ `scripts/triage-agent.sh loop` → `ISSUE_UNTIL=… scripts/issue-loop.sh`(worktree で実装・レビュー・main へ統合)。夜間は `QUALITY_UNTIL=06:00 scripts/quality-night.sh`。状況は `scripts/issue-agent.sh status`
 - 開発中の実行時エラーは Next.js の MCP(`.mcp.json` の next-devtools)で読める
 
 ## 構成
@@ -20,6 +22,7 @@ Next.js の API は学習データと異なる可能性があるので、書く�
 - `src/components/ide/`: 会計 IDE(`ide-shell.tsx` が状態とステップ進行、各ペインは別ファイル。`tutorial-tour.tsx` が操作ツアー、`help-dialog.tsx` が「使い方」)
 - 品質確認はローカルが正(ADR 0005)。`git config core.hooksPath .githooks` で push 前に lint・型・テストが走る。GitHub Actions は最小の 1 ジョブだけ
 - `src/lib/progress.ts`: 匿名サインインと回答・進捗の保存。`supabase/migrations/`: スキーマと RLS
+- `scripts/`: 無人ループ(`monkey-loop.sh` / `triage-agent.sh` / `issue-agent.sh` / `issue-loop.sh` / `issue-verify.sh` / `quality-night.sh`)、`scripts/monkey/session.mjs`(Monkey のオラクル)、`scripts/issue-agent/`(プロンプトとスキーマ、PreToolUse の guard)。`.claude/skills/monkey-test/`: 人格と手順。`e2e/repro/`: Issue の回帰テスト(`issue-<n>.spec.ts`)。`logs/` は gitignore
 - `src/components/markdown.tsx`: 説明文の描画。`[[id]]` → 用語ポップオーバー、```journal → 仕訳エディタ
 
 ## 使う Skills / MCP
