@@ -132,6 +132,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [pulseNext, setPulseNext] = useState(false);
   const celebratedSteps = useRef(new Set<number>());
   const bottomBar = useRef<HTMLDivElement>(null);
+  // 採点で押したボタンが消えるときは、フォーカスが body に落ちないよう結果へ移す(復元や誤答では動かさない)
+  const statusBox = useRef<HTMLDivElement>(null);
+  const focusStatus = useRef(false);
   const tutorial = useTutorialState();
   const forceTour = useSyncExternalStore(noop, readForceTour, () => false);
   const isTutorialUnit = unit.id === TUTORIAL_UNIT_ID;
@@ -363,6 +366,12 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   }, [draft]);
   const draftReady = entryDraft.debit.length > 0 && entryDraft.credit.length > 0;
 
+  useEffect(() => {
+    if (!result || !focusStatus.current) return;
+    focusStatus.current = false;
+    statusBox.current?.focus();
+  }, [result]);
+
   const check = () => {
     if (answeredStep.current === stepIndex) return;
     // 答えを変えずに押し直したときは採点も記録もしない(答えを変えれば数える)
@@ -377,6 +386,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         if (!draftReady || alreadyGraded(entryDraft)) return;
         const r = gradePost(task, entryDraft);
         if (r.correct) {
+          focusStatus.current = true;
           answeredStep.current = stepIndex;
           answered.current.set(stepIndex, entryDraft);
         }
@@ -395,6 +405,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       case "predict": {
         if (!ELEMENTS.every((el) => effect[el])) return;
         const r = gradePredict(task, effect as EffectAnswer);
+        focusStatus.current = true;
         answeredStep.current = stepIndex;
         answered.current.set(stepIndex, effect);
         setResult(r);
@@ -410,6 +421,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         if (calcValue.trim() === "" || Number.isNaN(n) || alreadyGraded(n)) return;
         const r = gradeCalc(task, n);
         if (r.correct) {
+          focusStatus.current = true;
           answeredStep.current = stepIndex;
           answered.current.set(stepIndex, n);
         }
@@ -423,6 +435,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         if (task.accounts.some((id) => !placed[id]) || alreadyGraded(placed)) return;
         const r = gradeClassify(task, placed, accountMap);
         if (r.correct) {
+          focusStatus.current = true;
           answeredStep.current = stepIndex;
           answered.current.set(stepIndex, placed);
         }
@@ -716,7 +729,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       )}
       <div ref={bottomBar} className="border-t bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm space-y-2 sticky bottom-0 max-h-[50dvh] overflow-y-auto">
         {result && (
-          <div role="status" aria-live="polite" className={`rounded-md p-3 space-y-2 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 ${result.correct ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-900"}`}>
+          <div ref={statusBox} tabIndex={-1} role="status" aria-live="polite" className={`rounded-md p-3 space-y-2 focus:outline-none motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 ${result.correct ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-900"}`}>
             {/* 正解はアイコンと見出しを大きくして、色だけに頼らず「もう一歩」と見分けられるようにする */}
             <p className={`flex items-center gap-1.5 ${result.correct ? "text-base font-bold" : "font-semibold"}`}>
               {result.correct ? <CheckCircle2 className="size-5" aria-hidden /> : <CircleAlert className="size-4" aria-hidden />}

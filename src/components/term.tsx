@@ -14,6 +14,8 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // ホバーで開いたときだけフォーカスを動かさない。キーボードで開いたときは中身にフォーカスを移して Tab で辿れるようにする
   const byHover = useRef(false);
+  // 「もっと見る」は押すと消えるので、展開した説明にフォーカスを移して位置を失わないようにする
+  const details = useRef<HTMLDivElement>(null);
 
   const schedule = (next: boolean, delay: number) => {
     if (timer.current) clearTimeout(timer.current);
@@ -26,6 +28,10 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
   useEffect(() => () => {
     if (timer.current) clearTimeout(timer.current);
   }, []);
+
+  useEffect(() => {
+    if (expanded) details.current?.focus();
+  }, [expanded]);
 
   return (
     <Popover
@@ -61,7 +67,7 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
         </div>
         <p>{entry.short}</p>
         {expanded ? (
-          <div className="space-y-2 border-t pt-2">
+          <div ref={details} tabIndex={-1} className="space-y-2 border-t pt-2 focus:outline-none">
             <p>{entry.summary}</p>
             {entry.example && <p className="text-muted-foreground">例: {entry.example}</p>}
             {entry.related.length > 0 && (
