@@ -502,7 +502,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           {task.type === "predict" && (
             <div className="space-y-3">
               <h3 className="text-sm font-semibold">これから記帳する仕訳</h3>
-              <JournalEditor accounts={accounts} value={fromJournalEntry(task.entry, accountMap)} readOnly />
+              <JournalEditor accounts={accounts} value={fromJournalEntry(task.entry, accountMap)} readOnly showImpact={result !== null} />
               <fieldset disabled={result !== null} className="grid gap-2 sm:grid-cols-5">
                 <legend className="text-sm font-semibold mb-1">記帳すると、それぞれどう動くと思いますか</legend>
                 {ELEMENTS.map((el) => (
