@@ -196,8 +196,13 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   // 条件を動かすたびに式を評価し、目標に届いた瞬間に 1 回だけ記録する
   const onTweakChange = (values: Record<string, number>) => {
     setParams(values);
-    if (task.type !== "tweak" || tweakDone) return;
+    if (task.type !== "tweak") return;
     const r = gradeTweak(task, evaluateFormula(task.formula, values).outputs);
+    // 達成後に値を外したら「できました」を隠す(記録と「次へ →」の有効は達成済みのまま保つ)
+    if (tweakDone) {
+      setResult(r.correct ? r : null);
+      return;
+    }
     if (r.correct) {
       setTweakDone(true);
       setResult(r);
