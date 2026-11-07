@@ -66,6 +66,7 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false }: P
                 )}
                 <Input
                   inputMode="numeric"
+                  data-amount-field={`${side}-${i}`}
                   aria-label={`${label}の金額 ${i + 1}`}
                   placeholder="金額"
                   value={line.amount}
