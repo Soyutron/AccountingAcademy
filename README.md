@@ -37,7 +37,7 @@ pnpm content             # コンテンツ検査だけ実行
 pnpm exec playwright test  # E2E(開発サーバーとローカル Supabase を使う。コンテンツを読んで全単元を自動で解く)
 ```
 
-CI(GitHub Actions)は push と pull request で lint・型・単体テスト・ビルドと、ローカル Supabase を立てた E2E を実行する。
+CI(GitHub Actions)は push と pull request で lint・型・単体テスト・ビルドだけを実行する(約 1 分)。E2E はローカルで実行する(ローカル Supabase と開発サーバーで全単元が 30 秒以内に通る)。CI で E2E が要るときは Actions の画面から手動で起動する。
 
 ## ディレクトリ
 

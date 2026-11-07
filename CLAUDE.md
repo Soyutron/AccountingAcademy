@@ -10,7 +10,7 @@ Next.js の API は学習データと異なる可能性があるので、書く�
 
 ## コマンド
 - `pnpm dev`(Velite の監視 + Next.js 開発サーバー)/ `pnpm build` / `pnpm start`
-- `pnpm content`(コンテンツ検査。`.velite/` に型付き JSON を出す)/ `pnpm typecheck` / `pnpm lint` / `pnpm test`
+- `pnpm content`(コンテンツ検査。`.velite/` に型付き JSON を出す)/ `pnpm typecheck` / `pnpm lint` / `pnpm test` / `pnpm exec playwright test`(E2E。コンテンツを変えたら必ずローカルで回す。CI では回さない)
 - `pnpm db:start` / `pnpm db:stop` / `pnpm db:reset`(Supabase ローカルスタック。Docker が要る。キーは `.env.local` に)
 - 開発中の実行時エラーは Next.js の MCP(`.mcp.json` の next-devtools)で読める
 
