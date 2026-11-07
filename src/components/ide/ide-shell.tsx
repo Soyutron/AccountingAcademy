@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { type AccountInfo, type Change, type Element, type JournalEntry, ELEMENT_LABELS, ELEMENTS, computeImpact, toChange } from "@/lib/accounting";
 import { ElementBadge } from "@/components/element-badge";
 import { AccountName } from "@/components/account-name";
@@ -18,6 +18,9 @@ import { StatementsPane } from "./statements-pane";
 import { ImpactCompare } from "./impact-compare";
 import { ClassifyBoard } from "./classify-board";
 import { TweakPanel } from "./tweak-panel";
+import { LedgerTab } from "./ledger-tab";
+import { type Flight, FlyingAmounts } from "./flying-amounts";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // 会計 IDE の本体。ステップの進行、帳簿(記帳済みの仕訳)、課題の確認と記録をまとめて持つ(docs/ide-design.md)
 
@@ -63,6 +66,29 @@ const CHANGE_LABELS: Record<Change, string> = { increase: "増える", decrease:
 const PANES: Pane[] = ["guide", "work", "result"];
 const PANE_LABELS: Record<Pane, string> = { guide: "ガイド", work: "ワークスペース", result: "結果" };
 
+// オンボーディングの表示状態は localStorage に持つ。サーバー描画では「閉じた」扱いにして水和のずれを防ぐ
+const INTRO_KEY = "ide-intro-dismissed";
+const introListeners = new Set<() => void>();
+function readIntroDismissed(): boolean {
+  try {
+    return localStorage.getItem(INTRO_KEY) === "1";
+  } catch {
+    return true;
+  }
+}
+function subscribeIntro(listener: () => void) {
+  introListeners.add(listener);
+  return () => introListeners.delete(listener);
+}
+function dismissIntro() {
+  try {
+    localStorage.setItem(INTRO_KEY, "1");
+  } catch {
+    // 保存できない環境では次回また出る
+  }
+  introListeners.forEach((l) => l());
+}
+
 /** ステップを飛ばして再開するとき、そこまでの仕訳を課題の答えから復元する */
 function replayEntries(steps: IdeStep[], upto: number): Posted[] {
   const posted: Posted[] = [];
@@ -93,6 +119,39 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [tweakDone, setTweakDone] = useState(false);
   // 帳簿をさかのぼる: 何件目までの記帳で財務諸表を見るか(null は最新)
   const [viewUpto, setViewUpto] = useState<number | null>(null);
+  // 取引の流れのアニメーション。記帳が成功した仕訳を次の描画で測って飛ばす
+  const [pendingFlight, setPendingFlight] = useState<JournalEntry | null>(null);
+  const [flights, setFlights] = useState<Flight[]>([]);
+  const introDismissed = useSyncExternalStore(subscribeIntro, readIntroDismissed, () => true);
+  const showIntro = !introDismissed;
+
+  // 新しい行が描画されてから出発点と到着点を測る必要があるので、次のフレームで測る
+  useEffect(() => {
+    if (!pendingFlight) return;
+    const raf = requestAnimationFrame(() => {
+      const next: Flight[] = [];
+      const measure = (side: "debit" | "credit") =>
+        pendingFlight[side].forEach((line, i) => {
+          const from = document.querySelector<HTMLElement>(`[data-journal-line="${side}-${i}"]`)?.getBoundingClientRect();
+          const to = document.querySelector<HTMLElement>(`[data-account="${line.account}"]`)?.getBoundingClientRect();
+          const account = accountMap.get(line.account);
+          // どちらかが画面に無い(スマートフォンで別タブ)ときは飛ばさない
+          if (!from || !to || !account || to.width === 0 || from.width === 0) return;
+          next.push({
+            id: `${Date.now()}-${side}-${i}`,
+            element: account.element,
+            amount: line.amount,
+            from: { x: from.left + from.width * 0.6, y: from.top + from.height / 2 - 10 },
+            to: { x: to.right - 80, y: to.top },
+          });
+        });
+      measure("debit");
+      measure("credit");
+      setFlights(next);
+      setPendingFlight(null);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [pendingFlight, accountMap]);
 
   const step = unit.steps[stepIndex];
   const task = step.task;
@@ -179,7 +238,10 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         setResult(r);
         setAttempts((n) => n + 1);
         record(r, entryDraft);
-        if (r.correct) setPosted((prev) => [...prev, { step: stepIndex, memo: task.transaction, entry: entryDraft }]);
+        if (r.correct) {
+          setPosted((prev) => [...prev, { step: stepIndex, memo: task.transaction, entry: entryDraft }]);
+          setPendingFlight(entryDraft);
+        }
         setPane(r.correct ? "result" : "work");
         break;
       }
@@ -189,6 +251,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         setResult(r);
         record(r, effect);
         setPosted((prev) => (prev.some((p) => p.step === stepIndex) ? prev : [...prev, { step: stepIndex, memo: task.transaction, entry: task.entry }]));
+        setPendingFlight(task.entry);
         setPane("result");
         break;
       }
@@ -278,6 +341,19 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       <div className="grid flex-1 min-h-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)]">
         <section id="pane-guide" role="region" aria-label="ガイド" className={`${paneClass("guide")} lg:border-r`}>
           <h2 className="text-lg font-semibold mb-2">{step.title}</h2>
+          {showIntro && stepIndex === 0 && (
+            <div className="mb-3 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm space-y-2" role="note">
+              <p className="font-semibold">はじめての会計 IDE</p>
+              <ul className="space-y-1">
+                <li><span className="font-medium">左</span>: 物語を読んで、「やること」を確かめます。</li>
+                <li><span className="font-medium">中央</span>: 仕訳帳に科目と金額を入れて「記帳する」を押します。</li>
+                <li><span className="font-medium">右</span>: 貸借対照表と損益計算書が、その場で動きます。</li>
+              </ul>
+              <Button size="sm" variant="outline" onClick={dismissIntro}>
+                わかった
+              </Button>
+            </div>
+          )}
           {resumeStep !== null && stepIndex === 0 && (
             <div className="mb-3 rounded-md bg-muted/60 p-2 text-sm flex items-center justify-between gap-2">
               <span>前回はステップ {resumeStep + 1} まで進みました。</span>
@@ -389,8 +465,15 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
             </div>
           )}
 
-          <div>
-            <h3 className="text-sm font-semibold mb-1">仕訳帳(記帳済み)</h3>
+          <Tabs defaultValue="journal">
+            <TabsList>
+              <TabsTrigger value="journal">仕訳帳(記帳済み)</TabsTrigger>
+              <TabsTrigger value="ledger">総勘定元帳(T 勘定)</TabsTrigger>
+            </TabsList>
+            <TabsContent value="ledger" className="pt-2">
+              <LedgerTab opening={unit.opening} posted={posted} accounts={accountMap} />
+            </TabsContent>
+            <TabsContent value="journal" className="pt-2">
             {posted.length === 0 ? (
               <p className="text-xs text-muted-foreground">まだ記帳はありません。</p>
             ) : (
@@ -424,7 +507,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
                 ))}
               </ol>
             )}
-          </div>
+            </TabsContent>
+          </Tabs>
         </section>
 
         <section id="pane-result" role="region" aria-label="結果" className={paneClass("result")}>
@@ -459,6 +543,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         </section>
       </div>
 
+      <FlyingAmounts flights={flights} onDone={(id) => setFlights((prev) => prev.filter((f) => f.id !== id))} />
       <div className="border-t bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm space-y-2 sticky bottom-0 max-h-[50dvh] overflow-y-auto">
         {result && (
           <div role="status" aria-live="polite" className={`rounded-md p-3 space-y-2 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 ${result.correct ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-900"}`}>

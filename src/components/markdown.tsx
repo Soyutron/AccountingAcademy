@@ -4,6 +4,8 @@ import wikiLink from "remark-wiki-link";
 import { accountList, accountMap, glossaryMap } from "@/lib/content";
 import { findAccountByName } from "@/lib/accounting";
 import { parseJournalBlock, toEntryLines } from "@/lib/journal-block";
+import { parse as parseYaml } from "yaml";
+import { Figure, type FigureSpec } from "./figures/figure";
 import { Term } from "./term";
 import { JournalEditor } from "./journal-editor";
 import { fromJournalEntry } from "@/lib/journal-editable";
@@ -35,6 +37,10 @@ const components: Components = {
           <JournalEditor accounts={accountList} value={fromJournalEntry(entry, accountMap)} readOnly />
         </div>
       );
+    }
+    if (className === "language-figure") {
+      // ビルド時に velite が検査済みなので、ここでは解釈するだけ
+      return <Figure spec={parseYaml(String(children)) as FigureSpec} />;
     }
     return className ? (
       <pre>

@@ -127,19 +127,19 @@ function Group({ element, lines, diff, accounts, children }: { element: Element;
       {lines.length === 0 && !children && <div className="text-xs text-muted-foreground/60 px-1">—</div>}
       {lines.map((l) => {
         const account = accounts.get(l.account);
-        return <Row key={l.account} name={account ? <AccountName account={account} /> : l.name} amount={l.amount} delta={diff.get(l.account) ?? 0} />;
+        return <Row key={l.account} id={l.account} name={account ? <AccountName account={account} /> : l.name} amount={l.amount} delta={diff.get(l.account) ?? 0} />;
       })}
       {children}
     </div>
   );
 }
 
-function Row({ name, amount, delta }: { name: React.ReactNode; amount: number; delta: number }) {
+function Row({ id, name, amount, delta }: { id?: string; name: React.ReactNode; amount: number; delta: number }) {
   const changed = delta !== 0;
   return (
-    <div className={`flex items-baseline justify-between gap-2 rounded px-1 ${changed ? "bg-amber-50 motion-safe:animate-highlight" : ""}`}>
-      <span className="min-w-0 break-keep">{name}</span>
-      <span className="tabular-nums whitespace-nowrap">
+    <div data-account={id} className={`flex flex-wrap items-baseline justify-between gap-x-2 rounded px-1 ${changed ? "bg-amber-50 motion-safe:animate-highlight" : ""}`}>
+      <span className="min-w-0">{name}</span>
+      <span className="ml-auto tabular-nums whitespace-nowrap">
         {amount < 0 ? (
           <>
             <span aria-hidden>△</span>

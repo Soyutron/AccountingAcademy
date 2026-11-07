@@ -50,7 +50,7 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false }: P
           const account = findAccountByName(line.accountName, accounts);
           const style = account ? ELEMENT_STYLE[account.element] : null;
           return (
-            <div key={i} className={`rounded-md border p-1.5 transition-colors ${style ? `${style.border} ${style.bg}` : "bg-background"}`}>
+            <div key={i} data-journal-line={`${side}-${i}`} className={`rounded-md border p-1.5 transition-colors ${style ? `${style.border} ${style.bg}` : "bg-background"}`}>
               <div className="flex gap-1 items-center">
                 <Input
                   list={readOnly ? undefined : listId}

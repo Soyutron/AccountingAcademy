@@ -43,6 +43,13 @@ export function increaseSide(element: Element): Side {
   return DEBIT_INCREASES.has(element) ? "debit" : "credit";
 }
 
+/** その科目自体が増える側。評価勘定(減価償却累計額など)は要素と逆の側で増える */
+export function accountIncreaseSide(account: Pick<AccountInfo, "element" | "contra">): Side {
+  const side = increaseSide(account.element);
+  if (!account.contra) return side;
+  return side === "debit" ? "credit" : "debit";
+}
+
 /**
  * 1 行の仕訳が、その科目の属する要素をいくら増減させるか。
  * 評価勘定(減価償却累計額など)は「科目自体」は貸方で増えるが、「要素(資産)」は減るので、要素への影響は通常の科目と同じ式になる

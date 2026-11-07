@@ -132,3 +132,16 @@ accounts:
     element: expense
     why: 売却によって純資産が減った分だから
     concepts: [expense, book_value]
+  - id: merchandise_inventory
+    name: 繰越商品
+    aliases: [商品]
+    short: 決算の日に売れ残っていた商品の仕入値
+    element: asset
+    why: まだ売れていない商品は、これから売ってお金に変わる会社の財産だから。売れた分だけが費用(売上原価)になる
+    concepts: [asset, ending_inventory, cost_of_goods_sold]
+  - id: shipping_expense
+    name: 発送費
+    short: 売った商品をお客さんに送るためにかかった運賃
+    element: expense
+    why: 売上を得るために使った犠牲で、純資産を減らす原因だから。仕入れるときの運賃(仕入諸掛)とは違い、仕入には含めない
+    concepts: [expense, incidental_costs]

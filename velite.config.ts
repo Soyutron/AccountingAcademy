@@ -119,10 +119,71 @@ export const taskSchema = s.discriminatedUnion("type", [
 ]);
 export type Task = z.infer<typeof taskSchema>;
 
+// 図解ブロック(docs/visual-guidelines.md 5 章)。alt は必須
+const amountItem = s.object({ account: s.string().optional(), label: s.string().optional(), amount: s.number().int() });
+const simpleFigure = s.discriminatedUnion("type", [
+  s.object({
+    type: s.literal("elements"),
+    alt: s.string(),
+    items: s.array(s.object({ account: s.string(), highlight: s.boolean().default(false) })).min(1),
+  }),
+  s.object({ type: s.literal("flow"), alt: s.string(), nodes: s.array(s.string()).min(2), highlight: s.number().int().min(0).optional() }),
+  s.object({
+    type: s.literal("timeline"),
+    alt: s.string(),
+    total: s.number().int().positive(),
+    periods: s.number().int().min(2).max(12),
+    unit: s.string().default("年"),
+    label: s.string().optional(),
+  }),
+  s.object({
+    type: s.literal("taccount"),
+    alt: s.string(),
+    account: s.string(),
+    debit: s.array(s.object({ label: s.string(), amount: s.number().int().positive() })).default([]),
+    credit: s.array(s.object({ label: s.string(), amount: s.number().int().positive() })).default([]),
+  }),
+  s.object({
+    type: s.literal("proportion"),
+    alt: s.string(),
+    assets: s.array(amountItem).min(1),
+    liabilities: s.array(amountItem).default([]),
+    equity: s.array(amountItem).default([]),
+  }),
+]);
+export const figureSchema = s.discriminatedUnion("type", [
+  ...simpleFigure.options,
+  s.object({
+    type: s.literal("compare"),
+    alt: s.string(),
+    left: s.object({ title: s.string(), figure: simpleFigure }),
+    right: s.object({ title: s.string(), figure: simpleFigure }),
+  }),
+]);
+export type Figure = z.infer<typeof figureSchema>;
+const FIGURE_BLOCK = /```figure\s*\n([\s\S]*?)```/g;
+
+/** 図解の中で参照している勘定科目 ID */
+function figureAccounts(f: Figure): string[] {
+  switch (f.type) {
+    case "elements":
+      return f.items.map((i) => i.account);
+    case "taccount":
+      return [f.account];
+    case "proportion":
+      return [...f.assets, ...f.liabilities, ...f.equity].flatMap((i) => (i.account ? [i.account] : []));
+    case "compare":
+      return [...figureAccounts(f.left.figure), ...figureAccounts(f.right.figure)];
+    default:
+      return [];
+  }
+}
+
 export interface Step {
   title: string;
   narrative: string;
   task: Task;
+  figures: Figure[];
 }
 
 // 単元本文を「## 見出し」ごとのステップに分け、```task ブロックを課題として解釈する
@@ -145,7 +206,16 @@ function parseSteps(body: string, ctx: z.RefinementCtx): Step[] {
       task = parsed.data;
     }
     const narrative = (m ? rest.replace(TASK_BLOCK, "") : rest).trim();
-    steps.push({ title, narrative, task });
+    const figures: Figure[] = [];
+    for (const fm of narrative.matchAll(FIGURE_BLOCK)) {
+      const parsed = figureSchema.safeParse(parseYaml(fm[1]));
+      if (!parsed.success) {
+        ctx.addIssue({ code: "custom", message: `ステップ ${i + 1}「${title}」の figure: ${parsed.error.issues.map((e) => `${e.path.join(".")} ${e.message}`).join("; ")}` });
+        return;
+      }
+      figures.push(parsed.data);
+    }
+    steps.push({ title, narrative, task, figures });
   });
   return steps;
 }
@@ -304,6 +374,14 @@ export default defineConfig({
       u.steps.forEach((st, i) => {
         const w = `${where} ステップ ${i + 1}「${st.title}」`;
         if (!st.narrative.trim()) errors.push(`${w}: 説明文がない`);
+        if (st.figures.length > 1) errors.push(`${w}: 図解は 1 ステップに 1 つまで`);
+        st.figures.forEach((f) => {
+          figureAccounts(f).forEach((a) => requireAccount(a, `${w} の図解`));
+          if (f.type === "proportion") {
+            const sum = (items: { amount: number }[]) => items.reduce((t, i) => t + i.amount, 0);
+            if (sum(f.assets) !== sum(f.liabilities) + sum(f.equity)) errors.push(`${w} の図解: 資産の合計が負債 + 純資産と一致しない`);
+          }
+        });
         for (const line of st.narrative.split("\n")) {
           if (line.trimStart().startsWith("|") && /\[\[[^\]]*\|/.test(line)) errors.push(`${w}: 表の中では [[id|表示語]] が使えない。[[id]] と書く`);
         }

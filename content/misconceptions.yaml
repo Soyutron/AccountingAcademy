@@ -66,3 +66,57 @@ misconceptions:
     correct: 配分するのは取得原価から残存価額を引いた金額。残存価額は使い終わった後に残る価値なので費用にしない
     concepts: [residual_value, straight_line_method]
     remediation: depreciation/straight-line
+  - id: purchase_is_asset
+    name: 仕入は資産
+    description: 売るための商品を買ったとき、備品と同じように資産として記録すると思っている
+    correct: 三分法では、商品を買ったときは「仕入」という費用で記録する。売れ残った分だけを決算で繰越商品(資産)に移す
+    concepts: [three_account_method, purchase, expense]
+    remediation: merchandise/three-account-method
+  - id: revenue_only_when_cash
+    name: お金を受け取るまで売上ではない
+    description: 商品を渡しても、代金を受け取るまでは売上にならないと思っている
+    correct: 売上は商品を渡した(サービスを提供した)ときに記録する。代金が後払いなら、受け取る権利を売掛金(資産)として記録する
+    concepts: [credit_transaction, receivable, revenue]
+    remediation: merchandise/credit-transactions
+  - id: receivable_is_cash
+    name: 売掛金は現金
+    description: 売掛金を、すでに受け取ったお金や売上そのものと混同している
+    correct: 売掛金は「後で代金を受け取る権利」で、現金とは別の資産。回収したときに現金や預金に変わる
+    concepts: [receivable, asset]
+    remediation: merchandise/credit-transactions
+  - id: receivable_collection_is_sale
+    name: 回収のときにもう一度売上
+    description: 売掛金を回収したときに、売上をもう一度記録してしまう
+    correct: 売上は商品を渡したときに記録済み。回収では売掛金(資産)が現金や預金(資産)に変わるだけで、売上は増えない
+    concepts: [receivable, revenue]
+    remediation: merchandise/credit-transactions
+  - id: payable_payment_is_purchase
+    name: 支払いのときにもう一度仕入
+    description: 買掛金を支払ったときに、仕入をもう一度記録してしまう
+    correct: 仕入は商品を受け取ったときに記録済み。支払いでは買掛金(負債)が減り、現金(資産)が減るだけで、仕入は増えない
+    concepts: [payable, purchase]
+    remediation: merchandise/credit-transactions
+  - id: return_as_new_transaction
+    name: 返品を新しい取引として記録
+    description: 返品を、新しい仕入や売上、あるいは別の費用や収益として記録してしまう
+    correct: 返品は元の取引を取り消すこと。元の仕訳を左右逆にした仕訳(逆仕訳)で、仕入や売上、買掛金や売掛金を減らす
+    concepts: [returns, journal_entry]
+    remediation: merchandise/returns-and-costs
+  - id: incidental_cost_separate
+    name: 仕入の運賃を別の費用にする
+    description: 商品を仕入れるときにかかった運賃を、仕入とは別の費用として記録してしまう
+    correct: 商品を手に入れるまでにかかった運賃(仕入諸掛)は、商品の値段の一部として仕入に含める
+    concepts: [incidental_costs, purchase]
+    remediation: merchandise/returns-and-costs
+  - id: shipping_in_purchases
+    name: 発送費を仕入に含める
+    description: 売った商品を送る運賃を、仕入に含めてしまう
+    correct: 売るときにかかる運賃は発送費という費用。仕入に含めるのは、仕入れるときにかかった運賃だけ
+    concepts: [incidental_costs, expense]
+    remediation: merchandise/returns-and-costs
+  - id: purchases_equal_cogs
+    name: 仕入の合計がそのまま売上原価
+    description: 1 年に仕入れた金額の全部が、売った商品の原価だと思っている
+    correct: 売れ残った商品の分は、まだ費用ではない。仕入の合計から期末の商品を引いた金額が売上原価で、売れ残りは繰越商品(資産)として次の期に持ち越す
+    concepts: [cost_of_goods_sold, ending_inventory]
+    remediation: merchandise/cost-of-goods-sold

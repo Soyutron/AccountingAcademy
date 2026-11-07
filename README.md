@@ -34,8 +34,10 @@ pnpm db:start            # Supabase ローカルスタック(Docker)。出力さ
 pnpm dev                 # http://localhost:3000
 pnpm test                # 採点エンジンなどの単体テスト
 pnpm content             # コンテンツ検査だけ実行
-pnpm exec playwright test  # E2E(開発サーバーとローカル Supabase を使う)
+pnpm exec playwright test  # E2E(開発サーバーとローカル Supabase を使う。コンテンツを読んで全単元を自動で解く)
 ```
+
+CI(GitHub Actions)は push と pull request で lint・型・単体テスト・ビルドと、ローカル Supabase を立てた E2E を実行する。
 
 ## ディレクトリ
 
