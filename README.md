@@ -3,11 +3,13 @@
 会計を基礎から専門領域まで、原理・概念・構造の理解を軸に体系的に学べる Web サービス。
 学習体験は **会計 IDE**: Codecademy(https://www.codecademy.com/)のように、物語と課題・仕訳帳・財務諸表を 1 画面に置き、
 仕訳を記帳すると貸借対照表と損益計算書がその場で動く。
+ビジョンと現状のギャップは [docs/vision.md](docs/vision.md)、開発方針とロードマップは [docs/roadmap.md](docs/roadmap.md)、
 要件は [docs/requirements.md](docs/requirements.md)、学習体験は [docs/ide-design.md](docs/ide-design.md)、コンテンツ構造は [docs/content-model.md](docs/content-model.md) が正本。
 
 ## 開発プロセス
 
-各フェーズの出口条件を満たしてから次へ進む。フェーズ内で決めたことは `docs/decisions/` に ADR として残す。
+立ち上げ期(フェーズ 0〜4)は完了し、以降は [docs/roadmap.md](docs/roadmap.md) のマイルストーン(M1〜M6)で進める。
+決めたことは `docs/decisions/` に ADR として残す。下表は立ち上げ期の記録。
 
 | # | フェーズ | 主な成果物 | 出口条件 | 状態 |
 |---|---|---|---|---|
@@ -38,6 +40,8 @@ pnpm exec playwright test  # E2E(開発サーバーとローカル Supabase を�
 ## ディレクトリ
 
 ```
+docs/vision.md          プロダクトビジョン、会計ならではの学び方、現状とのギャップ
+docs/roadmap.md         開発方針とマイルストーン
 docs/requirements.md    要件定義(正本)
 docs/ide-design.md      会計 IDE の画面構成・ステップの種類・学習フロー
 docs/content-model.md   コンテンツ構造・記述形式・ステップの課題・用語集

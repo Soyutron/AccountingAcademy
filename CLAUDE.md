@@ -1,10 +1,11 @@
 # AccountingAcademy(仮名)
 
 会計を基礎から専門領域まで、原理・概念・構造の理解を軸に体系的に学べる Web サービス。学習体験は Codecademy の learn-by-doing を踏襲する。
-要件は `docs/requirements.md`、学習体験(会計 IDE)は `docs/ide-design.md`、コンテンツ構造は `docs/content-model.md`、構成は `docs/architecture.md`、設計判断の理由は `docs/decisions/`、開発プロセスと現在のフェーズは `README.md` を見る。
+ビジョンは `docs/vision.md`、ロードマップは `docs/roadmap.md`、要件は `docs/requirements.md`、学習体験(会計 IDE)は `docs/ide-design.md`、コンテンツ構造は `docs/content-model.md`、構成は `docs/architecture.md`、設計判断の理由は `docs/decisions/`、開発プロセスと現在のフェーズは `README.md` を見る。
 
 ## 現在のフェーズ
-MVP 実装(フェーズ 4〜5)。スタックは Next.js 16 + Supabase(ADR 0003)。ホスティングは未決なので特定ホストの固有機能に依存しない。
+ロードマップ M1(学習ループの検証。docs/roadmap.md)。スタックは Next.js 16 + Supabase(ADR 0003)。ホスティングは未決なので特定ホストの固有機能に依存しない。
+新しい機能や課題の種類は、まず 1 単元で試してから量産する(roadmap.md 1 章)。
 Next.js の API は学習データと異なる可能性があるので、書く前に `node_modules/next/dist/docs/` の該当ガイドを読む(AGENTS.md)。
 
 ## コマンド
