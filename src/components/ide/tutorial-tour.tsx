@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import type { JournalLine } from "@/lib/accounting";
 import { updateTutorial } from "@/lib/tutorial-store";
 
 // 操作しながら使い方を覚えるツアー。対象を明るく残して周りを暗くし、ユーザーの操作が済むまで待つ(docs/ide-design.md)
@@ -10,8 +11,8 @@ import { updateTutorial } from "@/lib/tutorial-store";
 export interface TourContext {
   stepIndex: number;
   postedCount: number;
-  debitAccounts: string[];
-  creditAccounts: string[];
+  debit: JournalLine[];
+  credit: JournalLine[];
 }
 
 interface TourStep {
@@ -23,12 +24,15 @@ interface TourStep {
   waiting?: string;
 }
 
+// 6 段目の文言が画面の数値と一致するよう、科目だけでなく金額まで確かめる
+const hasLine = (lines: JournalLine[], account: string, amount: number) => lines.some((l) => l.account === account && l.amount === amount);
+
 const STEPS: TourStep[] = [
   { title: "会計 IDE へようこそ", body: "2 分で使い方を体験します。実際に 1 件記帳してみましょう。いつでもスキップできます。" },
   { target: "guide", title: "左はガイド", body: "物語と「やること」を読む場所です。ステップごとに 2〜4 文だけなので、読んだらすぐ手を動かします。" },
   { target: "next-button", title: "次へ進む", body: "下の「次へ →」を押して、最初の課題に進みましょう。", done: (c) => c.stepIndex >= 1, waiting: "「次へ →」を押してください" },
-  { target: "journal-debit", title: "借方(左)に書く", body: "科目に「現金」、金額に 100000 と入れます。科目は途中まで打つと候補が出ます。", done: (c) => c.debitAccounts.includes("cash"), waiting: "借方に 現金 100,000 を入れてください" },
-  { target: "journal-credit", title: "貸方(右)に書く", body: "科目に「資本金」、金額に 100000 と入れます。", done: (c) => c.creditAccounts.includes("capital_stock"), waiting: "貸方に 資本金 100,000 を入れてください" },
+  { target: "journal-debit", title: "借方(左)に書く", body: "科目に「現金」、金額に 100000 と入れます。科目は途中まで打つと候補が出ます。", done: (c) => hasLine(c.debit, "cash", 100000), waiting: "借方に 現金 100,000 を入れてください" },
+  { target: "journal-credit", title: "貸方(右)に書く", body: "科目に「資本金」、金額に 100000 と入れます。", done: (c) => hasLine(c.credit, "capital_stock", 100000), waiting: "貸方に 資本金 100,000 を入れてください" },
   { target: "impact", title: "影響がその場で見える", body: "資産 +100,000、純資産 +100,000。借方と貸方の合計も一致しました。記帳する前に、何が動くかが分かります。" },
   { target: "post-button", title: "記帳する", body: "「記帳する」を押します(金額欄で Enter でも記帳できます)。", done: (c) => c.postedCount >= 1, waiting: "「記帳する」を押してください" },
   { target: "statements", title: "右は結果", body: "貸借対照表に現金と資本金が現れ、▲ が付きました。記帳のたびにここが動きます。科目名に触れると意味が出ます。" },

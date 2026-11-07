@@ -704,7 +704,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       {tourActive && (
         <TutorialTour
           key={tourKey}
-          ctx={{ stepIndex, postedCount: posted.length, debitAccounts: entryDraft.debit.map((l) => l.account), creditAccounts: entryDraft.credit.map((l) => l.account) }}
+          ctx={{ stepIndex, postedCount: posted.length, debit: entryDraft.debit, credit: entryDraft.credit }}
           onExit={() => setTourExited(true)}
         />
       )}
