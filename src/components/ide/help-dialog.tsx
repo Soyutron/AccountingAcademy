@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { TUTORIAL_UNIT_ID, updateTutorial, useTutorialState } from "@/lib/tutorial-store";
 
 // 「使い方」: 各機能の説明と、チュートリアルのやり直し・表示設定
@@ -36,9 +36,12 @@ export function HelpDialog({ onRestartTour }: { onRestartTour?: () => void }) {
         </DialogHeader>
         <div className="flex flex-wrap items-center gap-2 text-sm">
           {onRestartTour ? (
-            <Button size="sm" onClick={onRestartTour}>
-              チュートリアルを最初から
-            </Button>
+            // 同じページでツアーを始めるので、ダイアログを閉じないとツアーがモーダルの背後に隠れる
+            <DialogClose asChild>
+              <Button size="sm" onClick={onRestartTour}>
+                チュートリアルを最初から
+              </Button>
+            </DialogClose>
           ) : (
             <Button size="sm" asChild>
               <Link href={`/units/${TUTORIAL_UNIT_ID}?tour=1`}>チュートリアルを最初から</Link>

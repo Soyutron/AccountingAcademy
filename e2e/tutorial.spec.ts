@@ -33,7 +33,7 @@ test("チュートリアルを操作しながら最後まで進められる", as
   await expect(tour).toBeHidden();
   await page.getByRole("button", { name: "使い方" }).click();
   await page.getByRole("button", { name: "チュートリアルを最初から" }).click();
-  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: /使い方/ })).toBeHidden();
   await expect(tour).toBeVisible();
   await tour.getByRole("button", { name: "スキップ" }).click();
   await expect(tour).toBeHidden();
