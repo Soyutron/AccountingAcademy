@@ -116,6 +116,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [reached, setReached] = useState(0);
   // このセッションで正解(predict は回答)したステップとその答え。「← 前へ」で戻ってから戻ってきたときに達成状態を復元する(Issue #16)
   const answered = useRef(new Map<number, unknown>());
+  // このステップで最後に採点した答え。同じ答えの連打(ダブルクリック)は 1 回の回答として扱う(Issue #15)
+  const gradedAnswer = useRef<string | null>(null);
   // 保存済みの step。見直しや案内前の「次へ」で保存する step を下げないために持つ
   const savedStep = useRef(0);
   // 帳簿をさかのぼる: 何件目までの記帳で財務諸表を見るか(null は最新)
@@ -290,6 +292,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     setShowHint(false);
     setTweakDone(false);
     answeredStep.current = null;
+    gradedAnswer.current = null;
     setViewUpto(null);
     setPane("guide");
     // observe の仕訳はステップに入った時点で自動的に記帳する
@@ -356,9 +359,16 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
 
   const check = () => {
     if (answeredStep.current === stepIndex) return;
+    // 答えを変えずに押し直したときは採点も記録もしない(答えを変えれば数える)
+    const alreadyGraded = (answer: unknown) => {
+      const key = JSON.stringify(answer);
+      if (gradedAnswer.current === key) return true;
+      gradedAnswer.current = key;
+      return false;
+    };
     switch (task.type) {
       case "post": {
-        if (!draftReady) return;
+        if (!draftReady || alreadyGraded(entryDraft)) return;
         const r = gradePost(task, entryDraft);
         if (r.correct) {
           answeredStep.current = stepIndex;
@@ -391,7 +401,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       }
       case "calc": {
         const n = Number(calcValue.replaceAll(",", ""));
-        if (calcValue.trim() === "" || Number.isNaN(n)) return;
+        if (calcValue.trim() === "" || Number.isNaN(n) || alreadyGraded(n)) return;
         const r = gradeCalc(task, n);
         if (r.correct) {
           answeredStep.current = stepIndex;
@@ -404,7 +414,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         break;
       }
       case "classify": {
-        if (task.accounts.some((id) => !placed[id])) return;
+        if (task.accounts.some((id) => !placed[id]) || alreadyGraded(placed)) return;
         const r = gradeClassify(task, placed, accountMap);
         if (r.correct) {
           answeredStep.current = stepIndex;
