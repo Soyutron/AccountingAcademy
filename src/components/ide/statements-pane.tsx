@@ -23,6 +23,9 @@ export function StatementsPane({ accounts, balances, diff, company }: Props) {
     const a = accounts.get(id);
     if (a) changedElements.set(a.element, (changedElements.get(a.element) ?? 0) + d);
   }
+  // 純資産は当期純利益を含む定義で見せる(仕訳エディタの影響表示・predict の採点と同じ。docs/content-model.md)
+  const netIncomeDelta = (changedElements.get("revenue") ?? 0) - (changedElements.get("expense") ?? 0);
+  changedElements.set("equity", (changedElements.get("equity") ?? 0) + netIncomeDelta);
   for (const [el, d] of [...changedElements]) if (d === 0) changedElements.delete(el);
   const empty = balances.size === 0 || [...balances.values()].every((v) => v === 0);
 
@@ -48,7 +51,7 @@ export function StatementsPane({ accounts, balances, diff, company }: Props) {
                 <Row
                   name={<span>{st.netIncome >= 0 ? "当期純利益" : "当期純損失"}</span>}
                   amount={st.netIncome}
-                  delta={(changedElements.get("revenue") ?? 0) - (changedElements.get("expense") ?? 0)}
+                  delta={netIncomeDelta}
                 />
               )}
             </Group>
