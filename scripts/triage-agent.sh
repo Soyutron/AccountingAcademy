@@ -108,7 +108,7 @@ case "${1:-}" in
       esac
       # 同じ Issue を延々と回さない(ラベルを書けなかったとき)
       # gh の --jq は null を空で出すので、真偽値で判定する
-      [ "$(gh issue view "$n" --json labels --jq 'any(.labels[].name == "needs-triage")')" = "false" ] || { log "#$n のラベルを更新できていません。停止します"; exit 5; }
+      [ "$(gh issue view "$n" --json labels --jq '[.labels[].name] | any(. == "needs-triage")')" = "false" ] || { log "#$n のラベルを更新できていません。停止します"; exit 5; }
     done ;;
   ""|*[!0-9]*) echo "使い方: scripts/triage-agent.sh <Issue 番号> | loop" >&2; exit 64 ;;
   *) triage_one "$1" ;;
