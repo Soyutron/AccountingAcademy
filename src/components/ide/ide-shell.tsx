@@ -106,6 +106,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [pane, setPane] = useState<Pane>("guide");
   const [resumeStep, setResumeStep] = useState<number | null>(null);
   const [resumeSolved, setResumeSolved] = useState(false);
+  // 再開するステップの最後の回答。predict は誤答でも進めるので、その予想を復元する(Issue #10)
+  const [resumeAnswer, setResumeAnswer] = useState<unknown>(undefined);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [tweakDone, setTweakDone] = useState(false);
   // 回答を確定したステップ。同一ティックの連打では state が更新前なので、ref で同期的に弾く
@@ -177,8 +179,10 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         const saved = p?.units[unit.id];
         if (saved) savedStep.current = saved.step;
         if (saved && saved.step > 0 && saved.step < unit.steps.length) {
+          const answer = p.answers[unit.id]?.[saved.step];
           setResumeStep(saved.step);
-          setResumeSolved(p.solved[unit.id]?.includes(saved.step) ?? false);
+          setResumeAnswer(answer);
+          setResumeSolved((p.solved[unit.id]?.includes(saved.step) ?? false) || (unit.steps[saved.step].task.type === "predict" && answer !== undefined));
         }
       })
       .catch((e: Error) => console.error(e));
@@ -272,8 +276,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       setResult(gradePost(t, t.answer));
     }
     if (t.type === "predict") {
-      setEffect(t.answer);
-      setResult(gradePredict(t, t.answer as EffectAnswer));
+      const predicted = (resumeAnswer as EffectAnswer | undefined) ?? (t.answer as EffectAnswer);
+      setEffect(predicted);
+      setResult(gradePredict(t, predicted));
     }
     if (t.type === "calc") {
       setCalcValue(String(t.answer));
