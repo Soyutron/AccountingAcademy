@@ -305,6 +305,11 @@ export default defineConfig({
     dup("誤解", misconceptions.misconceptions.map((m) => m.id));
     dup("単元", units.map((u) => u.id));
     dup("テーマ", topics.map((t) => t.id));
+    // 概念と勘定科目で同じ ID は「同じ用語」として用語集で 1 項目にまとめる(src/lib/content.ts)。名前が違えば別物なので拒否する
+    for (const a of accounts.accounts) {
+      const c = conceptById.get(a.id);
+      if (c && c.name !== a.name) errors.push(`勘定科目 ${a.id}(${a.name})と概念 ${c.id}(${c.name})が同じ ID で名前が違う`);
+    }
 
     const requireConcept = (id: string, where: string) => {
       if (!conceptIds.has(id)) errors.push(`${where}: 概念 ${id} が存在しない`);

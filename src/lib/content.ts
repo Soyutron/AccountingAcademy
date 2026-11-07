@@ -46,31 +46,42 @@ function nameOf(id: string): string {
   return conceptMap.get(id)?.name ?? accountMap.get(id)?.name ?? id;
 }
 
+// 概念と勘定科目が同じ ID を持つもの(小口現金など)は同じ用語なので、用語集では 1 項目にまとめる。
+// 概念の説明(summary / example / 単元)を採り、勘定科目の要素を足す。関連に自分自身は並べない(Issue #24)
+const accountById = new Map(accountList.map((a) => [a.id, a]));
 export const glossary: GlossaryEntry[] = [
-  ...conceptList.map((c) => ({
-    id: c.id,
-    kind: "concept" as const,
-    name: c.name,
-    short: c.short,
-    summary: c.summary,
-    example: c.example,
-    // related と contrasts の両方に挙げる概念があるので、先に出た方だけ残す
-    related: [...new Set([...c.requires, ...c.related, ...c.contrasts])].map((id) => ({ id, name: nameOf(id) })),
-    unit: (() => {
-      const u = introducingUnit(c.id);
-      return u ? { id: u.id, title: u.title } : undefined;
-    })(),
-  })),
-  ...accountList.map((a) => ({
-    id: a.id,
-    kind: "account" as const,
-    name: a.name,
-    short: a.short,
-    summary: a.why,
-    element: a.element,
-    contra: a.contra,
-    related: a.concepts.map((id) => ({ id, name: nameOf(id) })),
-  })),
+  ...conceptList.map((c) => {
+    const account = accountById.get(c.id);
+    const related = [...new Set([...c.requires, ...c.related, ...c.contrasts, ...(account?.concepts ?? [])])].filter((id) => id !== c.id);
+    return {
+      id: c.id,
+      kind: "concept" as const,
+      name: c.name,
+      short: c.short,
+      summary: c.summary,
+      example: c.example,
+      element: account?.element,
+      contra: account?.contra,
+      // related と contrasts の両方に挙げる概念があるので、先に出た方だけ残す
+      related: related.map((id) => ({ id, name: nameOf(id) })),
+      unit: (() => {
+        const u = introducingUnit(c.id);
+        return u ? { id: u.id, title: u.title } : undefined;
+      })(),
+    };
+  }),
+  ...accountList
+    .filter((a) => !conceptMap.has(a.id))
+    .map((a) => ({
+      id: a.id,
+      kind: "account" as const,
+      name: a.name,
+      short: a.short,
+      summary: a.why,
+      element: a.element,
+      contra: a.contra,
+      related: a.concepts.map((id) => ({ id, name: nameOf(id) })),
+    })),
 ];
 
 export const glossaryMap = new Map(glossary.map((g) => [g.id, g]));
