@@ -202,7 +202,12 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     return { balances: upto, diff: viewUpto === 0 ? new Map<string, number>() : diffBalances(prev, upto) };
   }, [viewUpto, posted, balancesNow, diff, unit.opening, accountMap]);
 
-  const save = (fn: () => Promise<void>) => fn().catch((e: Error) => setSaveError(e.message));
+  // 失敗の詳細(RLS の英文など)は console に出し、学習者には取るべき行動だけ見せる
+  const save = (fn: () => Promise<void>) =>
+    fn().catch((e: Error) => {
+      console.error(e);
+      setSaveError("保存できませんでした。ページを再読み込みしてから、もう一度お試しください。");
+    });
   const celebrate = () => {
     if (celebratedSteps.current.has(stepIndex)) return;
     celebratedSteps.current.add(stepIndex);
