@@ -44,6 +44,8 @@ docs/vision.md          プロダクトビジョン、会計ならではの学�
 docs/roadmap.md         開発方針とマイルストーン
 docs/requirements.md    要件定義(正本)
 docs/ide-design.md      会計 IDE の画面構成・ステップの種類・学習フロー
+docs/visual-guidelines.md 図解・イラスト・アニメーションの方針と図解ブロックの仕様
+docs/assets-ledger.md   外部素材の台帳
 docs/content-model.md   コンテンツ構造・記述形式・ステップの課題・用語集
 docs/tech-stack.md      技術選定の比較(記録)、Skills / MCP 一覧
 docs/architecture.md    採用した構成、責務の配置、データモデル、誤解検出の仕組み
