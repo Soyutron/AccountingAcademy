@@ -14,7 +14,7 @@
 #   MONKEY_MIN_ITER     残り時間がこれを切ったら新しい反復を始めない(既定 1500。短いと環境確認だけで終わる)
 #   MONKEY_PAUSE        反復間の待ち秒(既定 20)
 #   MONKEY_LOG_DIR      ログ置き場(既定 logs/monkey)。反復ごとに <日時>-<人格>/ を作る。stop ファイルもここ
-#   MONKEY_MODEL        claude -p に渡すモデル(未指定なら Claude Code の既定)
+#   MONKEY_MODEL        claude -p に渡すモデル(既定 opus。Fable はトリアージとレビューに取っておく)
 #   MONKEY_EFFORT       claude -p に渡す effort(未指定なら既定)
 set -u
 cd "$(dirname "$0")/.."
@@ -37,7 +37,7 @@ STEPS="${MONKEY_STEPS:-20}"
 ITER_TIMEOUT="${MONKEY_ITER_TIMEOUT:-3600}"
 MIN_ITER="${MONKEY_MIN_ITER:-1500}"
 PAUSE="${MONKEY_PAUSE:-20}"
-MODEL="${MONKEY_MODEL:-}"
+MODEL="${MONKEY_MODEL:-opus}"
 EFFORT="${MONKEY_EFFORT:-}"
 mkdir -p "$LOG_DIR"; rm -f "$STOP_FILE"
 

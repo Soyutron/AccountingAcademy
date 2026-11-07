@@ -6,7 +6,7 @@
 #   MONKEY_SEED=123 scripts/monkey-scripted.sh
 #
 # 環境変数: MONKEY_SEEDS / MONKEY_SEED / MONKEY_STEPS(spec と同じ)、MONKEY_REPORT=0 で起票をしない、
-#           MONKEY_MODEL / MONKEY_EFFORT(起票側の claude -p)
+#           MONKEY_MODEL(既定 opus)/ MONKEY_EFFORT(起票側の claude -p)
 set -u
 cd "$(dirname "$0")/.."
 ROOT=$PWD
@@ -30,7 +30,7 @@ for seed in "${failed[@]}"; do
 seed 付き Monkey のログは $ROOT/$session/scripted.log、セッションのディレクトリは $ROOT/$session です。\
 ユーザーへの質問はできないので、判断は自分で行ってください。終わったら起票した Issue 番号を要約して出力し、終了してください。"
   MONKEY_SESSION_DIR="$ROOT/$session" timeout --foreground -k 30 1800 \
-    claude -p "$prompt" ${MONKEY_MODEL:+--model "$MONKEY_MODEL"} ${MONKEY_EFFORT:+--effort "$MONKEY_EFFORT"} \
+    claude -p "$prompt" --model "${MONKEY_MODEL:-opus}" ${MONKEY_EFFORT:+--effort "$MONKEY_EFFORT"} \
       --permission-mode acceptEdits --allowedTools "Bash,Read,Write,Edit,Skill,Glob,Grep" \
       --disallowedTools "Bash(git push:*)" "Bash(git commit:*)" "Bash(gh issue close:*)" "Bash(gh issue delete:*)" "Bash(gh issue edit:*)" "Bash(pnpm db:reset:*)" "Bash(pnpm db:stop:*)" \
       --strict-mcp-config --mcp-config '{"mcpServers":{}}' >"$session/session.log" 2>&1
