@@ -37,7 +37,8 @@ pnpm content             # コンテンツ検査だけ実行
 pnpm exec playwright test  # E2E(開発サーバーとローカル Supabase を使う。コンテンツを読んで全単元を自動で解く)
 ```
 
-CI(GitHub Actions)は push と pull request で lint・型・単体テスト・ビルドだけを実行する(約 1 分)。E2E はローカルで実行する(ローカル Supabase と開発サーバーで全単元が 30 秒以内に通る)。CI で E2E が要るときは Actions の画面から手動で起動する。
+品質確認はローカルで完結させる(ADR 0005)。初回に `git config core.hooksPath .githooks` を実行すると、push の前に lint・型・単体テストが自動で走る。
+E2E(`pnpm exec playwright test`)はコンテンツや UI を変えたときにローカルで回す。GitHub Actions は lint・型・単体テスト・ビルドの 1 ジョブ(約 45 秒)だけ。
 
 ## ディレクトリ
 

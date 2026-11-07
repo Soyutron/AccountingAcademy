@@ -104,7 +104,7 @@ function ShapeBars({ st }: { st: ReturnType<typeof buildStatements> }) {
       </div>
     );
   return (
-    <section aria-label="会社のかたち" className="space-y-1">
+    <section aria-label="会社のかたち" className="space-y-1" data-tour="shape">
       <h3 className="font-semibold">会社のかたち</h3>
       <div className="grid grid-cols-2 gap-1">
         <div className="h-6 rounded-l bg-muted/60 flex overflow-hidden">{seg("資産", left, ELEMENT_STYLE.asset.bar)}</div>

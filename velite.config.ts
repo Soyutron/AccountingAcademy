@@ -247,7 +247,7 @@ export default defineConfig({
     topics: {
       name: "Topic",
       pattern: "topics/*/topic.yaml",
-      schema: s.object({ id: s.string(), title: s.string(), domain: s.string(), summary: s.string(), order: s.number() }),
+      schema: s.object({ id: s.string(), title: s.string(), domain: s.string(), summary: s.string(), order: s.number(), hidden: s.boolean().default(false) }),
     },
     units: {
       name: "Unit",

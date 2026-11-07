@@ -62,6 +62,11 @@ function solveTweak(task: Extract<Task, { type: "tweak" }>): Record<string, numb
 for (const unit of units) {
   test(`${unit.title} を最後まで進められる`, async ({ page }) => {
     await page.goto(`/units/${unit.id}`);
+    // チュートリアルの案内やツアーは、学習ループの検証では閉じる
+    const tourSkip = page.getByRole("dialog", { name: "チュートリアル" }).getByRole("button", { name: "スキップ" });
+    if (await tourSkip.isVisible()) await tourSkip.click();
+    const later = page.getByRole("button", { name: "今はしない" });
+    if (await later.isVisible()) await later.click();
     let triedWrong = false;
     for (let i = 0; i < unit.steps.length; i++) {
       const { task } = unit.steps[i];

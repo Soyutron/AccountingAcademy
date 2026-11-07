@@ -40,7 +40,7 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false }: P
   };
 
   const renderSide = (side: Side, label: string) => (
-    <div className="flex-1 min-w-0">
+    <div className="flex-1 min-w-0" data-tour={side === "debit" ? "journal-debit" : "journal-credit"}>
       <div className="mb-1 flex items-baseline gap-2">
         <span className="text-sm font-semibold">{label}</span>
         <span className="text-[10px] text-muted-foreground">{side === "debit" ? "左 · 資産と費用が増える側" : "右 · 負債・純資産・収益が増える側"}</span>
@@ -127,7 +127,7 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false }: P
 function ImpactPanel({ impact }: { impact: ReturnType<typeof computeImpact> }) {
   const sign = (n: number) => (n > 0 ? `+${formatAmount(n)}` : n < 0 ? `−${formatAmount(-n)}` : "±0");
   return (
-    <div className="rounded-md bg-muted/50 p-2 text-sm">
+    <div className="rounded-md bg-muted/50 p-2 text-sm" data-tour="impact">
       <div className="flex flex-wrap gap-1.5">
         {ELEMENTS.map((el) => {
           const value = el === "equity" ? impact.equityTotal : impact[el];

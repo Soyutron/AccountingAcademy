@@ -17,7 +17,8 @@ Next.js の API は学習データと異なる可能性があるので、書く�
 ## 構成
 - `content/`: ステップ型の単元・概念・勘定科目・誤解・学習パス(docs/content-model.md)。`velite.config.ts` がスキーマと横断検査
 - `src/lib/accounting.ts`: 5 要素への影響計算。`src/lib/ledger.ts`: 帳簿から財務諸表を組み立てる。`src/lib/grading.ts`: 課題の採点(誤解 ID を返す)。`src/lib/formulas.ts`: 「条件を変える」の式
-- `src/components/ide/`: 会計 IDE(`ide-shell.tsx` が状態とステップ進行、各ペインは別ファイル)
+- `src/components/ide/`: 会計 IDE(`ide-shell.tsx` が状態とステップ進行、各ペインは別ファイル。`tutorial-tour.tsx` が操作ツアー、`help-dialog.tsx` が「使い方」)
+- 品質確認はローカルが正(ADR 0005)。`git config core.hooksPath .githooks` で push 前に lint・型・テストが走る。GitHub Actions は最小の 1 ジョブだけ
 - `src/lib/progress.ts`: 匿名サインインと回答・進捗の保存。`supabase/migrations/`: スキーマと RLS
 - `src/components/markdown.tsx`: 説明文の描画。`[[id]]` → 用語ポップオーバー、```journal → 仕訳エディタ
 

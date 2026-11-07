@@ -1,16 +1,11 @@
 name: CI
 
-# push ごとに走るのは 1 分で終わる検査だけ。E2E はローカルで実行する(README)。必要なときは手動で起動できる
+# 最小構成: main への push と pull request で、1 分以内に終わる検査だけを走らせる。
+# E2E と目視確認はローカルで行う(docs/decisions/0005-ci-policy.md)
 on:
   push:
     branches: [main]
   pull_request:
-  workflow_dispatch:
-    inputs:
-      e2e:
-        description: "E2E も実行する(ローカル Supabase を立てるため 10 分前後かかる)"
-        type: boolean
-        default: false
 
 jobs:
   check:
@@ -30,29 +25,3 @@ jobs:
         env:
           NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder
-
-  e2e:
-    if: github.event_name == 'workflow_dispatch' && inputs.e2e
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - uses: supabase/setup-cli@v1
-        with:
-          version: latest
-      - name: Supabase ローカルスタックを起動
-        run: |
-          supabase start -x studio,imgproxy,inbucket,logflare,vector,edge-runtime,realtime,storage-api
-          supabase status -o env | sed -n 's/^API_URL=/NEXT_PUBLIC_SUPABASE_URL=/p;s/^PUBLISHABLE_KEY=/NEXT_PUBLIC_SUPABASE_ANON_KEY=/p' | tr -d '"' > .env.local
-      - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm exec playwright test
-      - uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: playwright-report
-          path: playwright-report

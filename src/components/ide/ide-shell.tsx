@@ -21,6 +21,9 @@ import { TweakPanel } from "./tweak-panel";
 import { LedgerTab } from "./ledger-tab";
 import { type Flight, FlyingAmounts } from "./flying-amounts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TutorialTour } from "./tutorial-tour";
+import { HelpDialog } from "./help-dialog";
+import { TUTORIAL_UNIT_ID, updateTutorial, useTutorialState } from "@/lib/tutorial-store";
 
 // 会計 IDE の本体。ステップの進行、帳簿(記帳済みの仕訳)、課題の確認と記録をまとめて持つ(docs/ide-design.md)
 
@@ -66,27 +69,10 @@ const CHANGE_LABELS: Record<Change, string> = { increase: "増える", decrease:
 const PANES: Pane[] = ["guide", "work", "result"];
 const PANE_LABELS: Record<Pane, string> = { guide: "ガイド", work: "ワークスペース", result: "結果" };
 
-// オンボーディングの表示状態は localStorage に持つ。サーバー描画では「閉じた」扱いにして水和のずれを防ぐ
-const INTRO_KEY = "ide-intro-dismissed";
-const introListeners = new Set<() => void>();
-function readIntroDismissed(): boolean {
-  try {
-    return localStorage.getItem(INTRO_KEY) === "1";
-  } catch {
-    return true;
-  }
-}
-function subscribeIntro(listener: () => void) {
-  introListeners.add(listener);
-  return () => introListeners.delete(listener);
-}
-function dismissIntro() {
-  try {
-    localStorage.setItem(INTRO_KEY, "1");
-  } catch {
-    // 保存できない環境では次回また出る
-  }
-  introListeners.forEach((l) => l());
+// URL の ?tour=1 でチュートリアルを強制的に始める(「使い方」からのやり直し)
+const noop = () => () => {};
+function readForceTour(): boolean {
+  return new URLSearchParams(window.location.search).get("tour") === "1";
 }
 
 /** ステップを飛ばして再開するとき、そこまでの仕訳を課題の答えから復元する */
@@ -122,8 +108,18 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   // 取引の流れのアニメーション。記帳が成功した仕訳を次の描画で測って飛ばす
   const [pendingFlight, setPendingFlight] = useState<JournalEntry | null>(null);
   const [flights, setFlights] = useState<Flight[]>([]);
-  const introDismissed = useSyncExternalStore(subscribeIntro, readIntroDismissed, () => true);
-  const showIntro = !introDismissed;
+  const tutorial = useTutorialState();
+  const forceTour = useSyncExternalStore(noop, readForceTour, () => false);
+  const isTutorialUnit = unit.id === TUTORIAL_UNIT_ID;
+  const [tourExited, setTourExited] = useState(false);
+  const [tourKey, setTourKey] = useState(0);
+  const tourActive = isTutorialUnit && !tourExited && (tutorial.status !== "done" || forceTour || tourKey > 0);
+  const restartTour = () => {
+    setPosted(replayEntries(unit.steps, 0));
+    goTo(0);
+    setTourExited(false);
+    setTourKey((k) => k + 1);
+  };
 
   // 新しい行が描画されてから出発点と到着点を測る必要があるので、次のフレームで測る
   useEffect(() => {
@@ -314,6 +310,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         <span className="text-muted-foreground whitespace-nowrap">
           ステップ {stepIndex + 1} / {unit.steps.length}
         </span>
+        <span className="flex-1" />
+        <HelpDialog onRestartTour={isTutorialUnit ? restartTour : undefined} />
       </div>
 
       <div className="lg:hidden grid grid-cols-3 border-b text-sm" role="tablist" aria-label="ペインの切り替え">
@@ -339,18 +337,16 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       </div>
 
       <div className="grid flex-1 min-h-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)]">
-        <section id="pane-guide" role="region" aria-label="ガイド" className={`${paneClass("guide")} lg:border-r`}>
+        <section id="pane-guide" role="region" aria-label="ガイド" className={`${paneClass("guide")} lg:border-r`} data-tour="guide">
           <h2 className="text-lg font-semibold mb-2">{step.title}</h2>
-          {showIntro && stepIndex === 0 && (
-            <div className="mb-3 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm space-y-2" role="note">
-              <p className="font-semibold">はじめての会計 IDE</p>
-              <ul className="space-y-1">
-                <li><span className="font-medium">左</span>: 物語を読んで、「やること」を確かめます。</li>
-                <li><span className="font-medium">中央</span>: 仕訳帳に科目と金額を入れて「記帳する」を押します。</li>
-                <li><span className="font-medium">右</span>: 貸借対照表と損益計算書が、その場で動きます。</li>
-              </ul>
-              <Button size="sm" variant="outline" onClick={dismissIntro}>
-                わかった
+          {!isTutorialUnit && tutorial.status === "pending" && tutorial.enabled && (
+            <div className="mb-3 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm flex flex-wrap items-center gap-2" role="note">
+              <span className="flex-1">初めてですか? 2 分のチュートリアルで、実際に 1 件記帳しながら使い方を覚えられます。</span>
+              <Button size="sm" asChild>
+                <Link href={`/units/${TUTORIAL_UNIT_ID}`}>はじめる</Link>
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => updateTutorial({ status: "skipped" })}>
+                今はしない
               </Button>
             </div>
           )}
@@ -365,7 +361,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           <div className="prose prose-neutral prose-sm max-w-none">{narratives[stepIndex]}</div>
           <TaskBox task={task} />
           {hint && (
-            <div className="mt-3 text-sm">
+            <div className="mt-3 text-sm" data-tour="hint">
               {showHint ? (
                 <p className="rounded-md bg-amber-50 p-2 text-amber-900">ヒント: {hint}</p>
               ) : (
@@ -389,7 +385,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               <h3 className="text-sm font-semibold">仕訳帳に書く</h3>
               <JournalEditor accounts={accounts} value={draft} onChange={setDraft} readOnly={result?.correct === true} />
               {!result?.correct && (
-                <Button type="submit" disabled={!draftReady}>
+                <Button type="submit" disabled={!draftReady} data-tour="post-button">
                   記帳する
                 </Button>
               )}
@@ -511,7 +507,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           </Tabs>
         </section>
 
-        <section id="pane-result" role="region" aria-label="結果" className={paneClass("result")}>
+        <section id="pane-result" role="region" aria-label="結果" className={paneClass("result")} data-tour="statements">
           {posted.length > 1 && (
             <div className="mb-3 rounded-md border p-2 text-xs space-y-1">
               <label className="flex items-center justify-between gap-2">
@@ -544,6 +540,13 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       </div>
 
       <FlyingAmounts flights={flights} onDone={(id) => setFlights((prev) => prev.filter((f) => f.id !== id))} />
+      {tourActive && (
+        <TutorialTour
+          key={tourKey}
+          ctx={{ stepIndex, postedCount: posted.length, debitAccounts: entryDraft.debit.map((l) => l.account), creditAccounts: entryDraft.credit.map((l) => l.account) }}
+          onExit={() => setTourExited(true)}
+        />
+      )}
       <div className="border-t bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm space-y-2 sticky bottom-0 max-h-[50dvh] overflow-y-auto">
         {result && (
           <div role="status" aria-live="polite" className={`rounded-md p-3 space-y-2 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 ${result.correct ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-900"}`}>
@@ -605,7 +608,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
             </Button>
           )}
           {!isLast ? (
-            <Button aria-disabled={!done} className={done ? "" : "opacity-50"} onClick={() => done && goTo(stepIndex + 1)}>
+            <Button aria-disabled={!done} className={done ? "" : "opacity-50"} onClick={() => done && goTo(stepIndex + 1)} data-tour="next-button">
               次へ →
             </Button>
           ) : unit.next ? (

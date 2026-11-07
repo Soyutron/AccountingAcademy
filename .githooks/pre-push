@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# push の前にローカルで検査する(docs/decisions/0005-ci-policy.md)。
+# 有効化: git config core.hooksPath .githooks
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+echo "[pre-push] lint / typecheck / test"
+pnpm lint
+pnpm typecheck
+pnpm test
