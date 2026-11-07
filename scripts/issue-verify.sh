@@ -18,6 +18,11 @@ if [ "${#files[@]}" -eq 0 ]; then
   note "再検証: 回帰テスト(ファイル名に \`issue-$ISSUE\` を含む spec / test)が main に見つからないため、自動の再検証は行っていません。"
   exit 1
 fi
+# E2E は本番ビルドを起動するので、統合後の main を必ずビルドし直す(古い .next を配ると修正前の挙動を検証してしまう)
+if printf '%s\n' "${files[@]}" | grep -q '^e2e/'; then
+  log "pnpm build"
+  pnpm build >"$LOG_DIR/verify.log" 2>&1 || { note "再検証: main のビルドに失敗しました(\`$LOG_DIR/verify.log\`)"; exit 1; }
+fi
 rc=0
 for f in "${files[@]}"; do
   log "実行: $f"
@@ -28,8 +33,10 @@ for f in "${files[@]}"; do
 done
 sha=$(git rev-parse --short HEAD)
 if [ "$rc" -eq 0 ]; then
-  gh issue edit "$ISSUE" --add-label agent:verified >/dev/null
+  gh issue edit "$ISSUE" --add-label agent:verified --remove-label agent:needs-human >/dev/null
   note "再検証: main \`$sha\` で回帰テスト($(printf '`%s` ' "${files[@]}"))が通りました。"
+  # 以前の再検証で reopen されていれば閉じ直す
+  [ "$(gh issue view "$ISSUE" --json state --jq .state)" = "OPEN" ] && gh issue close "$ISSUE" >/dev/null
   log "通過($sha)"
 else
   gh issue reopen "$ISSUE" >/dev/null 2>&1

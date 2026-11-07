@@ -66,7 +66,10 @@ triage_one() {
   brief=$(json_get "$out" structured_output.brief)
   dup=$(json_get "$out" structured_output.duplicate_of)
   log "#$n: $verdict ($prio) — $reason"
-  gh issue edit "$n" --remove-label needs-triage --remove-label p1 --remove-label p2 --remove-label p3 --add-label "$prio" >/dev/null
+  # 同じラベルを remove と add に並べると外れたままになるので、判定した優先度は外さない
+  local drop=()
+  for l in p1 p2 p3; do [ "$l" != "$prio" ] && drop+=(--remove-label "$l"); done
+  gh issue edit "$n" --remove-label needs-triage "${drop[@]}" --add-label "$prio" >/dev/null
   case "$verdict" in
     ready_for_agent)
       gh issue edit "$n" --add-label ready-for-agent >/dev/null
@@ -104,7 +107,8 @@ case "${1:-}" in
         *) log "停止します(rc=$rc)"; exit $rc ;;
       esac
       # 同じ Issue を延々と回さない(ラベルを書けなかったとき)
-      [ "$(gh issue view "$n" --json labels --jq '[.labels[].name] | index("needs-triage")')" = "null" ] || { log "#$n のラベルを更新できていません。停止します"; exit 5; }
+      # gh の --jq は null を空で出すので、真偽値で判定する
+      [ "$(gh issue view "$n" --json labels --jq 'any(.labels[].name == "needs-triage")')" = "false" ] || { log "#$n のラベルを更新できていません。停止します"; exit 5; }
     done ;;
   ""|*[!0-9]*) echo "使い方: scripts/triage-agent.sh <Issue 番号> | loop" >&2; exit 64 ;;
   *) triage_one "$1" ;;

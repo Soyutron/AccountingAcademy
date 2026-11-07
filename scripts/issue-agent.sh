@@ -206,7 +206,8 @@ print(f"{total:.2f}")
 
 # ---------- 0. 前提確認と claim ----------
 [ "$(git branch --show-current)" = "main" ] || { log "本体チェックアウトが main ではありません"; exit 5; }
-[ -z "$(git status --porcelain)" ] || { log "本体チェックアウトに未コミットの変更があります。統合できないので始めません"; exit 5; }
+# 人が同時に別のファイルを編集していてもよい。統合で触るファイルと重なるときだけ止める(統合の直前に確かめる)
+[ -z "$(git status --porcelain)" ] || log "注意: 本体チェックアウトに未コミットの変更があります。統合で触るファイルと重なれば中断します"
 for cmd in claude gh pnpm envsubst python3; do command -v "$cmd" >/dev/null || { log "$cmd が見つかりません"; exit 5; }; done
 if [ "$PUSH" = 1 ]; then
   git fetch -q origin main || { log "origin から main を取得できません"; exit 5; }
@@ -302,7 +303,9 @@ if [ "$(git -C "$WT" rev-parse HEAD)" != "$head_before" ]; then
   gate final || give_up 4 agent:needs-human "main 取り込み後の関門で失敗しました: ${GATE_REPORT%%$'\n'*}(詳細はログ)"
 fi
 [ "$(git branch --show-current)" = "main" ] || give_up 5 "" "本体チェックアウトが main ではなくなっています"
-[ -z "$(git status --porcelain)" ] || give_up 5 "" "本体チェックアウトに未コミットの変更があるため統合できません"
+overlap=$(comm -12 <(git status --porcelain | cut -c4- | sort) <(git diff --name-only main..."$BRANCH" | sort))
+[ -z "$overlap" ] || give_up 5 "" "本体チェックアウトの未コミットの変更が統合するファイルと重なっています:
+$overlap"
 log "main へマージします"
 if ! git merge --no-ff --no-edit -m "$title (#$ISSUE)" \
     -m "issue-agent による統合(実装 $IMPL_MODEL、レビュー $REVIEW_MODEL、$round ラウンド)。" "$BRANCH" >>"$ISSUE_DIR/merge.log" 2>&1; then
