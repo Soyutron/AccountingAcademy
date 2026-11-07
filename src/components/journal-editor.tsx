@@ -22,9 +22,11 @@ interface Props {
   value: EditableEntry;
   onChange?: (value: EditableEntry) => void;
   readOnly?: boolean;
+  // predict では予想を送るまで 5 要素の増減を見せない(答えが見えてしまう。Issue #11)
+  showImpact?: boolean;
 }
 
-export function JournalEditor({ accounts, value, onChange, readOnly = false }: Props) {
+export function JournalEditor({ accounts, value, onChange, readOnly = false, showImpact = true }: Props) {
   const accountMap = useMemo(() => new Map(accounts.map((a) => [a.id, a])), [accounts]);
   const entry = useMemo(() => toJournalEntry(value, accounts), [value, accounts]);
   const impact = useMemo(() => computeImpact(entry, accountMap), [entry, accountMap]);
@@ -114,7 +116,7 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false }: P
         {renderSide("debit", "借方")}
         {renderSide("credit", "貸方")}
       </div>
-      <ImpactPanel impact={impact} />
+      {showImpact && <ImpactPanel impact={impact} />}
     </div>
   );
 }
