@@ -768,11 +768,18 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
             </form>
           )}
           {task.type === "observe" && isLast && (
-            <div className="space-y-2" data-tour="task-sandbox">
+            <form
+              className="space-y-2"
+              data-tour="task-sandbox"
+              onSubmit={(e) => {
+                e.preventDefault();
+                postFreely();
+              }}
+            >
               <h3 className="text-sm font-semibold">自由に試す</h3>
               <p className="text-xs text-muted-foreground">好きな取引を記帳して、結果の財務諸表がどう動くか確かめてみましょう。</p>
               <JournalEditor accounts={accounts} value={draft} onChange={setDraft} />
-              <Button variant="outline" onClick={postFreely} disabled={!canPostFreely} aria-describedby={sideHint ? "free-side-hint" : draftReady && !freeBalanced ? "free-post-hint" : undefined}>
+              <Button type="submit" variant="outline" disabled={!canPostFreely} aria-describedby={sideHint ? "free-side-hint" : draftReady && !freeBalanced ? "free-post-hint" : undefined}>
                 記帳する
               </Button>
               {sideHint && (
@@ -785,7 +792,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
                   借方と貸方の合計をそろえると記帳できます。
                 </p>
               )}
-            </div>
+            </form>
           )}
 
           <Tabs defaultValue="journal">
