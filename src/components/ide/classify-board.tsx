@@ -37,7 +37,7 @@ export function ClassifyBoard({ accounts, placed, onChange, wrong, disabled }: P
       disabled={disabled}
       onClick={() => (inBin ? unplace(a.id) : setSelected(selected === a.id ? null : a.id))}
       aria-pressed={inBin ? undefined : selected === a.id}
-      className={`rounded-full border px-3 min-h-10 text-sm ${selected === a.id ? "border-primary bg-primary text-primary-foreground" : wrong.has(a.id) ? "border-rose-400 bg-rose-50" : "bg-background"}`}
+      className={`rounded-full border px-3 min-h-10 text-sm ${selected === a.id ? "border-primary bg-primary text-primary-foreground" : wrong.has(a.id) ? "border-error-fg text-error-fg bg-background" : "bg-background"}`}
     >
       {a.name}
       {wrong.has(a.id) && <span className="sr-only">(間違い)</span>}

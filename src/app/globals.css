@@ -3,45 +3,78 @@
 @import "shadcn/tailwind.css";
 @plugin "@tailwindcss/typography";
 
-@custom-variant dark (&:is(.dark *));
+/* テーマ(docs/design-system.md)。色・書体・形は各テーマの CSS が <html data-theme data-mode> に対して決める */
+@import "../themes/town-shop.css";
+@import "../themes/ai-shu.css";
+@import "../themes/ledger-paper.css";
+@import "../themes/workbench.css";
+
+@custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));
 
 @theme inline {
   /* 正解した直後に「次へ →」を 1 回だけ目立たせる(リングのパルス) */
   --animate-next-pulse: next-pulse 900ms ease-out;
+
+  --font-sans: var(--type-body), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--type-heading), var(--type-body), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--type-mono), ui-monospace, monospace;
+
+  /* 意味 */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-noto-sans-jp), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-brand-accent: var(--brand-accent);
+  --color-rule: var(--rule);
+  --color-surface-guide: var(--surface-guide);
+  --color-surface-work: var(--surface-work);
+  --color-surface-result: var(--surface-result);
+
+  /* 要素(5 要素 × 文字 / 面 / 線 / 棒) */
+  --color-asset-fg: var(--el-asset-fg);
+  --color-asset-bg: var(--el-asset-bg);
+  --color-asset-border: var(--el-asset-border);
+  --color-asset-bar: var(--el-asset-bar);
+  --color-liability-fg: var(--el-liability-fg);
+  --color-liability-bg: var(--el-liability-bg);
+  --color-liability-border: var(--el-liability-border);
+  --color-liability-bar: var(--el-liability-bar);
+  --color-equity-fg: var(--el-equity-fg);
+  --color-equity-bg: var(--el-equity-bg);
+  --color-equity-border: var(--el-equity-border);
+  --color-equity-bar: var(--el-equity-bar);
+  --color-revenue-fg: var(--el-revenue-fg);
+  --color-revenue-bg: var(--el-revenue-bg);
+  --color-revenue-border: var(--el-revenue-border);
+  --color-revenue-bar: var(--el-revenue-bar);
+  --color-expense-fg: var(--el-expense-fg);
+  --color-expense-bg: var(--el-expense-bg);
+  --color-expense-border: var(--el-expense-border);
+  --color-expense-bar: var(--el-expense-bar);
+
+  /* 状態(要素と別系統。ずれとエラーは文字と線だけで、面のトークンは無い) */
+  --color-ok: var(--ok-bg);
+  --color-ok-fg: var(--ok-fg);
+  --color-hint: var(--hint-bg);
+  --color-hint-fg: var(--hint-fg);
+  --color-diff-fg: var(--diff-fg);
+  --color-error-fg: var(--error-fg);
+  --color-changed: var(--changed-bg);
+
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -51,84 +84,23 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-:root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-}
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    @apply font-sans;
+  }
   body {
     @apply bg-background text-foreground;
   }
-  html {
-    @apply font-sans;
+  h1,
+  h2,
+  h3 {
+    @apply font-heading;
+  }
+  [data-mode="dark"] {
+    color-scheme: dark;
   }
 }
 /* 動きを減らす設定の利用者にはアニメーションを止める */
@@ -141,13 +113,13 @@
   }
 }
 
-/* 財務諸表で動いた行を一瞬光らせる */
+/* 財務諸表で動いた行を一瞬光らせる。終点は動いた行の面(--changed-bg)で、要素色・状態色のどちらでもない */
 @keyframes highlight {
   0% {
-    background-color: var(--color-amber-200);
+    background-color: color-mix(in oklch, var(--changed-bg), var(--foreground) 12%);
   }
   100% {
-    background-color: var(--color-amber-50);
+    background-color: var(--changed-bg);
   }
 }
 .animate-highlight {
@@ -157,12 +129,32 @@
 /* 拡大は使わない: 位置やサイズが動くと E2E(Playwright)がクリック前に静止を待ち、全ステップで遅くなる */
 @keyframes next-pulse {
   0% {
-    box-shadow: 0 0 0 0 var(--color-emerald-300);
+    box-shadow: 0 0 0 0 color-mix(in oklch, var(--primary), transparent 40%);
   }
   40% {
-    box-shadow: 0 0 0 7px var(--color-emerald-300);
+    box-shadow: 0 0 0 7px color-mix(in oklch, var(--primary), transparent 40%);
   }
   100% {
     box-shadow: 0 0 0 0 transparent;
   }
+}
+
+/* 説明文(@tailwindcss/typography)の色をテーマのトークンに合わせる。既定の prose-neutral はグレー固定でダークに追従しない */
+.prose {
+  --tw-prose-body: var(--foreground);
+  --tw-prose-headings: var(--foreground);
+  --tw-prose-lead: var(--muted-foreground);
+  --tw-prose-links: var(--primary);
+  --tw-prose-bold: var(--foreground);
+  --tw-prose-counters: var(--muted-foreground);
+  --tw-prose-bullets: var(--muted-foreground);
+  --tw-prose-hr: var(--border);
+  --tw-prose-quotes: var(--foreground);
+  --tw-prose-quote-borders: var(--border);
+  --tw-prose-captions: var(--muted-foreground);
+  --tw-prose-code: var(--foreground);
+  --tw-prose-pre-code: var(--foreground);
+  --tw-prose-pre-bg: var(--muted);
+  --tw-prose-th-borders: var(--border);
+  --tw-prose-td-borders: var(--rule);
 }
