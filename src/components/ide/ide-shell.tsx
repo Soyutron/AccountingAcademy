@@ -952,48 +952,53 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           onPane={setPane}
         />
       )}
-      <div className="border-t bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm space-y-2 sticky bottom-0 max-h-[50dvh] overflow-y-auto">
-        {result && (
-          <div ref={statusBox} tabIndex={-1} role="status" aria-live="polite" className={`rounded-md p-3 space-y-2 focus:outline-none motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 ${result.correct ? "bg-ok text-ok-fg" : "bg-hint text-hint-fg"}`}>
-            {/* 正解はアイコンと見出しを大きくして、色だけに頼らず「もう一歩」と見分けられるようにする */}
-            <p className={`flex items-center gap-1.5 ${result.correct ? "text-base font-bold" : "font-semibold"}`}>
-              {result.correct ? <CheckCircle2 className="size-5" aria-hidden /> : <CircleAlert className="size-4" aria-hidden />}
-              {result.correct ? "できました" : "もう一歩"}
+      <div className="border-t bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm flex flex-col gap-2 sticky bottom-0 max-h-[50dvh]">
+        {/* 説明が長くても操作行を押し出さないよう、スクロールするのは説明だけにする(Issue #115) */}
+        {(result || saveError) && (
+          <div className="min-h-0 overflow-y-auto space-y-2 border-b pb-2">
+          {result && (
+            <div ref={statusBox} tabIndex={-1} role="status" aria-live="polite" className={`rounded-md p-3 space-y-2 focus:outline-none motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 ${result.correct ? "bg-ok text-ok-fg" : "bg-hint text-hint-fg"}`}>
+              {/* 正解はアイコンと見出しを大きくして、色だけに頼らず「もう一歩」と見分けられるようにする */}
+              <p className={`flex items-center gap-1.5 ${result.correct ? "text-base font-bold" : "font-semibold"}`}>
+                {result.correct ? <CheckCircle2 className="size-5" aria-hidden /> : <CircleAlert className="size-4" aria-hidden />}
+                {result.correct ? "できました" : "もう一歩"}
+              </p>
+              <p className="whitespace-pre-wrap">{result.feedback}</p>
+              {task.type === "post" && !result.correct && draftHasBothSides && (
+                <div className="rounded bg-background/70 p-2">
+                  <ImpactCompare yours={entryDraft} expected={task.answer} accounts={accountMap} />
+                </div>
+              )}
+              {task.type === "predict" && <PredictCompare predicted={effect as EffectAnswer} entry={task.entry} accounts={accountMap} />}
+              {"wrong" in result && result.wrong.length > 0 && (
+                <ul className="list-disc pl-5 space-y-0.5">
+                  {result.wrong.map((w) => (
+                    <li key={w.account}>{w.feedback}</li>
+                  ))}
+                </ul>
+              )}
+              {misList.map((mis) => (
+                <div key={mis.id} className="border-t border-hint-fg/20 pt-2 space-y-1">
+                  <p className="font-semibold">よくある思い込み: {mis.name}</p>
+                  <p>{mis.description}</p>
+                  <p>見方: {mis.correct}</p>
+                  {mis.remediation.id !== unit.id && (
+                    <Link href={`/units/${mis.remediation.id}`} className="underline">
+                      解きほぐす単元: {mis.remediation.title}
+                    </Link>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          {saveError && (
+            <p role="alert" className="text-error-fg">
+              保存エラー: {saveError}
             </p>
-            <p className="whitespace-pre-wrap">{result.feedback}</p>
-            {task.type === "post" && !result.correct && draftHasBothSides && (
-              <div className="rounded bg-background/70 p-2">
-                <ImpactCompare yours={entryDraft} expected={task.answer} accounts={accountMap} />
-              </div>
-            )}
-            {task.type === "predict" && <PredictCompare predicted={effect as EffectAnswer} entry={task.entry} accounts={accountMap} />}
-            {"wrong" in result && result.wrong.length > 0 && (
-              <ul className="list-disc pl-5 space-y-0.5">
-                {result.wrong.map((w) => (
-                  <li key={w.account}>{w.feedback}</li>
-                ))}
-              </ul>
-            )}
-            {misList.map((mis) => (
-              <div key={mis.id} className="border-t border-hint-fg/20 pt-2 space-y-1">
-                <p className="font-semibold">よくある思い込み: {mis.name}</p>
-                <p>{mis.description}</p>
-                <p>見方: {mis.correct}</p>
-                {mis.remediation.id !== unit.id && (
-                  <Link href={`/units/${mis.remediation.id}`} className="underline">
-                    解きほぐす単元: {mis.remediation.title}
-                  </Link>
-                )}
-              </div>
-            ))}
+          )}
           </div>
         )}
-        {saveError && (
-          <p role="alert" className="text-error-fg">
-            保存エラー: {saveError}
-          </p>
-        )}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
           {canReveal && (
             <Button variant="ghost" size="sm" onClick={reveal}>
               答えを見る
