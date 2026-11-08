@@ -5,6 +5,7 @@ import { type Balances, type StatementLine, buildStatements } from "@/lib/ledger
 import { ELEMENT_STYLE } from "@/lib/elements";
 import { AccountName } from "@/components/account-name";
 import { ElementBadge } from "@/components/element-badge";
+import { HelpIcon } from "./help-icon";
 
 // 結果ペイン: 会社のかたち(資産 vs 負債 + 純資産の帯)、貸借対照表、損益計算書。前のステップからの差分を ▲▼ で示す
 
@@ -108,7 +109,10 @@ function ShapeBars({ st }: { st: ReturnType<typeof buildStatements> }) {
     );
   return (
     <section aria-label="会社のかたち" className="space-y-1" data-tour="shape">
-      <h3 className="font-semibold">会社のかたち</h3>
+      <div className="flex items-center gap-1">
+        <h3 className="font-semibold">会社のかたち</h3>
+        <HelpIcon topic="shape" />
+      </div>
       <div className="grid grid-cols-2 gap-1">
         <div className="h-6 rounded-l bg-muted/60 flex overflow-hidden">{seg("資産", left, ELEMENT_STYLE.asset.bar)}</div>
         <div className="h-6 rounded-r bg-muted/60 flex overflow-hidden">
