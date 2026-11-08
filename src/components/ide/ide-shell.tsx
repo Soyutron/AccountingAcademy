@@ -26,8 +26,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TutorialTour } from "./tutorial-tour";
 import { HelpDialog } from "./help-dialog";
 import { HelpControlsContext, HelpIcon } from "./help-icon";
-import type { HelpContext } from "@/lib/help-topics";
-import { TUTORIAL_UNIT_ID, updateTutorial, useTutorialState } from "@/lib/tutorial-store";
+import { FirstTimeNote } from "./first-time-note";
+import { Spotlight } from "./spotlight";
+import { type HelpContext, type HelpTopic, firstTimeTopic } from "@/lib/help-topics";
+import { TUTORIAL_UNIT_ID, markSeen, updateTutorial, useTutorialState } from "@/lib/tutorial-store";
 
 // 会計 IDE の本体。ステップの進行、帳簿(記帳済みの仕訳)、課題の確認と記録をまとめて持つ(docs/ide-design.md)
 
@@ -145,6 +147,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [helpOpen, setHelpOpen] = useState(false);
   // 「?」の「もっと詳しく」から開いたときに見せる話題
   const [helpFocus, setHelpFocus] = useState<string | null>(null);
+  // 「場所を示す」で光らせている対象(data-tour の値)
+  const [spotlight, setSpotlight] = useState<string | null>(null);
   const forceTour = useSyncExternalStore(noop, readForceTour, () => false);
   const isTutorialUnit = unit.id === TUTORIAL_UNIT_ID;
   const [tourExited, setTourExited] = useState(false);
@@ -498,6 +502,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const postFreely = () => {
     if (!freeBalanced) return;
     setPosted((prev) => [...prev, { step: stepIndex, memo: "自由に記帳", entry: entryDraft }]);
+    markSeen("sandbox");
     setDraft(emptyEntry());
     setPane("result");
   };
@@ -523,6 +528,18 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     setHelpFocus(id);
     setHelpOpen(true);
   };
+  const showTarget = (topic: HelpTopic) => {
+    if (topic.pane) setPane(topic.pane);
+    setSpotlight(topic.target ?? null);
+  };
+  // 初出の案内。チュートリアル単元とツアー中は出さず、再開などで結果が出ているステップでも出さない
+  const firstTime = firstTimeTopic(helpCtx);
+  const firstTimeDone = result !== null || tweakDone;
+  const showFirstTime = firstTime !== null && !isTutorialUnit && !tourActive && !firstTimeDone && !tutorial.seen.includes(firstTime.id);
+  // 課題を済ませたら、案内を閉じていなくても見た扱いにする
+  useEffect(() => {
+    if (firstTime && firstTimeDone) markSeen(firstTime.id);
+  }, [firstTime, firstTimeDone]);
 
   // min-w-0: スマホ幅(1 列の grid)で、仕訳帳の摘要(truncate の nowrap)の min-content 幅が列を押し広げないようにする(Issue #28)
   const paneClass = (p: Pane) => `${pane === p ? "block" : "hidden"} lg:block min-h-0 min-w-0 lg:overflow-y-auto p-4`;
@@ -532,7 +549,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     <div className="flex flex-col lg:h-[calc(100dvh-49px)]">
       <div className="flex items-center gap-3 border-b px-4 py-2 text-sm">
         <span className="font-semibold truncate">{unit.title}</span>
-        <ol className="flex gap-1" aria-label="ステップの進み具合">
+        <ol className="flex gap-1" aria-label="ステップの進み具合" data-tour="steps">
           {unit.steps.map((s, i) => (
             <li key={i} aria-current={i === stepIndex ? "step" : undefined} className={`h-2 w-2 rounded-full ${i < stepIndex ? "bg-primary" : i === stepIndex ? "bg-primary/60 ring-2 ring-primary/30" : "bg-muted"}`}>
               <span className="sr-only">{s.title}</span>
@@ -553,6 +570,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           ctx={helpCtx}
           stepLabel={`ステップ ${stepIndex + 1}「${step.title}」`}
           onRestartTour={isTutorialUnit ? restartTour : undefined}
+          onShowTarget={showTarget}
         />
       </div>
 
@@ -617,9 +635,11 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         </section>
 
         <section id="pane-work" role="region" aria-label="ワークスペース" className={`${paneClass("work")} bg-surface-work lg:border-r space-y-4`}>
+          {showFirstTime && <FirstTimeNote topic={firstTime} onMore={() => openHelpTopic(firstTime.id)} onDismiss={() => markSeen(firstTime.id)} />}
           {task.type === "post" && (
             <form
               className="space-y-2"
+              data-tour="journal"
               onSubmit={(e) => {
                 e.preventDefault();
                 check();
@@ -643,7 +663,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
             </form>
           )}
           {task.type === "predict" && (
-            <div className="space-y-3">
+            <div className="space-y-3" data-tour="task-predict">
               <h3 className="text-sm font-semibold">これから記帳する仕訳</h3>
               <JournalEditor accounts={accounts} value={fromJournalEntry(task.entry, accountMap)} readOnly showImpact={result !== null} />
               <fieldset disabled={result !== null} className="grid gap-2 sm:grid-cols-5">
@@ -675,10 +695,12 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
             </div>
           )}
           {task.type === "tweak" && (
+            <div data-tour="task-tweak">
             <TweakPanel formula={task.formula} params={task.params} values={Object.fromEntries(task.params.map((p) => [p.id, params[p.id] ?? p.value]))} onChange={onTweakChange} goal={task.goal} />
+            </div>
           )}
           {task.type === "classify" && (
-            <div className="space-y-2">
+            <div className="space-y-2" data-tour="task-classify">
               <ClassifyBoard accounts={task.accounts.map((id) => accountMap.get(id)!)} placed={placed} onChange={setPlaced} wrong={new Set(shownResult && "wrong" in shownResult ? shownResult.wrong.map((w) => w.account) : [])} disabled={result?.correct === true} />
               {!result?.correct && (
                 <Button onClick={check} disabled={task.accounts.some((id) => !placed[id])}>
@@ -690,6 +712,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           {task.type === "calc" && (
             <form
               className="space-y-2 max-w-xs"
+              data-tour="task-calc"
               onSubmit={(e) => {
                 e.preventDefault();
                 check();
@@ -719,7 +742,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
             </form>
           )}
           {task.type === "observe" && isLast && (
-            <div className="space-y-2">
+            <div className="space-y-2" data-tour="task-sandbox">
               <h3 className="text-sm font-semibold">自由に試す</h3>
               <p className="text-xs text-muted-foreground">好きな取引を記帳して、結果の財務諸表がどう動くか確かめてみましょう。</p>
               <JournalEditor accounts={accounts} value={draft} onChange={setDraft} />
@@ -740,7 +763,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           )}
 
           <Tabs defaultValue="journal">
-            <TabsList>
+            <TabsList data-tour="ledger">
               <TabsTrigger value="journal">仕訳帳(記帳済み)</TabsTrigger>
               <TabsTrigger value="ledger">総勘定元帳(T 勘定)</TabsTrigger>
             </TabsList>
@@ -787,7 +810,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
 
         <section id="pane-result" role="region" aria-label="結果" className={`${paneClass("result")} bg-surface-result`} data-tour="statements">
           {posted.length > 1 && (
-            <div className="mb-3 rounded-md border p-2 text-xs space-y-1">
+            <div className="mb-3 rounded-md border p-2 text-xs space-y-1" data-tour="rewind">
               <div className="flex items-center gap-1">
               <label className="flex flex-1 items-center justify-between gap-2">
                 <span className="font-medium">帳簿をさかのぼる</span>
@@ -822,6 +845,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
 
       <FlyingAmounts flights={flights} onDone={(id) => setFlights((prev) => prev.filter((f) => f.id !== id))} />
       <Celebration bursts={bursts} onDone={(id) => setBursts((prev) => prev.filter((b) => b.id !== id))} />
+      {spotlight && <Spotlight target={spotlight} onDone={() => setSpotlight(null)} />}
       {tourActive && (
         <TutorialTour
           key={tourKey}
