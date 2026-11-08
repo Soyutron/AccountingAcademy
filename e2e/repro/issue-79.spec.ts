@@ -1,8 +1,6 @@
-import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 
 // Issue #79: 読みや送り仮名の違いでも候補へたどり着ける。IME の変換中は赤字を出さない
-const accounts: { reading?: string[] }[] = JSON.parse(readFileSync(".velite/accounts.json", "utf8")).accounts;
 const NOT_FOUND = /この名前の科目はありません|候補から選ぶか/;
 
 const work = (page: import("@playwright/test").Page) => page.getByRole("region", { name: "ワークスペース" });
@@ -17,8 +15,6 @@ async function openFirstJournal(page: import("@playwright/test").Page) {
 
 for (const typed of ["仕入れ", "しいれ", "シイレ"]) {
   test(`「${typed}」と入れると候補に仕入が出る`, async ({ page }) => {
-    // reading のスキーマ(main e2a9d2e)が無いブランチでは .velite に読みが出ない
-    test.skip(typed !== "仕入れ" && !accounts.some((a) => a.reading?.length), "reading のスキーマが未取り込み");
     const input = await openFirstJournal(page);
     await input.pressSequentially(typed);
     await expect(page.getByRole("option", { name: /^仕入/ })).toBeVisible();
@@ -39,6 +35,15 @@ test("IME の変換中は科目が見つからないという赤字を出さな�
   await cdp.send("Input.imeSetComposition", { text: "ぞぞ", selectionStart: 2, selectionEnd: 2 });
   await expect(input).toHaveValue("ぞぞ");
   await expect(work(page).getByText(NOT_FOUND)).toHaveCount(0);
+});
+
+test("IME の変換中の Enter は変換の確定に使い、候補を選ばない", async ({ page }) => {
+  const input = await openFirstJournal(page);
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("Input.imeSetComposition", { text: "しい", selectionStart: 2, selectionEnd: 2 });
+  await expect(page.getByRole("option", { name: /^仕入/ })).toBeVisible();
+  await page.keyboard.press("Enter");
+  await expect(input).toHaveValue("しい");
 });
 
 test("確定した文字に合う科目が無ければ、次にすることを案内する", async ({ page }) => {

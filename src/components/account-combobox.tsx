@@ -49,6 +49,8 @@ export function AccountCombobox({ accounts, value, onChange, onCompositionChange
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // 変換中の Enter や矢印は IME のもの。読みで候補が出ていても奪わない
+    if (e.nativeEvent.isComposing) return;
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
