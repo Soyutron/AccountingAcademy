@@ -138,6 +138,12 @@ misconceptions:
     correct: 自分が振り出した小切手は当座預金から引き落とされるので、減るのは当座預金。逆に、他人が振り出した小切手を受け取ったときは、すぐ換金できるので現金として扱う
     concepts: [check, checking_account]
     remediation: cash-and-deposits/checking-account
+  - id: received_check_is_checking_account
+    name: 受け取った小切手は当座預金
+    description: 他人が振り出した小切手を受け取ると、自分の当座預金が増えると思っている
+    correct: 他人が振り出した小切手は、銀行に持っていけばすぐお金に換えられるので現金として扱う。当座預金を使うのは、自分が小切手を振り出すとき
+    concepts: [check, checking_account]
+    remediation: cash-and-deposits/checking-account
   - id: overdraft_is_deposit
     name: 当座借越も預金の仲間
     description: 当座借越に「当座」と付いているので、預金(資産)の一種だと考えている
