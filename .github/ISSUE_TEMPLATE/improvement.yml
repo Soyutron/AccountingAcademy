@@ -1,0 +1,21 @@
+name: 改善の提案
+description: 機能、学習体験、新しい単元や演習、ドキュメントの提案
+labels: ["type:feature", "ready-for-human"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: いま何に困っていますか / 何ができると学びやすくなりますか
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 提案
+      description: どう変えたいか。単元の提案なら、扱う概念と深さ(`docs/content-model.md` 1.2)も
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 考えた代替案(任意)
