@@ -9,11 +9,12 @@
 Next.js の API は学習データと異なる可能性があるので、書く前に `node_modules/next/dist/docs/` の該当ガイドを読む(AGENTS.md)。
 
 ## コマンド
-- `pnpm dev`(Velite の監視 + Next.js 開発サーバー)/ `pnpm build` / `pnpm start`
-- `pnpm content`(コンテンツ検査。`.velite/` に型付き JSON を出す)/ `pnpm typecheck` / `pnpm lint` / `pnpm test` / `pnpm exec playwright test`(E2E。コンテンツを変えたら必ずローカルで回す。CI では回さない)
-- `pnpm db:start` / `pnpm db:stop` / `pnpm db:reset`(Supabase ローカルスタック。Docker が要る。キーは `.env.local` に)
-- `scripts/check.sh`(lint / 型 / テスト / ビルド / E2E を一括。E2E は 3100 番で本番ビルド)
-- 品質改善ループ(docs/quality-loop.md): `scripts/services.sh up` → `MONKEY_UNTIL=… scripts/monkey-loop.sh`(人格型 Monkey)/ `MONKEY=1 pnpm exec playwright test e2e/monkey.spec.ts`(seed 付き Monkey)→ `scripts/triage-agent.sh loop` → `ISSUE_UNTIL=… scripts/issue-loop.sh`(worktree で実装・レビュー・main へ統合)。夜間は `QUALITY_UNTIL=06:00 scripts/quality-night.sh`。状況は `scripts/issue-agent.sh status`
+入口は `Makefile`(`make help` で一覧)。実体は package.json の scripts と `scripts/*.sh` で、新しいコマンドは原則 Makefile に足す。引数は環境変数で渡す(`make monkey MONKEY_UNTIL=22:00`)。
+- `make dev`(Velite の監視 + Next.js 開発サーバー)/ `make build` / `make start`
+- `make content`(コンテンツ検査。`.velite/` に型付き JSON を出す)/ `make typecheck` / `make lint` / `make test` / `make e2e`(E2E。コンテンツを変えたら必ずローカルで回す。CI では回さない)
+- `make db-start` / `make db-stop` / `make db-reset`(Supabase ローカルスタック。Docker が要る。キーは `.env.local` に)
+- `make check`(lint / 型 / テスト / ビルド / E2E を一括。E2E は 3100 番で本番ビルド。`CHECK_E2E=0` で E2E を省く)
+- 品質改善ループ(docs/quality-loop.md): `make services-up` → `make monkey MONKEY_UNTIL=…`(人格型 Monkey)/ `make monkey-scripted`(seed 付き Monkey)→ `make triage` → `make issue-loop ISSUE_UNTIL=…`(worktree で実装・レビュー・main へ統合)。夜間は `make quality-night QUALITY_UNTIL=06:00`。状況は `make issue-status`
 - 開発中の実行時エラーは Next.js の MCP(`.mcp.json` の next-devtools)で読める
 
 ## 構成

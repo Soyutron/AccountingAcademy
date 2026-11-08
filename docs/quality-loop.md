@@ -65,7 +65,7 @@ AccountingAcademy に移植した。§1〜§3 は調査の記録、§4 以降が
 | チェック | `make check`(lint / type / pytest / Vitest) | `pnpm lint` / `typecheck` / `test` / `build` / `playwright test`(計 2 分弱) | 関門に E2E を毎回含める |
 | 不具合の所在 | UI の状態遷移、権限 | UI に加えて **コンテンツ**(解説、採点、誤解判定、用語参照、図) | コンテンツ監査の人格とオラクルを足す |
 | 既存の E2E | 無し(Storybook のみ) | `e2e/learning-loop.spec.ts` が全単元を正解で通す | 「正解を入れたのに不正解」のオラクルにそのまま使える。`fillEntry` 等のヘルパーをスクリプト型 Monkey で共用 |
-| ビルド | Make | pnpm scripts | `scripts/*.sh` を直接呼ぶ(Makefile は足さない) |
+| ビルド | Make | pnpm scripts + Makefile | 当初は `scripts/*.sh` を直接呼んでいたが、2026-11 にコマンドの入口を Makefile に集約した(`make help`)。実体は引き続き `scripts/*.sh` |
 
 ## 4. 提案する構成
 
@@ -156,7 +156,7 @@ TaxForge の流れをそのまま使い、次の点を変える。
 | 依存の導入 | `uv sync` + `pnpm install` | `pnpm install --frozen-lockfile` と `.env.local` のコピーのみ |
 | 関門 | `make check` | `pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm exec playwright test`(約 2 分。E2E は `pnpm dev` を再利用せず worktree 内で `pnpm start` を 3001 などで起こす) |
 | 回帰テストの必須化 | 推奨 | **必須**。Issue の再現スクリプトを `e2e/repro/issue-<n>.spec.ts` か Vitest に昇格させ、修正前に失敗・修正後に成功することを `work.md` で求める。レビューは「振る舞いを変えたのにテストが無い」を `must` にする(既存と同じ) |
-| 保護パス | migrations、`.github`、`Makefile`、`scripts/issue-*`、`.env` | `supabase/migrations/`、`.github/`、`.githooks/`、`scripts/`、`.claude/`、`velite.config.ts` のスキーマ変更、`.env*`。`content/` は **許可**(コンテンツの不具合が主戦場) |
+| 保護パス | migrations、`.github`、`Makefile`、`scripts/issue-*`、`.env` | `supabase/migrations/`、`.github/`、`.githooks/`、`scripts/`、`.claude/`、`Makefile`、`velite.config.ts` のスキーマ変更、`.env*`。`content/` は **許可**(コンテンツの不具合が主戦場) |
 | 禁止ツール | TaxForge の MCP 群 | `mcp__next-devtools` 以外の MCP、`Bash(supabase:*)`、`Bash(gh issue edit|close:*)`、git の push / merge / checkout / worktree。加えて PreToolUse フックで `git push` を含む Bash 文字列を拒否 |
 | モデル | 実装 opus / レビュー fable | 同じ(実績あり) |
 | 統合モード | 直統合 | `ISSUE_MODE=merge`(既定)と `ISSUE_MODE=pr`(`gh pr create` で止める)。**導入初期は `pr` で 5 件ほど人が見てから `merge` に切り替える**(TaxForge §8 と同じ段階導入) |

@@ -57,7 +57,7 @@ DISALLOWED=(
 IMPL_ALLOWED=("Bash" "Read" "Write" "Edit" "MultiEdit" "Glob" "Grep" "Agent" "Skill" "WebFetch" "mcp__next-devtools" "mcp__context7")
 REVIEW_DISALLOWED=("Bash(git commit:*)" "Bash(git add:*)" "Bash(git restore:*)" "Bash(git stash:*)" "Bash(git reset:*)")
 # 触れていたら人手に回すパス
-PROTECTED_RE='^(supabase/migrations/|\.github/|\.githooks/|scripts/|\.claude/|velite\.config\.ts$)|(^|/)\.env(\..*)?$'
+PROTECTED_RE='^(supabase/migrations/|\.github/|\.githooks/|scripts/|\.claude/|Makefile$|velite\.config\.ts$)|(^|/)\.env(\..*)?$'
 
 log() { echo "[$(date '+%H:%M:%S')] $*"; }
 

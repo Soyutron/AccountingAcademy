@@ -56,27 +56,30 @@ Issue にしないもの: 設計の検討や試行錯誤(結論だけ ADR か do
 
 ## 開発環境
 
+コマンドの入口は `Makefile`(`make help` で一覧と用途を表示)。実体は package.json の scripts と `scripts/*.sh` で、新しいコマンドは原則 Makefile に足す。
+
 ```bash
-pnpm install
-pnpm db:start            # Supabase ローカルスタック(Docker)。出力されたキーを .env.local に書く(.env.example 参照)
-pnpm dev                 # http://localhost:3000
-pnpm test                # 採点エンジンなどの単体テスト
-pnpm content             # コンテンツ検査だけ実行
-pnpm exec playwright test  # E2E(開発サーバーとローカル Supabase を使う。コンテンツを読んで全単元を自動で解く)
+make setup       # pnpm install + git hook の有効化(push 前に lint・型・単体テストが走る。ADR 0005)
+make db-start    # Supabase ローカルスタック(Docker)。出力されたキーを .env.local に書く(.env.example 参照)
+make dev         # http://localhost:3000
+make test        # 採点エンジンなどの単体テスト
+make content     # コンテンツ検査だけ実行
+make e2e         # E2E(開発サーバーとローカル Supabase を使う。コンテンツを読んで全単元を自動で解く)
+make check       # lint / 型 / テスト / ビルド / E2E を一括(統合前の関門)
 ```
 
-品質確認はローカルで完結させる(ADR 0005)。初回に `git config core.hooksPath .githooks` を実行すると、push の前に lint・型・単体テストが自動で走る。
-E2E(`pnpm exec playwright test`)はコンテンツや UI を変えたときにローカルで回す。GitHub Actions は lint・型・単体テスト・ビルドの 1 ジョブ(約 45 秒)だけ。
+品質確認はローカルで完結させる(ADR 0005)。E2E(`make e2e`)はコンテンツや UI を変えたときにローカルで回す。GitHub Actions は lint・型・単体テスト・ビルドの 1 ジョブ(約 45 秒)だけ。
 
 不具合の発見から修正までを無人で回す品質改善ループ(Monkey テスト → Issue → 自動トリアージ → 修正 → 再検証)は `docs/quality-loop.md`。
 
 ```bash
-scripts/services.sh up                       # Supabase + pnpm dev
-MONKEY_UNTIL=23:00 MONKEY_PARALLEL=3 scripts/monkey-loop.sh  # 人格型 Monkey(Claude Code が学習者として操作し、再現したものを起票。3 人格まで同時)
-MONKEY=1 pnpm exec playwright test e2e/monkey.spec.ts  # seed 付き Monkey(LLM 不要)
-scripts/triage-agent.sh loop                 # needs-triage を再現して振り分け
-ISSUE_UNTIL=06:00 scripts/issue-loop.sh     # ready-for-agent を worktree で実装 → レビュー → main へ統合 → push
-QUALITY_UNTIL=06:00 scripts/quality-night.sh # 上の 3 つを順に(夜間)
+make services-up                                   # Supabase + pnpm dev
+make monkey MONKEY_UNTIL=23:00 MONKEY_PARALLEL=3   # 人格型 Monkey(Claude Code が学習者として操作し、再現したものを起票。3 人格まで同時)
+make monkey-scripted                               # seed 付き Monkey(所見が出た seed だけ Claude が再現・起票)
+make triage                                        # needs-triage を再現して振り分け(ISSUE=<n> で 1 件)
+make issue-loop ISSUE_UNTIL=06:00                  # ready-for-agent を worktree で実装 → レビュー → main へ統合 → push
+make quality-night QUALITY_UNTIL=06:00             # 上の 3 つを順に(夜間)
+make issue-status                                  # 処理中の Issue と残っている worktree
 ```
 
 ## ディレクトリ
@@ -97,6 +100,7 @@ docs/decisions/         ADR(設計判断の理由)
 content/                学習コンテンツ(Markdown + YAML)。velite.config.ts で検査
 src/                    Next.js アプリ(app: ページ、components: UI、lib: 採点・会計計算・進捗保存)
 supabase/               ローカルスタック設定とマイグレーション
+Makefile                コマンドの入口(make help)
 scripts/                無人ループ(Monkey、トリアージ、issue-agent)と品質確認(check.sh)
 e2e/                    E2E(学習ループ、チュートリアル、seed 付き Monkey、repro/ に Issue の回帰テスト)
 ```
