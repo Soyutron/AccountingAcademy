@@ -86,7 +86,7 @@ triage: ## needs-triage の Issue を再現して振り分ける(ISSUE=<n> で 1
 issue: ## Issue を 1 件 worktree で実装 → レビュー → main へ統合する(ISSUE=<n> 必須)
 	scripts/issue-agent.sh $(ISSUE)
 
-issue-loop: ## ready-for-agent の Issue を終了時刻まで順に処理する(ISSUE_UNTIL=06:00 必須)
+issue-loop: ## ready-for-agent の Issue を終了時刻まで処理する(ISSUE_UNTIL=06:00 必須。ISSUE_PARALLEL=3 で同時 3 件、統合は 1 件ずつ)
 	scripts/issue-loop.sh
 
 issue-stop: ## issue-loop を止める(いまの Issue が終わってから)
