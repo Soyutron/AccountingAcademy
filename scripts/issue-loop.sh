@@ -68,7 +68,8 @@ while :; do
   while [ -z "$stop_reason" ] && [ "${#pids[@]}" -lt "$PARALLEL" ]; do
     n=$(next_issue)
     if [ -z "$n" ]; then [ "${#pids[@]}" -eq 0 ] && stop_reason="対象の Issue がありません(ラベル $LABEL)"; break; fi
-    case "$processed" in *" $n "*) stop_reason="Issue #$n がまた選ばれました(ラベルを更新できていない可能性があります)"; break ;; esac
+    # 統合済みの Issue がまた選ばれるのはラベルや close が効いていないときだけ(needs-human を人が外した取り直しは通す)
+    case "$processed" in *" $n "*) stop_reason="統合済みの Issue #$n がまた選ばれました(ラベルを更新できていない可能性があります)"; break ;; esac
     slot=$(free_slot)
     echo "[$(date '+%H:%M:%S')] 反復 $((i + 1)): Issue #$n(並列 $((${#pids[@]} + 1))/$PARALLEL、E2E ポート $((3100 + slot)))"
     ( set -o pipefail; ISSUE_E2E_PORT=$((3100 + slot)) scripts/issue-agent.sh "$n" 2>&1 | sed -u "s/^/[#$n] /" ) &
@@ -88,11 +89,11 @@ while :; do
          wait "${pids[@]}" 2>/dev/null; pids=() issues=() slots=()
          scripts/claude-usage-limit.sh wait $((deadline - MARGIN)) "$STOP_FILE" || stop_reason="利用上限が解除されませんでした" ;;
       0) fails=0 offtarget=0; merged=$((merged + 1)); processed="$processed$n " ;;
-      2) skipped=$((skipped + 1)); processed="$processed$n "; echo "Issue #$n は人手が必要と判断されました。次へ進みます" ;;
+      2) skipped=$((skipped + 1)); echo "Issue #$n は人手が必要と判断されました。次へ進みます" ;;
       6) skipped=$((skipped + 1)); offtarget=$((offtarget + 1)); echo "Issue #$n は対象外でした(別のワーカーが処理中など)。次へ進みます"
          [ "$offtarget" -lt 5 ] || stop_reason="対象外の Issue が 5 回続いたため終了します(gh の一覧とラベルが食い違っている可能性があります)" ;;
-      5) processed="$processed$n "; stop_reason="環境の問題で停止します(終了コード 5)" ;;
-      *) fails=$((fails + 1)); processed="$processed$n "; echo "Issue #$n は終了コード $rc で失敗しました($fails 回連続)"
+      5) stop_reason="環境の問題で停止します(終了コード 5)" ;;
+      *) fails=$((fails + 1)); echo "Issue #$n は終了コード $rc で失敗しました($fails 回連続)"
          [ "$fails" -lt "$MAX_FAILS" ] || stop_reason="$MAX_FAILS 回連続で失敗したため終了します" ;;
     esac
     break

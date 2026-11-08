@@ -87,7 +87,15 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
             {entry.example && <p className="text-muted-foreground">例: {entry.example}</p>}
             {entry.related.length > 0 && (
               <p className="text-xs text-muted-foreground">
-                関連: {entry.related.map((r) => r.name).join("、")}
+                関連:{" "}
+                {entry.related.map((r, i) => (
+                  <span key={r.id}>
+                    {i > 0 && "、"}
+                    <Link href={`/glossary#${r.id}`} className="underline">
+                      {r.name}
+                    </Link>
+                  </span>
+                ))}
               </p>
             )}
             <div className="flex gap-3 text-xs">
