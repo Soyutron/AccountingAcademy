@@ -455,8 +455,10 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     setResult(null);
   };
 
+  // 課題の post ステップは採点が不一致を誤解として返すが、自由記帳には採点が無いのでここで止める(Issue #42)
+  const freeBalanced = computeImpact(entryDraft, accountMap).balanced;
   const postFreely = () => {
-    if (!draftReady) return;
+    if (!freeBalanced) return;
     setPosted((prev) => [...prev, { step: stepIndex, memo: "自由に記帳", entry: entryDraft }]);
     setDraft(emptyEntry());
     setPane("result");
@@ -635,9 +637,14 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               <h3 className="text-sm font-semibold">自由に試す</h3>
               <p className="text-xs text-muted-foreground">好きな取引を記帳して、右の財務諸表がどう動くか確かめてみましょう。</p>
               <JournalEditor accounts={accounts} value={draft} onChange={setDraft} />
-              <Button variant="outline" onClick={postFreely} disabled={!draftReady}>
+              <Button variant="outline" onClick={postFreely} disabled={!freeBalanced} aria-describedby={draftReady && !freeBalanced ? "free-post-hint" : undefined}>
                 記帳する
               </Button>
+              {draftReady && !freeBalanced && (
+                <p id="free-post-hint" className="text-xs text-muted-foreground">
+                  借方と貸方の合計をそろえると記帳できます。
+                </p>
+              )}
             </div>
           )}
 
