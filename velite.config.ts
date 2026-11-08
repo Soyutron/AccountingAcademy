@@ -25,6 +25,8 @@ const account = s.object({
 const concept = s.object({
   id: s.string(),
   name: s.string(),
+  // 読み(ひらがな)。用語集の検索で引く(勘定科目の reading と同じ)
+  reading: s.array(s.string()).default([]),
   short: s.string(),
   summary: s.string(),
   example: s.string(),
