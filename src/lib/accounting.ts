@@ -15,6 +15,8 @@ export interface AccountInfo {
   // 一文の説明と、なぜその要素に属するか。ホバー解説と要素分類のフィードバックに使う
   short: string;
   why: string;
+  // 用語集とポップオーバーの「例:」
+  example?: string;
 }
 
 export interface JournalLine {
@@ -34,6 +36,11 @@ export const ELEMENT_LABELS: Record<Element, string> = {
   revenue: "収益",
   expense: "費用",
 };
+
+// why は「なぜその要素か」の答えなので、問いが読めるように見出しを付けて用語の説明にする
+export function accountSummary(account: Pick<AccountInfo, "element" | "why">): string {
+  return `${ELEMENT_LABELS[account.element]}に分類する理由: ${account.why}`;
+}
 
 export const ELEMENTS: Element[] = ["asset", "liability", "equity", "revenue", "expense"];
 
@@ -118,10 +125,13 @@ export function findAccountByName(name: string, accounts: Iterable<AccountInfo>)
 
 export const toHiragana = (text: string) => text.replace(/[ァ-ヶ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));
 
-/** 入力途中の文字が科目名・別名・読みのどこかに部分一致するか。カタカナはひらがなとして比べる */
+/** 検索語と候補を比べられる形に揃える。全角・半角の違いと空白の有無を無視し、カタカナはひらがなにする */
+export const normalizeSearchText = (text: string) => toHiragana(text.normalize("NFKC").replace(/\s/g, ""));
+
+/** 入力途中の文字が科目名・別名・読みのどこかに部分一致するか */
 export function matchesAccountQuery(account: AccountInfo, query: string): boolean {
-  const q = toHiragana(query.trim());
-  return [account.name, ...account.aliases, ...(account.reading ?? [])].some((text) => toHiragana(text).includes(q));
+  const q = normalizeSearchText(query);
+  return [account.name, ...account.aliases, ...(account.reading ?? [])].some((text) => normalizeSearchText(text).includes(q));
 }
 
 /** 行の順序と分け方を無視して、科目ごとの金額が同じ仕訳か(同じ科目の行は合算して比べる) */
