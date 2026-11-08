@@ -15,6 +15,8 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // ホバーで開いたときだけフォーカスを動かさない。キーボードで開いたときは中身にフォーカスを移して Tab で辿れるようにする
   const byHover = useRef(false);
+  // 開いている間に中身へフォーカスが入ったかを覚えておく。onCloseAutoFocus は DOM を外した後に呼ばれるので、その時点では中身を調べられない
+  const focusEntered = useRef(false);
   // 「もっと見る」は押すと消えるので、展開した説明にフォーカスを移して位置を失わないようにする
   const details = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
@@ -73,6 +75,14 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
         className="w-80 text-sm space-y-2"
         onOpenAutoFocus={(e) => {
           if (byHover.current) e.preventDefault();
+        }}
+        onFocus={() => {
+          focusEntered.current = true;
+        }}
+        onCloseAutoFocus={(e) => {
+          // フォーカスが中に入らなかった(ホバーで見ただけの)ときは、入力欄で打っている途中の打鍵を奪わないよう動かさない
+          if (!focusEntered.current) e.preventDefault();
+          focusEntered.current = false;
         }}
         aria-label={entry.name}
         onPointerEnter={(e) => e.pointerType === "mouse" && timer.current && clearTimeout(timer.current)}
