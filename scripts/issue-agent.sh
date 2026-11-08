@@ -173,7 +173,12 @@ $protected"; return 2; fi
   if ! git -C "$WT" diff --name-only main...HEAD | grep -q "issue-$ISSUE"; then
     GATE_REPORT="回帰テストがありません(ファイル名に issue-$ISSUE を含むテストを e2e/repro/ か src/lib/ に追加してください)"; return 1
   fi
-  # 実装側・レビュー側の Claude が同じポートで E2E を回している最中なら、空くまで待つ(最大 10 分)
+  # 実装側・レビュー側の Claude が起動したまま残した、この worktree の本番サーバーは止める(ポートを塞ぎ続ける)
+  local p
+  for p in $(ss -ltnp 2>/dev/null | grep ":$E2E_PORT " | grep -oP 'pid=\K[0-9]+' | sort -u); do
+    [ "$(readlink /proc/"$p"/cwd 2>/dev/null)" = "$WT" ] && { log "ポート $E2E_PORT に残っていたこの worktree のサーバー(pid $p)を止めます"; kill "$p"; }
+  done
+  # 別のプロセスが同じポートで E2E を回している最中なら、空くまで待つ(最大 10 分)
   local waited=0
   while ss -ltn 2>/dev/null | grep -q ":$E2E_PORT "; do
     [ "$waited" -gt 0 ] || log "E2E のポート $E2E_PORT が使用中です。空くまで待ちます"
