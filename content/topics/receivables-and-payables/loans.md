@@ -98,7 +98,6 @@ answer:
   credit: [{ account: bank_deposit, amount: 3000 }]
 wrong_patterns:
   - match: { swapped: true }
-    misconception: debit_means_increase
     feedback: 支払利息は費用なので左、普通預金は減るので右です。
   - match: { debit: [{ account: loans_payable }] }
     misconception: interest_reduces_principal
