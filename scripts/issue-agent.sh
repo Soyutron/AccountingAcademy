@@ -91,6 +91,8 @@ BRANCH="worktree-issue-$ISSUE"
 mkdir -p "$ISSUE_DIR"
 exec > >(tee -a "$ISSUE_DIR/run.log") 2>&1
 export ISSUE WT BRANCH MAX_ROUNDS
+# 関門だけでなく、実装側の Claude が自分で回す scripts/check.sh も同じポートを使う(並走するワーカーと衝突させない)
+export E2E_PORT="${ISSUE_E2E_PORT:-3100}"
 
 # ロックは Issue ごと(別の Issue とは並走できる)。main への統合は 7 で $LOG_DIR/lock により直列化する
 exec 9>"$ISSUE_DIR/lock"
@@ -171,8 +173,14 @@ $protected"; return 2; fi
   if ! git -C "$WT" diff --name-only main...HEAD | grep -q "issue-$ISSUE"; then
     GATE_REPORT="回帰テストがありません(ファイル名に issue-$ISSUE を含むテストを e2e/repro/ か src/lib/ に追加してください)"; return 1
   fi
+  # 実装側・レビュー側の Claude が同じポートで E2E を回している最中なら、空くまで待つ(最大 10 分)
+  local waited=0
+  while ss -ltn 2>/dev/null | grep -q ":$E2E_PORT "; do
+    [ "$waited" -gt 0 ] || log "E2E のポート $E2E_PORT が使用中です。空くまで待ちます"
+    sleep 10; waited=$((waited + 10)); [ "$waited" -lt 600 ] || break
+  done
   log "scripts/check.sh($checklog)"
-  if ! (cd "$WT" && E2E_PORT="${ISSUE_E2E_PORT:-3100}" scripts/check.sh) >"$checklog" 2>&1; then
+  if ! (cd "$WT" && scripts/check.sh) >"$checklog" 2>&1; then
     GATE_REPORT="scripts/check.sh が失敗しました。出力の末尾:
 $(tail -n 80 "$checklog")"; return 1
   fi

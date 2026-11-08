@@ -725,6 +725,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           key={tourKey}
           ctx={{ stepIndex, postedCount: posted.length, debit: entryDraft.debit, credit: entryDraft.credit }}
           onExit={() => setTourExited(true)}
+          onPane={setPane}
         />
       )}
       <div ref={bottomBar} className="border-t bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm space-y-2 sticky bottom-0 max-h-[50dvh] overflow-y-auto">
