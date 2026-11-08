@@ -11,7 +11,6 @@ test("チュートリアルを操作しながら最後まで進められる", as
   // 操作待ち: 次へ → を押すまで進めない
   await expect(tour.getByRole("button", { name: "次へ" })).toBeDisabled();
   await page.getByRole("button", { name: "次へ →" }).click();
-  await tour.getByRole("button", { name: "次へ" }).click();
   const work = page.getByRole("region", { name: "ワークスペース" });
   await work.getByLabel("借方の科目 1").fill("現金");
   await work.getByLabel("借方の金額 1").fill("100000");
@@ -23,7 +22,7 @@ test("チュートリアルを操作しながら最後まで進められる", as
   await expect(tour.getByRole("button", { name: "次へ" })).toBeDisabled();
   await work.getByRole("button", { name: "記帳する" }).click();
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
-  for (let i = 0; i < 5; i++) await tour.getByRole("button", { name: "次へ" }).click();
+  for (let i = 0; i < 4; i++) await tour.getByRole("button", { name: "次へ" }).click();
   await expect(tour.getByText("できました")).toBeVisible();
   await tour.getByRole("button", { name: "閉じる" }).first().click();
   await expect(tour).toBeHidden();

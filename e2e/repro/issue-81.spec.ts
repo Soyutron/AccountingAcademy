@@ -11,7 +11,6 @@ async function advanceToLastCard(page: Page) {
   await tour.getByRole("button", { name: "はじめる" }).click();
   await tour.getByRole("button", { name: "次へ" }).click();
   await page.getByRole("button", { name: "次へ →" }).click();
-  await tour.getByRole("button", { name: "次へ" }).click();
   const work = page.getByRole("region", { name: "ワークスペース" });
   await work.getByLabel("借方の科目 1").fill("現金");
   await work.getByLabel("借方の金額 1").fill("100000");
@@ -22,7 +21,7 @@ async function advanceToLastCard(page: Page) {
   await tour.getByRole("button", { name: "次へ" }).click();
   await work.getByRole("button", { name: "記帳する" }).click();
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
-  for (let i = 0; i < 5; i++) await tour.getByRole("button", { name: "次へ" }).click();
+  for (let i = 0; i < 4; i++) await tour.getByRole("button", { name: "次へ" }).click();
   await expect(tour).toContainText("12 / 12");
 }
 
