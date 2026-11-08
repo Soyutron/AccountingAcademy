@@ -385,6 +385,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const missingSides = [entryDraft.debit.length === 0 && "借方", entryDraft.credit.length === 0 && "貸方"].filter(Boolean);
   const touched = [...draft.debit, ...draft.credit].some((l) => l.accountName.trim() || l.amount.trim());
   const sideHint = !draftReady && touched ? `${missingSides.join("と")}にも科目と金額を入れると記帳できます。` : null;
+  const predictReady = ELEMENTS.every((el) => effect[el]);
 
   useEffect(() => {
     if (!result || !focusStatus.current) return;
@@ -423,7 +424,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         break;
       }
       case "predict": {
-        if (!ELEMENTS.every((el) => effect[el])) return;
+        if (!predictReady) return;
         const r = gradePredict(task, effect as EffectAnswer);
         focusStatus.current = true;
         answeredStep.current = stepIndex;
@@ -649,9 +650,14 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
                 ))}
               </fieldset>
               {result === null && (
-                <Button onClick={check} disabled={!ELEMENTS.every((el) => effect[el])}>
+                <Button onClick={check} disabled={!predictReady} aria-describedby={predictReady ? undefined : "predict-hint"}>
                   予想して記帳する
                 </Button>
+              )}
+              {result === null && !predictReady && (
+                <p id="predict-hint" className="text-xs text-muted-foreground">
+                  5 つすべて選ぶと記帳できます。動かないと思う要素は「変わらない」を選びます。
+                </p>
               )}
             </div>
           )}
