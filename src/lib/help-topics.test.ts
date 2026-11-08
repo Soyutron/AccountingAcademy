@@ -35,3 +35,18 @@ describe("help topics", () => {
     expect(() => helpTopic("nope")).toThrow();
   });
 });
+
+describe("first-time topics", () => {
+  it("predict / classify / calc / tweak と最後の observe(自由に試す)に案内を出し、post と途中の observe には出さない", async () => {
+    const { firstTimeTopic, canShowTarget, helpTopic } = await import("./help-topics");
+    expect(firstTimeTopic({ ...base, taskType: "predict" })?.id).toBe("predict");
+    expect(firstTimeTopic({ ...base, taskType: "tweak" })?.id).toBe("tweak");
+    expect(firstTimeTopic({ ...base, taskType: "observe", isLast: true })?.id).toBe("sandbox");
+    expect(firstTimeTopic({ ...base, taskType: "post" })).toBeNull();
+    expect(firstTimeTopic({ ...base, taskType: "observe" })).toBeNull();
+    // 場所を示す: 対象があり、いまの画面に出ているものだけ
+    expect(canShowTarget(helpTopic("rewind"), { ...base, taskType: "post" })).toBe(false);
+    expect(canShowTarget(helpTopic("rewind"), { ...base, taskType: "post", postedCount: 2 })).toBe(true);
+    expect(canShowTarget(helpTopic("resume"), { ...base, taskType: "post" })).toBe(false);
+  });
+});

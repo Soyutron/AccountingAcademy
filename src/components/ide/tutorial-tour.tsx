@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { JournalLine } from "@/lib/accounting";
 import { updateTutorial } from "@/lib/tutorial-store";
+import { SpotlightRing, useTargetRect } from "./spotlight";
 
 // 操作しながら使い方を覚えるツアー。対象を明るく残して周りを暗くし、ユーザーの操作が済むまで待つ(docs/ide-design.md)
 
@@ -83,10 +84,7 @@ export function TutorialTour({ ctx, onExit, onPane }: { ctx: TourContext; onExit
   return (
     <div className="fixed inset-0 z-50 pointer-events-none" role="dialog" aria-modal="false" aria-label="チュートリアル">
       {spotlight ? (
-        <div
-          className="absolute rounded-md ring-2 ring-primary motion-safe:transition-all motion-safe:duration-300"
-          style={{ left: spotlight.left - 6, top: spotlight.top - 6, width: spotlight.width + 12, height: spotlight.height + 12, boxShadow: "0 0 0 9999px rgba(15, 23, 42, 0.45)" }}
-        />
+        <SpotlightRing rect={spotlight} />
       ) : (
         <div className="absolute inset-0 bg-foreground/30" />
       )}
@@ -121,30 +119,6 @@ export function TutorialTour({ ctx, onExit, onPane }: { ctx: TourContext; onExit
       </div>
     </div>
   );
-}
-
-/** 対象要素の位置を追いかける。レイアウトの変化に追従するため短い間隔で測り直す */
-function useTargetRect(target?: string) {
-  const [rect, setRect] = useState<DOMRect | null>(null);
-  useEffect(() => {
-    if (!target) {
-      const id = requestAnimationFrame(() => setRect(null));
-      return () => cancelAnimationFrame(id);
-    }
-    const measure = () => {
-      const el = document.querySelector<HTMLElement>(`[data-tour="${target}"]`);
-      setRect(el ? el.getBoundingClientRect() : null);
-    };
-    const raf = requestAnimationFrame(measure);
-    const timer = setInterval(measure, 300);
-    window.addEventListener("resize", measure);
-    return () => {
-      cancelAnimationFrame(raf);
-      clearInterval(timer);
-      window.removeEventListener("resize", measure);
-    };
-  }, [target]);
-  return rect;
 }
 
 function placeCard(r: DOMRect): React.CSSProperties {
