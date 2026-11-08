@@ -13,7 +13,7 @@ export interface GradeResult {
   feedback: string;
 }
 
-const GENERIC_WRONG = "まだ合っていません。右の「結果」で何が動くはずかを考えて、もう一度試してみましょう。";
+const GENERIC_WRONG = "まだ合っていません。結果の表で何が動くはずかを考えて、もう一度試してみましょう。";
 // 正解の金額は書かない。計算で求める課題では答えそのものになる
 const AMOUNT_WRONG = "科目は合っています。金額をもう一度確かめましょう。";
 
