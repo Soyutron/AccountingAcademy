@@ -74,6 +74,8 @@ wrong_patterns:
     feedback: 切手代は会社が使ったお金です。通信費という費用が増えます。
   - match: { equity: none }
     feedback: 費用が増えると当期純利益が減り、そのぶん純資産も減ります。
+  - match: { expense: decrease }
+    feedback: 切手代は使ったお金なので、通信費(費用)は減らずに増えます。
 hint: 現金過不足(資産)が減り、通信費(費用)が増えます。費用が増えれば利益も純資産も減ります。
 success: 通信費が損益計算書に現れ、現金過不足は 1,000 に減りました。残りの 1,000 円は、まだ正体が分かりません。
 ```
@@ -110,7 +112,11 @@ wrong_patterns:
   - match: { credit: [{ account: cash }] }
     feedback: 現金はもう実際の金額に直してあります。消すのは現金過不足のほうです。
   - match: { debit: [{ account: miscellaneous_gain }] }
+    misconception: shortage_is_gain
     feedback: 足りなかったので損です。雑益は多かったときに使います。
+  - match: { credit: [{ account: miscellaneous_gain }] }
+    misconception: shortage_is_gain
+    feedback: 今回は現金が足りなかったので損(雑損)です。雑益は現金が多かったときに使います。足りなかった分は現金過不足の左に預けてあるので、右に書いて消します。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 1,000 にしましょう。
 hint: 左に雑損 1,000、右に現金過不足 1,000 です。
