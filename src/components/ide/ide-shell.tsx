@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { type ReactNode, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { flushSync } from "react-dom";
 import { type AccountInfo, type Change, type Element, type JournalEntry, type Side, ELEMENT_LABELS, ELEMENTS, computeImpact, toChange } from "@/lib/accounting";
 import { splitAmounts } from "@/lib/task-text";
 import { ElementBadge } from "@/components/element-badge";
@@ -77,6 +78,7 @@ type Pane = "guide" | "work" | "result";
 const CHANGE_LABELS: Record<Change, string> = { increase: "増える", decrease: "減る", none: "変わらない" };
 const PANES: Pane[] = ["guide", "work", "result"];
 const PANE_LABELS: Record<Pane, string> = { guide: "ガイド", work: "ワークスペース", result: "結果" };
+const FOCUS_TARGET_CLASS = "focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring";
 
 // URL の ?tour=1 でチュートリアルを強制的に始める(「使い方」からのやり直し)
 const noop = () => () => {};
@@ -150,6 +152,11 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   // 採点で押したボタンが消えるときは、フォーカスが body に落ちないよう結果へ移す(復元や誤答では動かさない)
   const statusBox = useRef<HTMLDivElement>(null);
   const focusStatus = useRef(false);
+  // 採点を通らずに消えるボタンの移し先(Issue #85)
+  const stepHeading = useRef<HTMLHeadingElement>(null);
+  const hintText = useRef<HTMLParagraphElement>(null);
+  const workPane = useRef<HTMLElement>(null);
+  const rewindSlider = useRef<HTMLInputElement>(null);
   const tutorial = useTutorialState();
   const [helpOpen, setHelpOpen] = useState(false);
   // 「?」の「もっと詳しく」から開いたときに見せる話題
@@ -622,14 +629,21 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
 
       <div className="grid flex-1 min-h-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)]">
         <section id="pane-guide" role="region" aria-label="ガイド" className={`${paneClass("guide")} bg-surface-guide lg:border-r`} data-tour="guide">
-          <h2 className="text-lg font-semibold mb-2">{step.title}</h2>
+          <h2 ref={stepHeading} tabIndex={-1} className={`text-lg font-semibold mb-2 ${FOCUS_TARGET_CLASS}`}>{step.title}</h2>
           {!isTutorialUnit && noRecord && tutorial.status === "pending" && tutorial.enabled && (
             <div className="mb-3 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm flex flex-wrap items-center gap-2" role="note">
               <span className="flex-1">初めてですか? 2 分のチュートリアルで、実際に 1 件記帳しながら使い方を覚えられます。</span>
               <Button size="sm" asChild>
                 <Link href={`/units/${TUTORIAL_UNIT_ID}`}>はじめる</Link>
               </Button>
-              <Button size="sm" variant="ghost" onClick={() => updateTutorial({ status: "skipped" })}>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  stepHeading.current?.focus();
+                  updateTutorial({ status: "skipped" });
+                }}
+              >
                 今はしない
               </Button>
             </div>
@@ -639,7 +653,15 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           {!tourActive && resumeStep !== null && stepIndex === 0 && (
             <div className="mb-3 rounded-md bg-muted/60 p-2 text-sm flex items-center justify-between gap-2">
               <span>前回はステップ {resumeStep + 1} まで進みました。</span>
-              <Button size="sm" variant="outline" onClick={resume}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  // 再開したステップの見出しを読ませるので、描画を終えてから移す
+                  flushSync(resume);
+                  stepHeading.current?.focus();
+                }}
+              >
                 続きから
               </Button>
             </div>
@@ -649,9 +671,16 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           {hint && (
             <div className="mt-3 text-sm" data-tour="hint">
               {showHint ? (
-                <p className="rounded-md bg-hint p-2 text-hint-fg">ヒント: {hint}</p>
+                <p ref={hintText} tabIndex={-1} className={`rounded-md bg-hint p-2 text-hint-fg ${FOCUS_TARGET_CLASS}`}>ヒント: {hint}</p>
               ) : (
-                <button type="button" className="underline text-muted-foreground" onClick={() => setShowHint(true)}>
+                <button
+                  type="button"
+                  className="underline text-muted-foreground"
+                  onClick={() => {
+                    flushSync(() => setShowHint(true));
+                    hintText.current?.focus();
+                  }}
+                >
                   ヒントを見る
                 </button>
               )}
@@ -660,8 +689,12 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           <ContributeLinks unit={unit} stepNumber={stepIndex + 1} />
         </section>
 
-        <section id="pane-work" role="region" aria-label="ワークスペース" className={`${paneClass("work")} bg-surface-work lg:border-r space-y-4`}>
-          {showFirstTime && <FirstTimeNote topic={firstTime} onMore={() => openHelpTopic(firstTime.id)} onDismiss={() => markSeen(firstTime.id)} />}
+        <section ref={workPane} id="pane-work" role="region" aria-label="ワークスペース" tabIndex={-1} className={`${paneClass("work")} bg-surface-work lg:border-r space-y-4 ${FOCUS_TARGET_CLASS}`}>
+          {showFirstTime && <FirstTimeNote topic={firstTime} onMore={() => openHelpTopic(firstTime.id)} onDismiss={() => {
+            // 入力欄へ移すとスマートフォンでキーボードが開くので、ペイン自体へ移す
+            workPane.current?.focus();
+            markSeen(firstTime.id);
+          }} />}
           {task.type === "post" && (
             <form
               className="space-y-2"
@@ -851,6 +884,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
                   {viewUpto === null || viewUpto >= posted.length ? "最新" : viewUpto === 0 ? "記帳前" : `${viewUpto} 件目まで`}
                 </span>
                 <input
+                  ref={rewindSlider}
                   type="range"
                   min={0}
                   max={posted.length}
@@ -865,7 +899,14 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               {viewUpto !== null && viewUpto < posted.length && (
                 <p className="text-muted-foreground">
                   {viewUpto === 0 ? "まだ何も記帳していない状態です。" : `「${posted[viewUpto - 1].memo}」を記帳した直後の姿です。`}
-                  <button type="button" className="ml-2 underline" onClick={() => setViewUpto(null)}>
+                  <button
+                    type="button"
+                    className="ml-2 underline"
+                    onClick={() => {
+                      rewindSlider.current?.focus();
+                      setViewUpto(null);
+                    }}
+                  >
                     最新に戻る
                   </button>
                 </p>

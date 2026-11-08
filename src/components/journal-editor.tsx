@@ -49,6 +49,8 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
   }, [value]);
   const removeLine = (side: Side, index: number) => {
     if (value[side].length <= 1) return;
+    // 押した「行を削除」は消えるか無効になるので、同じ位置の行(末尾なら前の行)へ移す(Issue #85)
+    focusLine.current = `${side}-${Math.min(index, value[side].length - 2)}`;
     onChange?.({ ...value, [side]: value[side].filter((_, i) => i !== index) });
   };
 
