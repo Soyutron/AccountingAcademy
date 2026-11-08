@@ -18,7 +18,7 @@ test("科目の候補が要素ごとにまとまり、キーボードで選べ�
 
   await input.press("ArrowDown");
   await input.press("Enter");
-  await expect(input).toHaveValue("普通預金");
+  await expect(input).toHaveValue("小口現金");
   await expect(list).toBeHidden();
   // Enter で候補を選んでもフォームは送信されない
   await expect(page.getByText("できました", { exact: true })).toBeHidden();

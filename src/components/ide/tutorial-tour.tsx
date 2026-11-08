@@ -50,6 +50,8 @@ const STEPS: TourStep[] = [
   { title: "できました", body: "使い方は以上です。ここからは 3 級パスの最初の単元で、カフェを開業するところから始めましょう。" },
 ];
 
+const NEXT_BUTTON_STAGE = STEPS.findIndex((s) => s.target === "next-button");
+
 export function TutorialTour({ ctx, onExit, onPane }: { ctx: TourContext; onExit: () => void; onPane: (pane: TourPane) => void }) {
   const [index, setIndex] = useState(0);
   const step = STEPS[index];
@@ -58,7 +60,9 @@ export function TutorialTour({ ctx, onExit, onPane }: { ctx: TourContext; onExit
   const satisfied = step.done ? step.done(ctx) : true;
   const card = useRef<HTMLDivElement>(null);
 
-  if (step.autoAdvance && satisfied) setIndex(index + 1);
+  // 本体の「← 前へ」で最初のステップへ戻ると、記入以降の段の対象や文言が画面と合わなくなるので、「次へ →」を待つ段へ戻す(Issue #96)
+  if (index > NEXT_BUTTON_STAGE && ctx.stepIndex === 0) setIndex(NEXT_BUTTON_STAGE);
+  else if (step.autoAdvance && satisfied) setIndex(index + 1);
 
   useEffect(() => {
     if (step.pane) onPane(step.pane);

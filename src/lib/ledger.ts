@@ -51,9 +51,10 @@ export interface Statements {
 /** 残高を貸借対照表と損益計算書の形に並べる。残高ゼロの科目は出さない。評価勘定は資産の中にマイナス表示 */
 export function buildStatements(balances: Balances, accounts: ReadonlyMap<string, AccountInfo>): Statements {
   const groups: Record<Element, StatementLine[]> = { asset: [], liability: [], equity: [], revenue: [], expense: [] };
-  for (const [id, amount] of balances) {
-    const a = accounts.get(id);
-    if (!a || amount === 0) continue;
+  // 行順は残高の現れた順ではなくマスタの順(資産・負債は流動性配列)。記帳や期首残高の順で表の形を変えない
+  for (const [id, a] of accounts) {
+    const amount = balances.get(id);
+    if (!amount) continue;
     // 残高は「要素が増える側」を正としているので、評価勘定は自然に負の値(控除)として並ぶ
     groups[a.element].push({ account: id, name: a.name, amount, contra: a.contra });
   }
