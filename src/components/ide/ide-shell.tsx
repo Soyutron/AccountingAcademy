@@ -601,8 +601,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               </Button>
             </div>
           )}
-          {/* ツアーはステップ 0 からの台本なので、ツアー中に再開させるとツアーと画面がずれる */}
-          {!tourActive && resumeStep !== null && stepIndex < resumeStep && (
+          {/* ツアーはステップ 0 からの台本なので、ツアー中に再開させるとツアーと画面がずれる。
+              案内は開いた直後(最初のステップ)だけ出す。自分で進み始めたら学習に集中できるよう消す */}
+          {!tourActive && resumeStep !== null && stepIndex === 0 && (
             <div className="mb-3 rounded-md bg-muted/60 p-2 text-sm flex items-center justify-between gap-2">
               <span>前回はステップ {resumeStep + 1} まで進みました。</span>
               <Button size="sm" variant="outline" onClick={resume}>
