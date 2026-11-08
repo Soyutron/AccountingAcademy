@@ -144,6 +144,12 @@ misconceptions:
     correct: 渡しただけでは会社のお金が担当者の手元に移っただけ。実際に支払われた分の報告を受けたときに、使い道ごとの費用になる
     concepts: [petty_cash, imprest_system]
     remediation: cash-and-deposits/petty-cash
+  - id: petty_cash_is_cash
+    name: 小口現金も金庫の現金と同じ
+    description: 担当者に渡した小口現金を、店の金庫のお金と同じ「現金」の科目で記録してしまう
+    correct: 担当者の手元のお金は、金庫の現金とは分けて小口現金という科目で管理する。前渡しでは小口現金が増え、使った分の報告を受けたら小口現金が減る
+    concepts: [petty_cash]
+    remediation: cash-and-deposits/petty-cash
   - id: interest_is_loan_return
     name: 利息も貸したお金の戻り
     description: 受け取った利息を、貸付金が戻ってきた分として貸付金を減らしてしまう
