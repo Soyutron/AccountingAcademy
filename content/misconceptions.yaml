@@ -86,8 +86,8 @@ misconceptions:
     remediation: merchandise/credit-transactions
   - id: receivable_collection_is_sale
     name: 回収のときにもう一度売上
-    description: 売掛金を回収したときに、売上をもう一度記録してしまう
-    correct: 売上は商品を渡したときに記録済み。回収では売掛金(資産)が現金や預金(資産)に変わるだけで、売上は増えない
+    description: 売掛金や未収入金を回収したときに、売上をもう一度記録してしまう
+    correct: 代金を受け取る権利(売掛金・未収入金)は、売ったときに記録済み。回収では権利(資産)が現金や預金(資産)に変わるだけで、売上は増えない
     concepts: [receivable, revenue]
     remediation: merchandise/credit-transactions
   - id: payable_payment_is_purchase
@@ -214,6 +214,12 @@ misconceptions:
     name: 仮払いした時点で旅費
     description: 出張の前に渡した概算のお金を、渡した時点で旅費交通費にしてしまう
     correct: 使い道と金額が確定するまでは仮払金(資産)。精算のときに、実際に使った分だけが費用になる
+    concepts: [suspense_accounts, expense]
+    remediation: receivables-and-payables/temporary-and-deposits
+  - id: settlement_full_amount_is_expense
+    name: 精算では仮払金の全額が費用
+    description: 返ってきた分も含めて、仮払いした金額をそのまま費用にしてしまう
+    correct: 費用になるのは実際に使った分だけ。残りは現金として戻り、資産が形を変えるだけ
     concepts: [suspense_accounts, expense]
     remediation: receivables-and-payables/temporary-and-deposits
   - id: suspense_receipt_is_revenue

@@ -114,13 +114,16 @@ export function findAccountByName(name: string, accounts: Iterable<AccountInfo>)
   return undefined;
 }
 
-/** 行の順序を無視して、科目と金額の組み合わせが同じ仕訳か */
+/** 行の順序と分け方を無視して、科目ごとの金額が同じ仕訳か(同じ科目の行は合算して比べる) */
 export function sameEntry(a: JournalEntry, b: JournalEntry): boolean {
-  const key = (lines: JournalLine[]) =>
-    lines
-      .map((l) => `${l.account}:${l.amount}`)
+  const key = (lines: JournalLine[]) => {
+    const totals = new Map<string, number>();
+    for (const l of lines) totals.set(l.account, (totals.get(l.account) ?? 0) + l.amount);
+    return [...totals]
+      .map(([account, amount]) => `${account}:${amount}`)
       .sort()
       .join(",");
+  };
   return key(a.debit) === key(b.debit) && key(a.credit) === key(b.credit);
 }
 

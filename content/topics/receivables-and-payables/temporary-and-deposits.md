@@ -153,7 +153,7 @@ answer:
   credit: [{ account: suspense_payment, amount: 20000 }]
 wrong_patterns:
   - match: { debit: [{ account: travel_expense, amount: 20000 }] }
-    misconception: suspense_is_expense
+    misconception: settlement_full_amount_is_expense
     feedback: 費用になるのは実際に使った 18,000 円だけです。残りの 2,000 円は現金として戻ります。
   - match: { debit: [{ account: suspense_payment }] }
     feedback: 仮払金は精算で役目を終えます。右に書いて消します。
@@ -200,7 +200,7 @@ wrong_patterns:
   - match: { swapped: true }
     feedback: 仮受金を消すので左、未収入金を減らすので右です。
   - match: { credit: [{ account: sales }] }
-    misconception: suspense_receipt_is_revenue
+    misconception: receivable_collection_is_sale
     feedback: ショーケースを売ったときに、未収入金として記録済みです。今回はその権利が回収されただけなので、売上ではありません。
   - match: { debit: [{ account: bank_deposit }] }
     feedback: 普通預金は入金のときに増やしてあります。今回は仮受金と未収入金を相殺するだけです。
