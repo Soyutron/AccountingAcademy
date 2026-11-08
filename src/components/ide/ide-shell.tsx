@@ -8,7 +8,7 @@ import { ElementBadge } from "@/components/element-badge";
 import { AccountName } from "@/components/account-name";
 import { CheckCircle2, CircleAlert } from "lucide-react";
 import { type EditableEntry, emptyEntry, fromJournalEntry, parseAmount, toJournalEntry } from "@/lib/journal-editable";
-import { type ClassifyResult, type EffectAnswer, type GradeResult, type Task, gradeCalc, gradeClassify, gradePost, gradePredict, gradeTweak } from "@/lib/grading";
+import { type ClassifyResult, type EffectAnswer, type GradeResult, type PredictResult, type Task, gradeCalc, gradeClassify, gradePost, gradePredict, gradeTweak } from "@/lib/grading";
 import { evaluateFormula } from "@/lib/formulas";
 import { type OpeningLine, computeBalances, diffBalances } from "@/lib/ledger";
 import { fetchProgress, recordAttempt, setUnitProgress } from "@/lib/progress";
@@ -102,7 +102,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [calcValue, setCalcValue] = useState("");
   // calc の入力が金額として読めないときの理由。採点も記録もしない(Issue #43)
   const [calcError, setCalcError] = useState<string | null>(null);
-  const [result, setResult] = useState<GradeResult | ClassifyResult | null>(null);
+  const [result, setResult] = useState<GradeResult | ClassifyResult | PredictResult | null>(null);
   const [attempts, setAttempts] = useState(0);
   const [showHint, setShowHint] = useState(false);
   const [pane, setPane] = useState<Pane>("guide");
@@ -497,7 +497,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     (result?.correct ?? false);
   const hint = "hint" in task ? task.hint : undefined;
   const canReveal = attempts >= 2 && (task.type === "post" || task.type === "calc" || task.type === "classify") && !result?.correct;
-  const mis = result?.misconception ? misconceptions[result.misconception] : undefined;
+  const misIds = result && "misconceptions" in result ? result.misconceptions : result?.misconception ? [result.misconception] : [];
+  const misList = misIds.flatMap((id) => misconceptions[id] ?? []);
 
   // min-w-0: スマホ幅(1 列の grid)で、仕訳帳の摘要(truncate の nowrap)の min-content 幅が列を押し広げないようにする(Issue #28)
   const paneClass = (p: Pane) => `${pane === p ? "block" : "hidden"} lg:block min-h-0 min-w-0 lg:overflow-y-auto p-4`;
@@ -805,8 +806,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
                 ))}
               </ul>
             )}
-            {mis && (
-              <div className="border-t border-hint-fg/20 pt-2 space-y-1">
+            {misList.map((mis) => (
+              <div key={mis.id} className="border-t border-hint-fg/20 pt-2 space-y-1">
                 <p className="font-semibold">よくある思い込み: {mis.name}</p>
                 <p>{mis.description}</p>
                 <p>見方: {mis.correct}</p>
@@ -816,7 +817,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
                   </Link>
                 )}
               </div>
-            )}
+            ))}
           </div>
         )}
         {saveError && (
