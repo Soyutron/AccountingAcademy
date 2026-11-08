@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { TUTORIAL_UNIT_ID, updateTutorial, useTutorialState } from "@/lib/tutorial-store";
@@ -24,6 +25,8 @@ const FEATURES: { title: string; body: string }[] = [
 
 export function HelpDialog({ onRestartTour }: { onRestartTour?: () => void }) {
   const state = useTutorialState();
+  // ツアーをやり直すときは、閉じたダイアログがフォーカスを「使い方」へ戻すとツアーのカードから奪うので戻さない(Issue #51)
+  const restarting = useRef(false);
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -31,7 +34,14 @@ export function HelpDialog({ onRestartTour }: { onRestartTour?: () => void }) {
           使い方
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-lg">
+      <DialogContent
+        className="max-h-[85dvh] overflow-y-auto sm:max-w-lg"
+        onCloseAutoFocus={(e) => {
+          if (!restarting.current) return;
+          restarting.current = false;
+          e.preventDefault();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>会計 IDE の使い方</DialogTitle>
           <DialogDescription>各機能の説明と、チュートリアルの設定です。</DialogDescription>
@@ -40,7 +50,13 @@ export function HelpDialog({ onRestartTour }: { onRestartTour?: () => void }) {
           {onRestartTour ? (
             // 同じページでツアーを始めるので、ダイアログを閉じないとツアーがモーダルの背後に隠れる
             <DialogClose asChild>
-              <Button size="sm" onClick={onRestartTour}>
+              <Button
+                size="sm"
+                onClick={() => {
+                  restarting.current = true;
+                  onRestartTour();
+                }}
+              >
                 チュートリアルを最初から
               </Button>
             </DialogClose>
