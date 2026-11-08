@@ -141,7 +141,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const savedStep = useRef(0);
   // 失敗した回答は最新の 1 件だけ持ち、次の保存の前に再送する。進捗は次の upsert が最新で上書きするので持たない
   const failedAttempt = useRef<(() => Promise<void>) | null>(null);
-  // 帳簿をさかのぼる: 何件目までの記帳で財務諸表を見るか(null は最新)
+  // 帳簿をさかのぼる: 何件目までの記帳で財務諸表を見るか(null は最新)。記帳したら結果が見えるよう最新に戻す
   const [viewUpto, setViewUpto] = useState<number | null>(null);
   // 取引の流れのアニメーション。記帳が成功した仕訳を次の描画で測って飛ばす
   const [pendingFlight, setPendingFlight] = useState<JournalEntry | null>(null);
@@ -162,6 +162,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [helpOpen, setHelpOpen] = useState(false);
   // 「?」の「もっと詳しく」から開いたときに見せる話題
   const [helpFocus, setHelpFocus] = useState<string | null>(null);
+  // 「?」や note の「くわしく」から開いたときの、閉じたあとのフォーカスの戻り先(Issue #101)
+  const helpReturnTo = useRef<HTMLElement | null>(null);
   // 「場所を示す」で光らせている対象(data-tour の値)
   const [spotlight, setSpotlight] = useState<string | null>(null);
   const forceTour = useSyncExternalStore(noop, readForceTour, () => false);
@@ -472,6 +474,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         if (r.correct) {
           // 「← 前へ」で戻って再記帳しても、そのステップの仕訳は 1 件のまま
           setPosted((prev) => (prev.some((p) => p.step === stepIndex) ? prev : [...prev, { step: stepIndex, memo: task.transaction, entry: entryDraft }]));
+          setViewUpto(null);
           setPendingFlight(entryDraft);
           celebrate();
         }
@@ -487,6 +490,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         setResult(r);
         record(r, effect);
         setPosted((prev) => (prev.some((p) => p.step === stepIndex) ? prev : [...prev, { step: stepIndex, memo: task.transaction, entry: task.entry }]));
+        setViewUpto(null);
         setPendingFlight(task.entry);
         if (r.correct) celebrate();
         setPane("result");
@@ -548,6 +552,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const postFreely = () => {
     if (!canPostFreely) return;
     setPosted((prev) => [...prev, { step: stepIndex, memo: "自由に記帳", entry: entryDraft }]);
+    setViewUpto(null);
     markSeen("sandbox");
     setDraft(emptyEntry());
     setPane("result");
@@ -571,7 +576,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const misIds = result && "misconceptions" in result ? result.misconceptions : result?.misconception ? [result.misconception] : [];
   const misList = misIds.flatMap((id) => misconceptions[id] ?? []);
   const helpCtx: HelpContext = { taskType: task.type, postedCount: posted.length, isLast, hasHint: Boolean(hint) };
-  const openHelpTopic = (id: string) => {
+  const openHelpTopic = (id: string, returnTo: HTMLElement | null) => {
+    helpReturnTo.current = returnTo;
     setHelpFocus(id);
     setHelpOpen(true);
   };
@@ -615,6 +621,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
             if (!o) setHelpFocus(null);
           }}
           focusTopic={helpFocus}
+          returnToRef={helpReturnTo}
           ctx={helpCtx}
           stepLabel={`ステップ ${stepIndex + 1}「${step.title}」`}
           onRestartTour={isTutorialUnit ? restartTour : undefined}
@@ -707,7 +714,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         </section>
 
         <section ref={workPane} id="pane-work" role="region" aria-label="ワークスペース" tabIndex={-1} className={`${paneClass("work")} bg-surface-work lg:border-r space-y-4 ${FOCUS_TARGET_CLASS}`}>
-          {showFirstTime && <FirstTimeNote topic={firstTime} onMore={() => openHelpTopic(firstTime.id)} onDismiss={() => {
+          {showFirstTime && <FirstTimeNote topic={firstTime} onMore={(button) => openHelpTopic(firstTime.id, button)} onDismiss={() => {
             // 入力欄へ移すとスマートフォンでキーボードが開くので、ペイン自体へ移す
             workPane.current?.focus();
             markSeen(firstTime.id);

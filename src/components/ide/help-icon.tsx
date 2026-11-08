@@ -1,15 +1,15 @@
 "use client";
 
 import { CircleHelp } from "lucide-react";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useRef, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { helpTopic } from "@/lib/help-topics";
 
 // 機能の見出し横の「?」。押すとその機能だけの短い説明を出す(docs/help-design.md 5.1)
 
 export interface HelpControls {
-  // 「使い方」をその話題を開いた状態で表示する
-  openTopic: (id: string) => void;
+  // 「使い方」をその話題を開いた状態で表示する。閉じたらフォーカスを returnTo へ戻す
+  openTopic: (id: string, returnTo: HTMLElement | null) => void;
   // ツアー中はスポットライトと説明が重なるので出さない
   hidden: boolean;
 }
@@ -20,6 +20,7 @@ export const HelpControlsContext = createContext<HelpControls | null>(null);
 export function HelpIcon({ topic: id }: { topic: string }) {
   const controls = useContext(HelpControlsContext);
   const [open, setOpen] = useState(false);
+  const trigger = useRef<HTMLButtonElement>(null);
   const topic = helpTopic(id);
   if (controls?.hidden) return null;
   return (
@@ -27,6 +28,7 @@ export function HelpIcon({ topic: id }: { topic: string }) {
       <PopoverTrigger asChild>
         {/* 見出しの行高を変えないよう、押せる範囲は負のマージンで確保する */}
         <button
+          ref={trigger}
           type="button"
           aria-label={`「${topic.title}」の説明`}
           className="-my-2 inline-flex size-7 shrink-0 items-center justify-center rounded-md align-middle text-muted-foreground hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -43,7 +45,7 @@ export function HelpIcon({ topic: id }: { topic: string }) {
             className="self-start text-xs underline text-muted-foreground"
             onClick={() => {
               setOpen(false);
-              controls.openTopic(id);
+              controls.openTopic(id, trigger.current);
             }}
           >
             もっと詳しく →
