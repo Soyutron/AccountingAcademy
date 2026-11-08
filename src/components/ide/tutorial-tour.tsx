@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { JournalLine } from "@/lib/accounting";
 import { updateTutorial } from "@/lib/tutorial-store";
@@ -52,6 +52,13 @@ export function TutorialTour({ ctx, onExit, onPane }: { ctx: TourContext; onExit
   const rect = useTargetRect(step.target);
   const last = index === STEPS.length - 1;
   const satisfied = step.done ? step.done(ctx) : true;
+  const card = useRef<HTMLDivElement>(null);
+
+  // 開いた時と段が変わった時にカードへフォーカスを移す。吹き出しは DOM の末尾にあり、
+  // 操作待ちの段では主ボタンが無効になってフォーカスが body に落ちるため(Issue #51)
+  useEffect(() => {
+    card.current?.focus();
+  }, [index]);
 
   const finish = () => {
     updateTutorial({ status: "done" });
@@ -83,7 +90,7 @@ export function TutorialTour({ ctx, onExit, onPane }: { ctx: TourContext; onExit
       ) : (
         <div className="absolute inset-0 bg-slate-900/30" />
       )}
-      <div className="pointer-events-auto absolute w-80 max-w-[calc(100vw-2rem)] rounded-lg border bg-background p-4 shadow-lg text-sm space-y-2" style={cardStyle}>
+      <div ref={card} tabIndex={-1} role="group" aria-labelledby="tutorial-tour-title" aria-describedby="tutorial-tour-body" className="pointer-events-auto absolute w-80 max-w-[calc(100vw-2rem)] rounded-lg border bg-background p-4 shadow-lg text-sm space-y-2 focus:outline-none" style={cardStyle}>
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>
             チュートリアル {index + 1} / {STEPS.length}
@@ -92,8 +99,8 @@ export function TutorialTour({ ctx, onExit, onPane }: { ctx: TourContext; onExit
             {last ? "閉じる" : "スキップ"}
           </button>
         </div>
-        <p className="font-semibold">{step.title}</p>
-        <p>{step.body}</p>
+        <p id="tutorial-tour-title" className="font-semibold">{step.title}</p>
+        <p id="tutorial-tour-body">{step.body}</p>
         {!satisfied && step.waiting && <p className="text-xs text-primary">{step.waiting}</p>}
         <div className="flex justify-end gap-2 pt-1">
           {last ? (
