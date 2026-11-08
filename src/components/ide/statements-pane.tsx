@@ -150,15 +150,7 @@ function Row({ id, name, amount, delta, magnitude = false }: { id?: string; name
     <div data-account={id} className={`flex flex-wrap items-baseline justify-between gap-x-2 rounded px-1 ${changed ? "bg-changed motion-safe:animate-highlight" : ""}`}>
       <span className="min-w-0">{name}</span>
       <span className="ml-auto font-mono tabular-nums whitespace-nowrap">
-        {amount < 0 ? (
-          <>
-            <span aria-hidden>△</span>
-            <span className="sr-only">マイナス </span>
-            {formatAmount(-amount)}
-          </>
-        ) : (
-          formatAmount(amount)
-        )}
+        <SignedAmount amount={amount} />
         {changed && (
           <span className="ml-1 text-xs text-muted-foreground">
             <span aria-hidden>{shown > 0 ? "▲" : "▼"}</span>
@@ -175,7 +167,20 @@ function Total({ label, amount }: { label: string; amount: number }) {
   return (
     <div className="mt-auto flex flex-wrap items-baseline justify-between gap-x-2 border-t border-foreground/60 pt-1 font-medium">
       <span className="min-w-0">{label}</span>
-      <span className="ml-auto font-mono tabular-nums whitespace-nowrap">{formatAmount(amount)}</span>
+      <span className="ml-auto font-mono tabular-nums whitespace-nowrap">
+        <SignedAmount amount={amount} />
+      </span>
     </div>
+  );
+}
+
+function SignedAmount({ amount }: { amount: number }) {
+  if (amount >= 0) return formatAmount(amount);
+  return (
+    <>
+      <span aria-hidden>△</span>
+      <span className="sr-only">マイナス </span>
+      {formatAmount(-amount)}
+    </>
   );
 }
