@@ -4,16 +4,21 @@ import { useEffect, useRef, useState } from "react";
 
 // 対象を明るく残して周りを暗くする。ツアーと「使い方」の「場所を示す」で共用(docs/help-design.md 5.3)
 
-/** 対象要素の位置を追いかける。レイアウトの変化に追従するため短い間隔で測り直す */
-export function useTargetRect(target?: string) {
+/** 対象要素の位置を追いかける。レイアウトの変化に追従するため短い間隔で測り直す。reveal なら、最初に見えた時に隠れていれば画面内へ出す */
+export function useTargetRect(target?: string, { reveal = false }: { reveal?: boolean } = {}) {
   const [rect, setRect] = useState<DOMRect | null>(null);
   useEffect(() => {
     if (!target) {
       const id = requestAnimationFrame(() => setRect(null));
       return () => cancelAnimationFrame(id);
     }
+    let pendingReveal = reveal;
     const measure = () => {
       const el = document.querySelector<HTMLElement>(`[data-tour="${target}"]`);
+      if (el && pendingReveal && el.getBoundingClientRect().width > 0) {
+        pendingReveal = false;
+        revealIfCovered(el);
+      }
       setRect(el ? el.getBoundingClientRect() : null);
     };
     const raf = requestAnimationFrame(measure);
@@ -24,8 +29,18 @@ export function useTargetRect(target?: string) {
       clearInterval(timer);
       window.removeEventListener("resize", measure);
     };
-  }, [target]);
+  }, [target, reveal]);
   return rect;
+}
+
+// 固定バーの裏や画面外にある対象だけを動かす。固定バー自身の中の対象まで中央へ寄せると、ページだけが無駄に動く。
+// 画面より高いペインは中央へ寄せると先頭が切れるので動かさない
+function revealIfCovered(el: HTMLElement) {
+  const r = el.getBoundingClientRect();
+  if (r.height >= window.innerHeight) return;
+  // 前の段の位置に残っているカードは、これから動くので隠れとして数えない
+  const hit = document.elementsFromPoint(r.left + r.width / 2, r.top + r.height / 2).find((e) => !e.closest("[data-tour-card]"));
+  if (!hit || !el.contains(hit)) el.scrollIntoView({ block: "center" });
 }
 
 export function SpotlightRing({ rect }: { rect: DOMRect }) {
