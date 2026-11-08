@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { type RefObject, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { type HelpContext, type HelpTopic, HELP_CATEGORIES, HELP_TOPICS, canShowTarget, currentTopics, helpTopic } from "@/lib/help-topics";
@@ -14,6 +14,8 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   // 「?」から開いたときに見せる話題。その分類を開いて話題へフォーカスを移す
   focusTopic: string | null;
+  // 閉じたあとのフォーカスの戻り先。空ならトリガー(ヘッダーの「使い方」)へ戻る
+  returnToRef: RefObject<HTMLElement | null>;
   ctx: HelpContext;
   stepLabel: string;
   onRestartTour?: () => void;
@@ -21,7 +23,7 @@ interface Props {
   onShowTarget: (topic: HelpTopic) => void;
 }
 
-export function HelpDialog({ open, onOpenChange, focusTopic, ctx, stepLabel, onRestartTour, onShowTarget }: Props) {
+export function HelpDialog({ open, onOpenChange, focusTopic, returnToRef, ctx, stepLabel, onRestartTour, onShowTarget }: Props) {
   const state = useTutorialState();
   const current = currentTopics(ctx);
   const focusCategory = focusTopic ? helpTopic(focusTopic).category : null;
@@ -51,8 +53,16 @@ export function HelpDialog({ open, onOpenChange, focusTopic, ctx, stepLabel, onR
         ref={content}
         className="max-h-[85dvh] overflow-y-auto sm:max-w-lg"
         onCloseAutoFocus={(e) => {
-          if (toTour.current) e.preventDefault();
+          if (toTour.current) {
+            e.preventDefault();
+          } else if (returnToRef.current?.getClientRects().length) {
+            // 「場所を示す」でスマホのペインが切り替わると戻り先は隠れて focus できないので、そのときはトリガーに任せる
+            e.preventDefault();
+            returnToRef.current.focus();
+          }
           toTour.current = false;
+          // 次にヘッダーのボタンから開いたときに使い回さない
+          returnToRef.current = null;
         }}
       >
         <DialogHeader>
@@ -136,7 +146,7 @@ function TopicList({ topics, idPrefix, ctx, onShowTarget }: { topics: HelpTopic[
           <dd className="text-muted-foreground">
             {t.body}
             {canShowTarget(t, ctx) && (
-              // 閉じたダイアログがフォーカスを「使い方」へ戻すので、光る対象を見失わない
+              // 閉じたダイアログがフォーカスを開いた元へ戻すので、光る対象を見失わない
               <DialogClose asChild>
                 <button type="button" className="ml-2 text-xs underline" onClick={() => onShowTarget(t)}>
                   場所を示す →
