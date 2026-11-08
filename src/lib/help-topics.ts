@@ -74,7 +74,7 @@ export const HELP_TOPICS: HelpTopic[] = [
     pane: "work",
     short: "入力中の仕訳で 5 要素と当期純利益がどう動くかを、記帳する前に見せます。",
     body: "入力中の仕訳で 5 要素と当期純利益がどう動くかを、記帳する前に見せます。動く要素だけに色が付きます。借方と貸方の合計がそろうと「一致」になります。",
-    when: (c) => canWrite(c) || c.taskType === "predict",
+    when: canWrite,
   },
   {
     id: "posted",
