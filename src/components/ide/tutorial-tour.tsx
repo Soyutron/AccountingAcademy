@@ -55,7 +55,7 @@ const NEXT_BUTTON_STAGE = STEPS.findIndex((s) => s.target === "next-button");
 export function TutorialTour({ ctx, onExit, onPane }: { ctx: TourContext; onExit: () => void; onPane: (pane: TourPane) => void }) {
   const [index, setIndex] = useState(0);
   const step = STEPS[index];
-  const rect = useTargetRect(step.target);
+  const rect = useTargetRect(step.target, { reveal: true });
   const last = index === STEPS.length - 1;
   const satisfied = step.done ? step.done(ctx) : true;
   const card = useRef<HTMLDivElement>(null);
@@ -65,7 +65,10 @@ export function TutorialTour({ ctx, onExit, onPane }: { ctx: TourContext; onExit
   else if (step.autoAdvance && satisfied) setIndex(index + 1);
 
   useEffect(() => {
-    if (step.pane) onPane(step.pane);
+    if (!step.pane) return;
+    onPane(step.pane);
+    // 前のペインでのスクロールを持ち越すと、切り替え先の対象の先頭が画面外になりカードが内容に重なる
+    window.scrollTo(0, 0);
   }, [step.pane, onPane]);
 
   // 開いた時と段が変わった時にカードへフォーカスを移す。吹き出しは DOM の末尾にあり、
@@ -100,7 +103,7 @@ export function TutorialTour({ ctx, onExit, onPane }: { ctx: TourContext; onExit
       ) : (
         <div className="absolute inset-0 bg-foreground/30" />
       )}
-      <div ref={card} tabIndex={-1} role="group" aria-labelledby="tutorial-tour-title" aria-describedby="tutorial-tour-body" className="pointer-events-auto absolute w-80 max-w-[calc(100vw-2rem)] rounded-lg border bg-background p-4 shadow-lg text-sm space-y-2 focus:outline-none" style={cardStyle}>
+      <div ref={card} data-tour-card tabIndex={-1} role="group" aria-labelledby="tutorial-tour-title" aria-describedby="tutorial-tour-body" className="pointer-events-auto absolute w-80 max-w-[calc(100vw-2rem)] rounded-lg border bg-background p-4 shadow-lg text-sm space-y-2 focus:outline-none" style={cardStyle}>
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>
             チュートリアル {index + 1} / {STEPS.length}

@@ -51,7 +51,7 @@ interface HelpTopic {
   category: "guide" | "work" | "result" | "task" | "progress";
   title: string;              // 「帳簿をさかのぼる」
   short: string;              // 機能ヘルプと初出の案内。1〜2 文
-  body: string;               // 「使い方」。2〜4 文。手順と、キーボードの別手段
+  body: string | ((ctx: HelpContext) => string); // 「使い方」。2〜4 文。手順と、キーボードの別手段。課題の種類で言えることが変わる話題は関数
   target?: string;            // data-tour の値。「場所を示す」で光らせる
   pane?: "guide" | "work" | "result";
   when?: (ctx: HelpContext) => boolean; // 「いまの画面」に入れる条件。無ければ常に
