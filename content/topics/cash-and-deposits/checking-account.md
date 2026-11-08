@@ -52,6 +52,9 @@ wrong_patterns:
     feedback: 今回は普通預金から移しました。手元の現金は動いていません。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 200,000 にしましょう。
+  - match: { debit: [{ account: bank_deposit }], credit: [{ account: bank_deposit }] }
+    misconception: deposit_kinds_confused
+    feedback: 左も右も普通預金になっています。「預金」とだけ書くと、普通預金として読まれます。左は新しく作った当座預金です。普通預金から普通預金へ移しても何も変わらないので、比較表はすべて「同じ」になります。
 hint: 左に当座預金 200,000、右に普通預金 200,000 です。
 success: 貸借対照表に当座預金が現れ、普通預金が同じだけ減りました。資産の合計は変わっていません。
 ```

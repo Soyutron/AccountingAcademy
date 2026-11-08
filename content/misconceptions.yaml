@@ -24,6 +24,12 @@ misconceptions:
     correct: 負債は「将来支払う義務」で貸借対照表に残る。費用は「純資産を減らす原因」で損益計算書に載り、その期で消える
     concepts: [expense, liability]
     remediation: bookkeeping-basics/five-elements
+  - id: capital_loan_confused
+    name: 元手と借入金の混同
+    description: お店に入ったお金はどれも同じだと考えて、自分が出した元手を借入金と書いたり、銀行から借りたお金を資本金と書いたりしてしまう
+    correct: 借入金は、いつか返す義務があるお金。資本金は、持ち主が事業のために出した元手で、返す義務がない。「返す必要があるか」で見分ける
+    concepts: [equity, liability, five_elements]
+    remediation: bookkeeping-basics/five-elements
   - id: expense_at_payment
     name: 支払った時に費用
     description: 現金を支払った時点で費用になると思っている。支払いと費用の発生を区別していない
@@ -167,6 +173,12 @@ misconceptions:
     description: 当座借越に「当座」と付いているので、預金(資産)の一種だと考えている
     correct: 当座借越は、残高を超えて振り出した小切手を銀行が立て替えた金額。返す義務なので負債
     concepts: [bank_overdraft, liability]
+    remediation: cash-and-deposits/checking-account
+  - id: deposit_kinds_confused
+    name: 預金はどれも同じ科目
+    description: 当座預金と普通預金を区別せず、どちらも「預金」として同じ科目で記録してしまう
+    correct: 普通預金と当座預金は別の口座で、別の勘定科目。普通預金から当座預金へ移したら、増える当座預金が左、減る普通預金が右
+    concepts: [checking_account, account_title]
     remediation: cash-and-deposits/checking-account
   - id: petty_cash_is_expense
     name: 渡した時点で費用
