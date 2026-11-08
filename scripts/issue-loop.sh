@@ -80,7 +80,11 @@ while :; do
     pids+=($!); issues+=("$n"); slots+=("$slot"); i=$((i + 1))
     sleep 5  # 次の選択までに issue-agent がロックとラベルを取れるようにする
   done
-  [ "${#pids[@]}" -gt 0 ] || break
+  if [ "${#pids[@]}" -eq 0 ]; then
+    # ISSUE_WAIT=1 なら対象が増えるまで待つ(トリアージが ready-for-agent を付けるのを待つ)
+    [ -z "$stop_reason" ] && [ "${ISSUE_WAIT:-0}" = 1 ] && { sleep "$PAUSE"; continue; }
+    break
+  fi
   wait -n "${pids[@]}" 2>/dev/null
   # 終わったものを回収する
   for idx in "${!pids[@]}"; do
