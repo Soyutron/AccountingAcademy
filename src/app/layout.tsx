@@ -23,14 +23,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           本文へ移動
         </a>
         <header className="border-b">
-          <nav className="mx-auto flex max-w-4xl items-center gap-5 px-4 py-2 text-sm">
-            <Link href="/" className="font-heading font-bold">
+          <nav className="mx-auto flex max-w-4xl items-center gap-3 px-4 py-2 text-sm sm:gap-5">
+            {/* 狭い幅では語が割れるリンクの代わりにブランド名を省略して収める */}
+            <Link href="/" className="truncate font-heading font-bold">
               AccountingAcademy
             </Link>
-            <Link href="/paths/boki-3" className="text-muted-foreground hover:text-foreground">
+            <Link href="/paths/boki-3" className="whitespace-nowrap text-muted-foreground hover:text-foreground">
               3 級合格パス
             </Link>
-            <Link href="/glossary" className="text-muted-foreground hover:text-foreground">
+            <Link href="/glossary" className="whitespace-nowrap text-muted-foreground hover:text-foreground">
               用語集
             </Link>
             <span className="flex-1" />
