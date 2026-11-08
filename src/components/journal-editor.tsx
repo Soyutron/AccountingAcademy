@@ -81,7 +81,7 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
                   className="min-w-24 flex-[2] text-right bg-background"
                 />
                 {!readOnly && (
-                  <Button type="button" variant="ghost" size="icon" aria-label="行を削除" disabled={value[side].length <= 1} onClick={() => removeLine(side, i)}>
+                  <Button type="button" variant="ghost" size="icon" className="shrink-0" aria-label="行を削除" disabled={value[side].length <= 1} onClick={() => removeLine(side, i)}>
                     ×
                   </Button>
                 )}
@@ -111,8 +111,9 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
   );
 
   return (
-    <div className="rounded-lg border bg-card p-3 space-y-3 not-prose">
-      <div className="flex flex-col sm:flex-row gap-3">
+    // 借方・貸方の並べ方は画面幅ではなくカード自身の幅で決める(3 ペインでは画面が広くてもカードが狭い。Issue #33)
+    <div className="@container rounded-lg border bg-card p-3 space-y-3 not-prose">
+      <div className="flex flex-col @lg:flex-row gap-3">
         {renderSide("debit", "借方")}
         {renderSide("credit", "貸方")}
       </div>

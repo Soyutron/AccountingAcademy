@@ -455,8 +455,10 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     setResult(null);
   };
 
+  // 課題の post ステップは採点が不一致を誤解として返すが、自由記帳には採点が無いのでここで止める(Issue #42)
+  const freeBalanced = computeImpact(entryDraft, accountMap).balanced;
   const postFreely = () => {
-    if (!draftReady) return;
+    if (!freeBalanced) return;
     setPosted((prev) => [...prev, { step: stepIndex, memo: "自由に記帳", entry: entryDraft }]);
     setDraft(emptyEntry());
     setPane("result");
@@ -529,7 +531,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               </Button>
             </div>
           )}
-          {resumeStep !== null && stepIndex < resumeStep && (
+          {/* ツアーはステップ 0 からの台本なので、ツアー中に再開させるとツアーと画面がずれる */}
+          {!tourActive && resumeStep !== null && stepIndex < resumeStep && (
             <div className="mb-3 rounded-md bg-muted/60 p-2 text-sm flex items-center justify-between gap-2">
               <span>前回はステップ {resumeStep + 1} まで進みました。</span>
               <Button size="sm" variant="outline" onClick={resume}>
@@ -634,9 +637,14 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               <h3 className="text-sm font-semibold">自由に試す</h3>
               <p className="text-xs text-muted-foreground">好きな取引を記帳して、右の財務諸表がどう動くか確かめてみましょう。</p>
               <JournalEditor accounts={accounts} value={draft} onChange={setDraft} />
-              <Button variant="outline" onClick={postFreely} disabled={!draftReady}>
+              <Button variant="outline" onClick={postFreely} disabled={!freeBalanced} aria-describedby={draftReady && !freeBalanced ? "free-post-hint" : undefined}>
                 記帳する
               </Button>
+              {draftReady && !freeBalanced && (
+                <p id="free-post-hint" className="text-xs text-muted-foreground">
+                  借方と貸方の合計をそろえると記帳できます。
+                </p>
+              )}
             </div>
           )}
 
@@ -725,6 +733,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           key={tourKey}
           ctx={{ stepIndex, postedCount: posted.length, debit: entryDraft.debit, credit: entryDraft.credit }}
           onExit={() => setTourExited(true)}
+          onPane={setPane}
         />
       )}
       <div ref={bottomBar} className="border-t bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm space-y-2 sticky bottom-0 max-h-[50dvh] overflow-y-auto">

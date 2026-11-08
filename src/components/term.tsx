@@ -17,6 +17,7 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
   const byHover = useRef(false);
   // 「もっと見る」は押すと消えるので、展開した説明にフォーカスを移して位置を失わないようにする
   const details = useRef<HTMLDivElement>(null);
+  const content = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
   const schedule = (next: boolean, delay: number) => {
@@ -39,6 +40,8 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
     <Popover
       open={open}
       onOpenChange={(next) => {
+        // 予約済みのホバーのタイマーが残ると、クリック直後の Esc で閉じた後に開き直る
+        if (timer.current) clearTimeout(timer.current);
         byHover.current = false;
         setOpen(next);
         if (!next) setExpanded(false);
@@ -48,6 +51,15 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
         <button
           type="button"
           className="term underline decoration-dotted decoration-primary/60 underline-offset-4 hover:decoration-solid focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+          onClick={(e) => {
+            // ホバーで開いている用語を押したときは、トグルで閉じずに固定して中身へフォーカスを移す
+            if (open && byHover.current) {
+              e.preventDefault();
+              if (timer.current) clearTimeout(timer.current);
+              byHover.current = false;
+              content.current?.querySelector<HTMLElement>("button, a")?.focus();
+            }
+          }}
           onMouseEnter={() => schedule(true, 150)}
           onMouseLeave={() => schedule(false, 250)}
         >
@@ -55,6 +67,7 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
         </button>
       </PopoverTrigger>
       <PopoverContent
+        ref={content}
         className="w-80 text-sm space-y-2"
         onOpenAutoFocus={(e) => {
           if (byHover.current) e.preventDefault();
@@ -74,7 +87,15 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
             {entry.example && <p className="text-muted-foreground">例: {entry.example}</p>}
             {entry.related.length > 0 && (
               <p className="text-xs text-muted-foreground">
-                関連: {entry.related.map((r) => r.name).join("、")}
+                関連:{" "}
+                {entry.related.map((r, i) => (
+                  <span key={r.id}>
+                    {i > 0 && "、"}
+                    <Link href={`/glossary#${r.id}`} className="underline">
+                      {r.name}
+                    </Link>
+                  </span>
+                ))}
               </p>
             )}
             <div className="flex gap-3 text-xs">

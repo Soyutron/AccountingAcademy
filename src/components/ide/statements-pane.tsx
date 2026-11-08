@@ -166,9 +166,9 @@ function Row({ id, name, amount, delta }: { id?: string; name: React.ReactNode; 
 
 function Total({ label, amount }: { label: string; amount: number }) {
   return (
-    <div className="mt-auto flex justify-between border-t pt-1 font-medium">
-      <span>{label}</span>
-      <span className="tabular-nums">{formatAmount(amount)}</span>
+    <div className="mt-auto flex flex-wrap items-baseline justify-between gap-x-2 border-t pt-1 font-medium">
+      <span className="min-w-0">{label}</span>
+      <span className="ml-auto tabular-nums whitespace-nowrap">{formatAmount(amount)}</span>
     </div>
   );
 }
