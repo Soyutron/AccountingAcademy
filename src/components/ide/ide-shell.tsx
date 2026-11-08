@@ -677,7 +677,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           {task.type === "observe" && isLast && (
             <div className="space-y-2">
               <h3 className="text-sm font-semibold">自由に試す</h3>
-              <p className="text-xs text-muted-foreground">好きな取引を記帳して、右の財務諸表がどう動くか確かめてみましょう。</p>
+              <p className="text-xs text-muted-foreground">好きな取引を記帳して、結果の財務諸表がどう動くか確かめてみましょう。</p>
               <JournalEditor accounts={accounts} value={draft} onChange={setDraft} />
               <Button variant="outline" onClick={postFreely} disabled={!freeBalanced} aria-describedby={sideHint ? "free-side-hint" : draftReady && !freeBalanced ? "free-post-hint" : undefined}>
                 記帳する
@@ -881,7 +881,7 @@ function TaskBox({ task, onAmount }: { task: Task; onAmount?: (digits: string) =
       case "classify":
         return { title: "科目を 5 つの箱に分けましょう", body: null };
       case "calc":
-        return { title: "右の結果を読んで答えましょう", body: task.question };
+        return { title: "結果の表を読んで答えましょう", body: task.question };
       case "observe":
         return null;
     }
