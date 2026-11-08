@@ -336,8 +336,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       setAttempts(resumeWrong);
       return;
     }
-    // predict 以外は正解の保存値が無くても模範解答で戻せる。predict は保存した予想(誤答でも)で戻す
-    restoreStep(resumeStep, unit.steps[resumeStep].task.type === "predict" ? resumeAnswer : undefined);
+    // post / calc / classify は模範解答で戻せる。predict は保存した予想(誤答でも)、tweak は模範解答が無いので達成時の値で戻す
+    const type = unit.steps[resumeStep].task.type;
+    restoreStep(resumeStep, type === "predict" || type === "tweak" ? resumeAnswer : undefined);
   };
 
   const entryDraft = toJournalEntry(draft, accounts);
