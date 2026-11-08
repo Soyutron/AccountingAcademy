@@ -30,6 +30,7 @@ import { FirstTimeNote } from "./first-time-note";
 import { Spotlight } from "./spotlight";
 import { type HelpContext, type HelpTopic, firstTimeTopic } from "@/lib/help-topics";
 import { TUTORIAL_UNIT_ID, markSeen, updateTutorial, useTutorialState } from "@/lib/tutorial-store";
+import { REPO_URL } from "@/lib/repo";
 
 // 会計 IDE の本体。ステップの進行、帳簿(記帳済みの仕訳)、課題の確認と記録をまとめて持つ(docs/ide-design.md)
 
@@ -41,6 +42,8 @@ export interface IdeStep {
 export interface IdeUnit {
   id: string;
   title: string;
+  // リポジトリのルートからの Markdown のパス
+  sourcePath: string;
   company: string;
   opening: OpeningLine[];
   steps: IdeStep[];
@@ -654,6 +657,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               )}
             </div>
           )}
+          <ContributeLinks unit={unit} stepNumber={stepIndex + 1} />
         </section>
 
         <section id="pane-work" role="region" aria-label="ワークスペース" className={`${paneClass("work")} bg-surface-work lg:border-r space-y-4`}>
@@ -960,6 +964,25 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       </div>
     </div>
     </HelpControlsContext>
+  );
+}
+
+function ContributeLinks({ unit, stepNumber }: { unit: IdeUnit; stepNumber: number }) {
+  // unit はテンプレートの入力欄の id。GitHub が URL の値を初期値として埋める
+  const reportHref = `${REPO_URL}/issues/new?template=content-error.yml&unit=${encodeURIComponent(`/units/${unit.id} ステップ ${stepNumber}`)}`;
+  const links = [
+    { href: reportHref, label: "誤りを報告", purpose: "GitHub の Issue 作成画面" },
+    { href: `${REPO_URL}/edit/main/${unit.sourcePath}`, label: "この単元を改善", purpose: "GitHub の編集画面" },
+  ];
+  return (
+    <div className="mt-6 flex flex-wrap gap-x-4 text-xs text-muted-foreground">
+      {links.map((l) => (
+        <a key={l.label} href={l.href} target="_blank" rel="noopener noreferrer" className="py-1 underline">
+          {l.label}
+          <span className="sr-only">({l.purpose}を新しいタブで開く)</span>
+        </a>
+      ))}
+    </div>
   );
 }
 
