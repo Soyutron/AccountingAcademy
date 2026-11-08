@@ -84,6 +84,18 @@ misconceptions:
     correct: 売掛金は「後で代金を受け取る権利」で、現金とは別の資産。回収したときに現金や預金に変わる
     concepts: [accounts_receivable, asset]
     remediation: merchandise/credit-transactions
+  - id: deposit_is_cash
+    name: 預金も現金
+    description: 銀行の口座に入ったお金を、手元のお金と同じ「現金」の科目で記録してしまう
+    correct: 現金は手元の通貨、普通預金は銀行の口座の残高で、別の勘定科目。口座に振り込まれたら増えるのは普通預金で、手元の現金は動かない
+    concepts: [asset, account_title]
+    remediation: merchandise/credit-transactions
+  - id: receivable_payable_confused
+    name: 売掛金と買掛金の取り違え
+    description: 名前が似ている売掛金と買掛金を、どちらがどちらか逆に使ってしまう
+    correct: 売掛金は商品を売って後で代金を受け取る権利(資産)、買掛金は商品を仕入れて後で代金を払う義務(負債)。「売ったのか、買ったのか」で見分ける
+    concepts: [accounts_receivable, accounts_payable]
+    remediation: merchandise/credit-transactions
   - id: receivable_collection_is_sale
     name: 回収のときにもう一度売上
     description: 売掛金や未収入金を回収したときに、売上をもう一度記録してしまう
