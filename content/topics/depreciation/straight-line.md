@@ -42,7 +42,6 @@ answer:
   credit: [{ account: cash, amount: 1200000 }]
 wrong_patterns:
   - match: { swapped: true }
-    misconception: debit_means_increase
     feedback: 増えた軽バン(資産)は左、減った現金は右です。左右を入れ替えてみましょう。
   - match: { debit: [{ account: depreciation_expense }] }
     misconception: no_cost_allocation

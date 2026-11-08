@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
+import { useId, useMemo } from "react";
 import { type AccountInfo, type Side, computeImpact, ELEMENTS, findAccountByName, formatAmount } from "@/lib/accounting";
-import { type EditableEntry, type EditableLine, toJournalEntry } from "@/lib/journal-editable";
+import { type EditableEntry, type EditableLine, parseAmount, toJournalEntry } from "@/lib/journal-editable";
 import { ELEMENT_STYLE } from "@/lib/elements";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ interface Props {
 }
 
 export function JournalEditor({ accounts, value, onChange, readOnly = false, showImpact = true }: Props) {
+  const idPrefix = useId();
   const accountMap = useMemo(() => new Map(accounts.map((a) => [a.id, a])), [accounts]);
   const entry = useMemo(() => toJournalEntry(value, accounts), [value, accounts]);
   const impact = useMemo(() => computeImpact(entry, accountMap), [entry, accountMap]);
@@ -51,6 +52,10 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
         {value[side].map((line, i) => {
           const account = findAccountByName(line.accountName, accounts);
           const style = account ? ELEMENT_STYLE[account.element] : null;
+          const parsed = parseAmount(line.amount);
+          // 空欄はまだ入力していないだけなので理由を出さない
+          const amountError = line.amount.trim() && "reason" in parsed ? parsed.reason : null;
+          const errorId = `${idPrefix}-${side}-${i}-amount-error`;
           return (
             <div key={i} data-journal-line={`${side}-${i}`} className={`rounded-md border p-1.5 transition-colors ${style ? `${style.border} ${style.bg}` : "bg-background"}`}>
               <div className="flex gap-1 items-center">
@@ -73,10 +78,12 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
                   placeholder="金額"
                   value={line.amount}
                   readOnly={readOnly}
+                  aria-invalid={amountError ? true : undefined}
+                  aria-describedby={amountError ? errorId : undefined}
                   onChange={(e) => update(side, i, { amount: e.target.value })}
                   onBlur={(e) => {
-                    const n = Number(e.target.value.replaceAll(",", ""));
-                    if (e.target.value.trim() && Number.isInteger(n)) update(side, i, { amount: formatAmount(n) });
+                    const p = parseAmount(e.target.value);
+                    if ("value" in p) update(side, i, { amount: formatAmount(p.value) });
                   }}
                   className="min-w-24 flex-[2] text-right bg-background font-mono tabular-nums"
                 />
@@ -98,6 +105,11 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
                   <span className="text-error-fg">この名前の科目はありません</span>
                 ) : null}
               </div>
+              {amountError && (
+                <p id={errorId} className="mt-0.5 text-[10px] text-rose-700">
+                  {amountError}
+                </p>
+              )}
             </div>
           );
         })}
