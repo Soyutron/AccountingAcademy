@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef } from "react";
-import { type AccountInfo, type Side, computeImpact, ELEMENTS, findAccountByName, formatAmount } from "@/lib/accounting";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { type AccountInfo, type Side, computeImpact, ELEMENTS, findAccountByName, formatAmount, matchesAccountQuery } from "@/lib/accounting";
 import { type EditableEntry, type EditableLine, parseAmount, toJournalEntry } from "@/lib/journal-editable";
 import { ELEMENT_STYLE } from "@/lib/elements";
 import { Input } from "@/components/ui/input";
@@ -11,12 +11,6 @@ import { AccountCombobox } from "@/components/account-combobox";
 import { HelpIcon } from "@/components/ide/help-icon";
 
 // 仕訳エディタ。入力に応じて 5 要素の増減と当期純利益への影響をその場で表示する(要件 4.1)
-
-// 入力途中(候補の絞り込みと同じ部分一致で科目が残る)の間は「科目がない」と言わない
-function matchesSomeAccount(text: string, accounts: AccountInfo[]): boolean {
-  const t = text.trim();
-  return accounts.some((a) => a.name.includes(t) || a.aliases.some((x) => x.includes(t)));
-}
 
 interface Props {
   accounts: AccountInfo[];
@@ -31,6 +25,8 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
   const idPrefix = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const focusLine = useRef<string | null>(null);
+  // IME の変換中は読みの途中なので「科目がない」と言わない(Issue #79)
+  const [composingLine, setComposingLine] = useState<string | null>(null);
   const accountMap = useMemo(() => new Map(accounts.map((a) => [a.id, a])), [accounts]);
   const entry = useMemo(() => toJournalEntry(value, accounts), [value, accounts]);
   const impact = useMemo(() => computeImpact(entry, accountMap), [entry, accountMap]);
@@ -82,6 +78,7 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
                     placeholder="科目"
                     value={line.accountName}
                     onChange={(accountName) => update(side, i, { accountName })}
+                    onCompositionChange={(composing) => setComposingLine(composing ? `${side}-${i}` : null)}
                     className="min-w-24 flex-[3] bg-background"
                   />
                 )}
@@ -115,8 +112,8 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
                     </span>
                     <span className="text-muted-foreground truncate">{account.short}</span>
                   </>
-                ) : line.accountName.trim() && !matchesSomeAccount(line.accountName, accounts) ? (
-                  <span className="text-error-fg">この名前の科目はありません</span>
+                ) : line.accountName.trim() && composingLine !== `${side}-${i}` && !accounts.some((a) => matchesAccountQuery(a, line.accountName)) ? (
+                  <span className="text-error-fg">候補から選ぶか、漢字の一部を入れてください</span>
                 ) : null}
               </div>
               {amountError && (
