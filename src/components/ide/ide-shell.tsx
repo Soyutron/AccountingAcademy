@@ -140,7 +140,6 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [bursts, setBursts] = useState<Burst[]>([]);
   const [pulseNext, setPulseNext] = useState(false);
   const celebratedSteps = useRef(new Set<number>());
-  const bottomBar = useRef<HTMLDivElement>(null);
   // 採点で押したボタンが消えるときは、フォーカスが body に落ちないよう結果へ移す(復元や誤答では動かさない)
   const statusBox = useRef<HTMLDivElement>(null);
   const focusStatus = useRef(false);
@@ -242,9 +241,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     if (celebratedSteps.current.has(stepIndex)) return;
     celebratedSteps.current.add(stepIndex);
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const bar = bottomBar.current?.getBoundingClientRect();
-    const from = bar ? { x: bar.left + bar.width / 2, y: bar.top } : { x: window.innerWidth / 2, y: window.innerHeight * 0.7 };
-    setBursts((prev) => [...prev, { id: `${stepIndex}-${Date.now()}`, from, big: isLast }]);
+    setBursts((prev) => [...prev, { id: `${stepIndex}-${Date.now()}`, big: isLast }]);
     setPulseNext(true);
   };
 
@@ -857,7 +854,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           onPane={setPane}
         />
       )}
-      <div ref={bottomBar} className="border-t bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm space-y-2 sticky bottom-0 max-h-[50dvh] overflow-y-auto">
+      <div className="border-t bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm space-y-2 sticky bottom-0 max-h-[50dvh] overflow-y-auto">
         {result && (
           <div ref={statusBox} tabIndex={-1} role="status" aria-live="polite" className={`rounded-md p-3 space-y-2 focus:outline-none motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 ${result.correct ? "bg-ok text-ok-fg" : "bg-hint text-hint-fg"}`}>
             {/* 正解はアイコンと見出しを大きくして、色だけに頼らず「もう一歩」と見分けられるようにする */}

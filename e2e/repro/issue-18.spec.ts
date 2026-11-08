@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-// Issue #18: 正解した瞬間に短い紙吹雪を 1 回出し、「次へ →」を一度だけ強調する。復元時と reduced-motion では出さない
+// Issue #18: 正解した瞬間に紙吹雪(いまは画面全体の祝福)を 1 回出し、「次へ →」を一度だけ強調する。復元時と reduced-motion では出さない
 
 const solve = async (page: import("@playwright/test").Page) => {
   await page.goto("/units/tutorial/first-entry");
