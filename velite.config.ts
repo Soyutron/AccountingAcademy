@@ -17,12 +17,16 @@ const account = s.object({
   element,
   contra: s.boolean().default(false),
   why: s.string(),
+  // 用語集とポップオーバーの「例:」。概念と同じ役割(docs/content-model.md 4 節)
+  example: s.string().optional(),
   concepts: idList,
 });
 
 const concept = s.object({
   id: s.string(),
   name: s.string(),
+  // 読み(ひらがな)。用語集の検索で引く(勘定科目の reading と同じ)
+  reading: s.array(s.string()).default([]),
   short: s.string(),
   summary: s.string(),
   example: s.string(),
