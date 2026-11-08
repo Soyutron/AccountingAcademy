@@ -115,6 +115,8 @@ export function AccountCombobox({ accounts, value, onChange, onCompositionChange
         className="block w-[min(20rem,calc(100vw-2rem))] max-h-72 overflow-y-auto overscroll-contain p-1"
         onOpenAutoFocus={(e) => e.preventDefault()}
         onCloseAutoFocus={(e) => e.preventDefault()}
+        // 候補行・余白・スクロールバーを押しても入力欄を blur させない(blur すると一覧が閉じる)。スクロールバーの操作自体は止まらない
+        onMouseDown={(e) => e.preventDefault()}
         onInteractOutside={(e) => {
           if (e.target === inputRef.current) e.preventDefault();
         }}
@@ -136,7 +138,6 @@ export function AccountCombobox({ accounts, value, onChange, onCompositionChange
                     role="option"
                     aria-selected={account === activeOption}
                     className={`flex cursor-pointer touch-manipulation items-baseline gap-2 rounded-r-sm border-l-2 px-2 py-1.5 ${s.border} ${account === activeOption ? "bg-accent" : ""}`}
-                    onMouseDown={(e) => e.preventDefault()}
                     onMouseMove={() => setActive(options.indexOf(account))}
                     onClick={() => select(account)}
                   >
