@@ -119,7 +119,7 @@ wrong_patterns:
     misconception: debit_means_increase
     feedback: 受け取った小切手(現金)が増えるので左、売上は右です。
   - match: { debit: [{ account: checking_account }] }
-    misconception: check_is_cash
+    misconception: received_check_is_checking_account
     feedback: 他人が振り出した小切手を受け取ったときは現金として扱います。当座預金に入れたわけではありません。
   - match: { debit: [{ account: accounts_receivable }] }
     feedback: 代金はもう小切手で受け取っています。「後で受け取る権利」ではありません。

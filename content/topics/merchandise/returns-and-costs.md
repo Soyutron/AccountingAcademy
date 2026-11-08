@@ -46,7 +46,6 @@ wrong_patterns:
     misconception: incidental_cost_separate
     feedback: 仕入れるときの運賃は、豆の値段の一部です。発送費ではなく、仕入に含めて 52,000 にしましょう。
   - match: { debit: [{ account: purchases, amount: 50000 }] }
-    misconception: incidental_cost_separate
     feedback: 運賃 2,000 も仕入に含めます。仕入は 52,000 です。
   - match: { credit: [{ account: cash, amount: 52000 }] }
     feedback: 豆の代金 50,000 は掛け(買掛金)で、現金で払ったのは運賃の 2,000 だけです。右を 2 行に分けてみましょう。
