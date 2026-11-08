@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { flushSync } from "react-dom";
 import type { GlossaryEntry } from "@/lib/content";
 import { ElementBadge } from "@/components/element-badge";
 import { Input } from "@/components/ui/input";
@@ -52,7 +53,12 @@ export function GlossarySearch({
                       {e.related.map((r, i) => (
                         <span key={r.id}>
                           {i > 0 && "、"}
-                          <a href={`#${r.id}`} className="underline">
+                          <a
+                            href={`#${r.id}`}
+                            className="underline"
+                            // 絞り込み中は関連先が描画されていないので、検索を解いて DOM に戻してからブラウザのアンカー移動に任せる
+                            onClick={() => flushSync(() => setQuery(""))}
+                          >
                             {r.name}
                           </a>
                         </span>
