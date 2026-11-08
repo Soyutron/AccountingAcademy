@@ -18,13 +18,37 @@ export const emptyEntry = (): EditableEntry => ({
   credit: [{ accountName: "", amount: "" }],
 });
 
-/** 入力中の行を勘定科目 ID の仕訳に変換する。科目が解決できない行や金額が空の行は落とす */
+export type ParsedAmount = { value: number } | { reason: string };
+
+/**
+ * 金額の入力を円単位の整数として解釈する。IME をオンのまま打った全角数字・全角カンマ・末尾の「円」は受け付け、
+ * それ以外は理由を返す(Issue #43)。`Number()` に任せると「1e6」や安全な整数を超える桁まで通ってしまう。
+ * signed は calc 用で、負数と 0 を許す(当期純損失などを答える課題がある)。
+ */
+export function parseAmount(text: string, signed = false): ParsedAmount {
+  const s = text
+    .trim()
+    .replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0))
+    .replace(/[,，]/g, "")
+    .replace(/円$/, "")
+    .replace(/^[−－]/, "-");
+  if (s === "") return { reason: "金額を入れてください" };
+  if (/^-?\d+\.\d+$/.test(s)) return { reason: "小数は使えません。円単位の整数で入力してください" };
+  if (!signed && s.startsWith("-")) return { reason: "マイナスは使えません。半角の数字で入力してください(例: 100000)" };
+  if (!/^-?\d+$/.test(s)) return { reason: "半角の数字だけで入力してください(例: 100000)" };
+  const value = Number(s);
+  if (!Number.isSafeInteger(value)) return { reason: "桁が多すぎます" };
+  if (!signed && value === 0) return { reason: "1 円以上の金額を入れてください" };
+  return { value };
+}
+
+/** 入力中の行を勘定科目 ID の仕訳に変換する。科目が解決できない行や金額が解釈できない行は落とす */
 export function toJournalEntry(entry: EditableEntry, accounts: AccountInfo[]): JournalEntry {
   const convert = (lines: EditableLine[]): JournalLine[] =>
     lines.flatMap((l) => {
       const account = findAccountByName(l.accountName, accounts);
-      const amount = Number(l.amount.replaceAll(",", ""));
-      return account && Number.isInteger(amount) && amount > 0 ? [{ account: account.id, amount }] : [];
+      const amount = parseAmount(l.amount);
+      return account && "value" in amount ? [{ account: account.id, amount: amount.value }] : [];
     });
   return { debit: convert(entry.debit), credit: convert(entry.credit) };
 }

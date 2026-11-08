@@ -7,7 +7,7 @@ import { splitAmounts } from "@/lib/task-text";
 import { ElementBadge } from "@/components/element-badge";
 import { AccountName } from "@/components/account-name";
 import { CheckCircle2, CircleAlert } from "lucide-react";
-import { type EditableEntry, emptyEntry, fromJournalEntry, toJournalEntry } from "@/lib/journal-editable";
+import { type EditableEntry, emptyEntry, fromJournalEntry, parseAmount, toJournalEntry } from "@/lib/journal-editable";
 import { type ClassifyResult, type EffectAnswer, type GradeResult, type Task, gradeCalc, gradeClassify, gradePost, gradePredict, gradeTweak } from "@/lib/grading";
 import { evaluateFormula } from "@/lib/formulas";
 import { type OpeningLine, computeBalances, diffBalances } from "@/lib/ledger";
@@ -100,6 +100,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [params, setParams] = useState<Record<string, number>>({});
   const [placed, setPlaced] = useState<Partial<Record<string, Element>>>({});
   const [calcValue, setCalcValue] = useState("");
+  // calc の入力が金額として読めないときの理由。採点も記録もしない(Issue #43)
+  const [calcError, setCalcError] = useState<string | null>(null);
   const [result, setResult] = useState<GradeResult | ClassifyResult | null>(null);
   const [attempts, setAttempts] = useState(0);
   const [showHint, setShowHint] = useState(false);
@@ -292,6 +294,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     setEffect({});
     setPlaced({});
     setCalcValue("");
+    setCalcError(null);
     setParams({});
     setResult(null);
     setAttempts(0);
@@ -365,6 +368,10 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     input?.setSelectionRange(caret.pos, caret.pos);
   }, [draft]);
   const draftReady = entryDraft.debit.length > 0 && entryDraft.credit.length > 0;
+  // 何か入れたのに記帳できないとき、足りない側を伝える(ボタンが無言で無効のままにならないように。Issue #43)
+  const missingSides = [entryDraft.debit.length === 0 && "借方", entryDraft.credit.length === 0 && "貸方"].filter(Boolean);
+  const touched = [...draft.debit, ...draft.credit].some((l) => l.accountName.trim() || l.amount.trim());
+  const sideHint = !draftReady && touched ? `${missingSides.join("と")}にも科目と金額を入れると記帳できます。` : null;
 
   useEffect(() => {
     if (!result || !focusStatus.current) return;
@@ -417,8 +424,15 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         break;
       }
       case "calc": {
-        const n = Number(calcValue.replaceAll(",", ""));
-        if (calcValue.trim() === "" || Number.isNaN(n) || alreadyGraded(n)) return;
+        const parsed = parseAmount(calcValue, true);
+        if ("reason" in parsed) {
+          setCalcError(parsed.reason);
+          setResult(null);
+          gradedAnswer.current = null;
+          return;
+        }
+        const n = parsed.value;
+        if (alreadyGraded(n)) return;
         const r = gradeCalc(task, n);
         if (r.correct) {
           focusStatus.current = true;
@@ -450,7 +464,10 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
 
   const reveal = () => {
     if (task.type === "post") setDraft(fromJournalEntry(task.answer, accountMap));
-    if (task.type === "calc") setCalcValue(String(task.answer));
+    if (task.type === "calc") {
+      setCalcValue(String(task.answer));
+      setCalcError(null);
+    }
     if (task.type === "classify") setPlaced(Object.fromEntries(task.accounts.map((id) => [id, accountMap.get(id)!.element])));
     setResult(null);
   };
@@ -567,9 +584,14 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               <h3 className="text-sm font-semibold">仕訳帳に書く</h3>
               <JournalEditor accounts={accounts} value={draft} onChange={setDraft} readOnly={result?.correct === true} />
               {!result?.correct && (
-                <Button type="submit" disabled={!draftReady} data-tour="post-button">
+                <Button type="submit" disabled={!draftReady} data-tour="post-button" aria-describedby={sideHint ? "post-side-hint" : undefined}>
                   記帳する
                 </Button>
+              )}
+              {!result?.correct && sideHint && (
+                <p id="post-side-hint" className="text-xs text-muted-foreground">
+                  {sideHint}
+                </p>
               )}
             </form>
           )}
@@ -623,12 +645,24 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
             >
               <label className="text-sm font-semibold block">
                 {task.question}
-                <Input inputMode="numeric" className="mt-1" value={calcValue} disabled={result?.correct === true} onChange={(e) => setCalcValue(e.target.value)} placeholder="金額(円)" />
+                <Input inputMode="numeric" className="mt-1" value={calcValue} disabled={result?.correct === true} onChange={(e) => {
+                    setCalcValue(e.target.value);
+                    setCalcError(null);
+                  }}
+                  aria-invalid={calcError ? true : undefined}
+                  aria-describedby={calcError ? "calc-error" : undefined}
+                  placeholder="金額(円)"
+                />
               </label>
               {!result?.correct && (
                 <Button type="submit" disabled={calcValue.trim() === ""}>
                   確認する
                 </Button>
+              )}
+              {calcError && (
+                <p id="calc-error" role="status" className="text-xs text-rose-700">
+                  {calcError}
+                </p>
               )}
             </form>
           )}
@@ -637,9 +671,14 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               <h3 className="text-sm font-semibold">自由に試す</h3>
               <p className="text-xs text-muted-foreground">好きな取引を記帳して、右の財務諸表がどう動くか確かめてみましょう。</p>
               <JournalEditor accounts={accounts} value={draft} onChange={setDraft} />
-              <Button variant="outline" onClick={postFreely} disabled={!freeBalanced} aria-describedby={draftReady && !freeBalanced ? "free-post-hint" : undefined}>
+              <Button variant="outline" onClick={postFreely} disabled={!freeBalanced} aria-describedby={sideHint ? "free-side-hint" : draftReady && !freeBalanced ? "free-post-hint" : undefined}>
                 記帳する
               </Button>
+              {sideHint && (
+                <p id="free-side-hint" className="text-xs text-muted-foreground">
+                  {sideHint}
+                </p>
+              )}
               {draftReady && !freeBalanced && (
                 <p id="free-post-hint" className="text-xs text-muted-foreground">
                   借方と貸方の合計をそろえると記帳できます。
