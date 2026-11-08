@@ -63,6 +63,11 @@ wrong_patterns:
     feedback: 掛けでも、買ったときは仕入という費用で記録します。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 40,000 にしましょう。
+  - match: { credit: [{ account: accounts_receivable }] }
+    misconception: receivable_payable_confused
+    feedback: 売掛金は商品を売って後で受け取る権利(資産)です。問屋に後で払う義務は買掛金(負債)なので、右は買掛金です。
+  - match: { credit: [{ account: accounts_payable_other }] }
+    feedback: 未払金は商品以外の物を買ったときの義務です。商品の代金を後で払う義務は買掛金を使います。
 hint: 左に仕入 40,000、右に買掛金 40,000 です。
 success: 負債の箱に買掛金が現れました。現金は 1 円も動いていないのに、仕入はきちんと記録されています。
 ```
@@ -114,6 +119,9 @@ wrong_patterns:
     feedback: 代金は銀行の口座に振り込まれたので、手元の現金は増えていません。左は普通預金です。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 60,000 にしましょう。
+  - match: { credit: [{ account: accounts_payable }] }
+    misconception: receivable_payable_confused
+    feedback: 買掛金は商品を仕入れて後で払う義務(負債)です。ここで消えるのは売って受け取る権利のほうなので、右は売掛金です。
 hint: 左に普通預金 60,000、右に売掛金 60,000 です。
 success: 売掛金が消えて、普通預金が現れました。資産の中身が変わっただけで、売上も利益も動いていません。
 ```
@@ -137,6 +145,9 @@ wrong_patterns:
     feedback: 仕入は豆を受け取った日に記録済みです。ここでは買掛金(義務)が減るだけなので、左は買掛金です。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 40,000 にしましょう。
+  - match: { debit: [{ account: accounts_receivable }] }
+    misconception: receivable_payable_confused
+    feedback: 売掛金は商品を売って後で受け取る権利(資産)です。ここで消えるのは問屋に払う義務のほうなので、左は買掛金です。
 hint: 左に買掛金 40,000、右に現金 40,000 です。
 success: 買掛金が消えました。負債が減り、現金も減る。仕入や費用はここでは動きません。
 ```
