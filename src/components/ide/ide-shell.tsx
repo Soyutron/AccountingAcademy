@@ -162,6 +162,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [helpOpen, setHelpOpen] = useState(false);
   // 「?」の「もっと詳しく」から開いたときに見せる話題
   const [helpFocus, setHelpFocus] = useState<string | null>(null);
+  // 「?」や note の「くわしく」から開いたときの、閉じたあとのフォーカスの戻り先(Issue #101)
+  const helpReturnTo = useRef<HTMLElement | null>(null);
   // 「場所を示す」で光らせている対象(data-tour の値)
   const [spotlight, setSpotlight] = useState<string | null>(null);
   const forceTour = useSyncExternalStore(noop, readForceTour, () => false);
@@ -571,7 +573,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const misIds = result && "misconceptions" in result ? result.misconceptions : result?.misconception ? [result.misconception] : [];
   const misList = misIds.flatMap((id) => misconceptions[id] ?? []);
   const helpCtx: HelpContext = { taskType: task.type, postedCount: posted.length, isLast, hasHint: Boolean(hint) };
-  const openHelpTopic = (id: string) => {
+  const openHelpTopic = (id: string, returnTo: HTMLElement | null) => {
+    helpReturnTo.current = returnTo;
     setHelpFocus(id);
     setHelpOpen(true);
   };
@@ -615,6 +618,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
             if (!o) setHelpFocus(null);
           }}
           focusTopic={helpFocus}
+          returnToRef={helpReturnTo}
           ctx={helpCtx}
           stepLabel={`ステップ ${stepIndex + 1}「${step.title}」`}
           onRestartTour={isTutorialUnit ? restartTour : undefined}
@@ -707,7 +711,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         </section>
 
         <section ref={workPane} id="pane-work" role="region" aria-label="ワークスペース" tabIndex={-1} className={`${paneClass("work")} bg-surface-work lg:border-r space-y-4 ${FOCUS_TARGET_CLASS}`}>
-          {showFirstTime && <FirstTimeNote topic={firstTime} onMore={() => openHelpTopic(firstTime.id)} onDismiss={() => {
+          {showFirstTime && <FirstTimeNote topic={firstTime} onMore={(button) => openHelpTopic(firstTime.id, button)} onDismiss={() => {
             // 入力欄へ移すとスマートフォンでキーボードが開くので、ペイン自体へ移す
             workPane.current?.focus();
             markSeen(firstTime.id);
