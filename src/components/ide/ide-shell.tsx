@@ -7,7 +7,7 @@ import { splitAmounts } from "@/lib/task-text";
 import { ElementBadge } from "@/components/element-badge";
 import { AccountName } from "@/components/account-name";
 import { CheckCircle2, CircleAlert } from "lucide-react";
-import { type EditableEntry, emptyEntry, fromJournalEntry, parseAmount, toJournalEntry } from "@/lib/journal-editable";
+import { type EditableEntry, emptyEntry, fromJournalEntry, isIncompleteLine, parseAmount, toJournalEntry } from "@/lib/journal-editable";
 import { type ClassifyResult, type EffectAnswer, type GradeResult, type PredictResult, type Task, gradeCalc, gradeClassify, gradePost, gradePredict, gradeTweak } from "@/lib/grading";
 import { evaluateFormula } from "@/lib/formulas";
 import { type OpeningLine, computeBalances, diffBalances } from "@/lib/ledger";
@@ -407,11 +407,13 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     input?.focus();
     input?.setSelectionRange(caret.pos, caret.pos);
   }, [draft]);
-  const draftReady = entryDraft.debit.length > 0 && entryDraft.credit.length > 0;
-  // 何か入れたのに記帳できないとき、足りない側を伝える(ボタンが無言で無効のままにならないように。Issue #43)
+  const draftHasBothSides = entryDraft.debit.length > 0 && entryDraft.credit.length > 0;
+  const draftIncomplete = [...draft.debit, ...draft.credit].some((l) => isIncompleteLine(l, accounts));
+  const draftReady = draftHasBothSides && !draftIncomplete;
+  // 何か入れたのに記帳できないとき、足りない側か途中の行を伝える(ボタンが無言で無効のままにならないように。Issue #43, #71)
   const missingSides = [entryDraft.debit.length === 0 && "借方", entryDraft.credit.length === 0 && "貸方"].filter(Boolean);
   const touched = [...draft.debit, ...draft.credit].some((l) => l.accountName.trim() || l.amount.trim());
-  const sideHint = !draftReady && touched ? `${missingSides.join("と")}にも科目と金額を入れると記帳できます。` : null;
+  const sideHint = draftReady || !touched ? null : draftHasBothSides ? "入力が途中の行があります。科目と金額をそろえるか、その行を削除すると記帳できます。" : `${missingSides.join("と")}にも科目と金額を入れると記帳できます。`;
   const predictReady = ELEMENTS.every((el) => effect[el]);
 
   useEffect(() => {
@@ -516,8 +518,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
 
   // 課題の post ステップは採点が不一致を誤解として返すが、自由記帳には採点が無いのでここで止める(Issue #42)
   const freeBalanced = computeImpact(entryDraft, accountMap).balanced;
+  const canPostFreely = freeBalanced && !draftIncomplete;
   const postFreely = () => {
-    if (!freeBalanced) return;
+    if (!canPostFreely) return;
     setPosted((prev) => [...prev, { step: stepIndex, memo: "自由に記帳", entry: entryDraft }]);
     markSeen("sandbox");
     setDraft(emptyEntry());
@@ -765,7 +768,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               <h3 className="text-sm font-semibold">自由に試す</h3>
               <p className="text-xs text-muted-foreground">好きな取引を記帳して、結果の財務諸表がどう動くか確かめてみましょう。</p>
               <JournalEditor accounts={accounts} value={draft} onChange={setDraft} />
-              <Button variant="outline" onClick={postFreely} disabled={!freeBalanced} aria-describedby={sideHint ? "free-side-hint" : draftReady && !freeBalanced ? "free-post-hint" : undefined}>
+              <Button variant="outline" onClick={postFreely} disabled={!canPostFreely} aria-describedby={sideHint ? "free-side-hint" : draftReady && !freeBalanced ? "free-post-hint" : undefined}>
                 記帳する
               </Button>
               {sideHint && (
@@ -882,7 +885,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               {result.correct ? "できました" : "もう一歩"}
             </p>
             <p className="whitespace-pre-wrap">{result.feedback}</p>
-            {task.type === "post" && !result.correct && draftReady && (
+            {task.type === "post" && !result.correct && draftHasBothSides && (
               <div className="rounded bg-background/70 p-2">
                 <ImpactCompare yours={entryDraft} expected={task.answer} accounts={accountMap} />
               </div>
@@ -927,7 +930,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               variant="ghost"
               size="sm"
               onClick={() => {
-                if (draftReady && !result?.correct && !window.confirm("入力中の仕訳は消えます。前のステップに戻りますか?")) return;
+                if (draftHasBothSides && !result?.correct && !window.confirm("入力中の仕訳は消えます。前のステップに戻りますか?")) return;
                 goTo(stepIndex - 1);
               }}
             >

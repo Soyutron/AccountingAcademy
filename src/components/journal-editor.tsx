@@ -66,6 +66,10 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
           // 空欄はまだ入力していないだけなので理由を出さない
           const amountError = line.amount.trim() && "reason" in parsed ? parsed.reason : null;
           const errorId = `${idPrefix}-${side}-${i}-amount-error`;
+          const composing = composingLine === `${side}-${i}`;
+          // 科目を選んだ直後は普通の入力の途中なので、赤字にせず次にすることとして添える(Issue #71)
+          const amountMissing = !readOnly && account && !line.amount.trim();
+          const accountMissing = !readOnly && !account && !composing && line.amount.trim();
           return (
             <div key={i} data-journal-line={`${side}-${i}`} className={`rounded-md border p-1.5 transition-colors ${style ? `${style.border} ${style.bg}` : "bg-background"}`}>
               <div className="flex gap-1 items-center">
@@ -90,7 +94,7 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
                   value={line.amount}
                   readOnly={readOnly}
                   aria-invalid={amountError ? true : undefined}
-                  aria-describedby={amountError ? errorId : undefined}
+                  aria-describedby={amountError || amountMissing ? errorId : undefined}
                   onChange={(e) => update(side, i, { amount: e.target.value })}
                   onBlur={(e) => {
                     const p = parseAmount(e.target.value);
@@ -112,9 +116,16 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
                     </span>
                     <span className="text-muted-foreground truncate">{account.short}</span>
                   </>
-                ) : line.accountName.trim() && composingLine !== `${side}-${i}` && !accounts.some((a) => matchesAccountQuery(a, line.accountName)) ? (
+                ) : line.accountName.trim() && !composing && !accounts.some((a) => matchesAccountQuery(a, line.accountName)) ? (
                   <span className="text-error-fg">候補から選ぶか、漢字の一部を入れてください</span>
+                ) : accountMissing ? (
+                  <span className="text-error-fg">科目を選んでください</span>
                 ) : null}
+                {amountMissing && (
+                  <span id={errorId} className="ml-auto shrink-0 text-muted-foreground">
+                    金額を入れてください
+                  </span>
+                )}
               </div>
               {amountError && (
                 <p id={errorId} className="mt-0.5 text-[10px] text-error-fg">

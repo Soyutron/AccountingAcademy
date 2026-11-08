@@ -42,6 +42,12 @@ export function parseAmount(text: string, signed = false): ParsedAmount {
   return { value };
 }
 
+/** toJournalEntry が落とす行のうち、学習者が何か入れた行か。この行が残っていると入力と記帳内容が食い違う(Issue #71) */
+export function isIncompleteLine(line: EditableLine, accounts: AccountInfo[]): boolean {
+  if (!line.accountName.trim() && !line.amount.trim()) return false;
+  return !findAccountByName(line.accountName, accounts) || "reason" in parseAmount(line.amount);
+}
+
 /** 入力中の行を勘定科目 ID の仕訳に変換する。科目が解決できない行や金額が解釈できない行は落とす */
 export function toJournalEntry(entry: EditableEntry, accounts: AccountInfo[]): JournalEntry {
   const convert = (lines: EditableLine[]): JournalLine[] =>
