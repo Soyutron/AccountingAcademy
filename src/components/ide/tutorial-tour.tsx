@@ -8,6 +8,8 @@ import { updateTutorial } from "@/lib/tutorial-store";
 
 // 操作しながら使い方を覚えるツアー。対象を明るく残して周りを暗くし、ユーザーの操作が済むまで待つ(docs/ide-design.md)
 
+export type TourPane = "guide" | "work" | "result";
+
 export interface TourContext {
   stepIndex: number;
   postedCount: number;
@@ -17,6 +19,8 @@ export interface TourContext {
 
 interface TourStep {
   target?: string;
+  // スマートフォンでは 1 ペインずつ表示するので、対象のあるペインへ切り替える
+  pane?: TourPane;
   title: string;
   body: string;
   // 操作が済んだら true。無ければ「次へ」で進む
@@ -29,20 +33,20 @@ const hasLine = (lines: JournalLine[], account: string, amount: number) => lines
 
 const STEPS: TourStep[] = [
   { title: "会計 IDE へようこそ", body: "2 分で使い方を体験します。実際に 1 件記帳してみましょう。いつでもスキップできます。" },
-  { target: "guide", title: "左はガイド", body: "物語と「やること」を読む場所です。ステップごとに 2〜4 文だけなので、読んだらすぐ手を動かします。" },
-  { target: "next-button", title: "次へ進む", body: "下の「次へ →」を押して、最初の課題に進みましょう。", done: (c) => c.stepIndex >= 1, waiting: "「次へ →」を押してください" },
-  { target: "journal-debit", title: "借方(左)に書く", body: "科目に「現金」、金額に 100000 と入れます。科目は途中まで打つと候補が出ます。", done: (c) => hasLine(c.debit, "cash", 100000), waiting: "借方に 現金 100,000 を入れてください" },
-  { target: "journal-credit", title: "貸方(右)に書く", body: "科目に「資本金」、金額に 100000 と入れます。", done: (c) => hasLine(c.credit, "capital_stock", 100000), waiting: "貸方に 資本金 100,000 を入れてください" },
-  { target: "impact", title: "影響がその場で見える", body: "資産 +100,000、純資産 +100,000。借方と貸方の合計も一致しました。記帳する前に、何が動くかが分かります。" },
-  { target: "post-button", title: "記帳する", body: "「記帳する」を押します(金額欄で Enter でも記帳できます)。", done: (c) => c.postedCount >= 1, waiting: "「記帳する」を押してください" },
-  { target: "statements", title: "右は結果", body: "貸借対照表に現金と資本金が現れ、▲ が付きました。記帳のたびにここが動きます。科目名に触れると意味が出ます。" },
-  { target: "shape", title: "会社のかたち", body: "上の帯は、左の資産が右の負債と純資産でまかなわれている様子です。帯の幅が記帳で変わっていきます。" },
-  { target: "hint", title: "迷ったら", body: "「ヒントを見る」で手がかりが出ます。2 回間違えると「答えを見る」も使えます。" },
+  { target: "guide", pane: "guide", title: "ここはガイド", body: "物語と「やること」を読む場所です。ステップごとに 2〜4 文だけなので、読んだらすぐ手を動かします。" },
+  { target: "next-button", title: "次へ進む", body: "「次へ →」を押して、最初の課題に進みましょう。", done: (c) => c.stepIndex >= 1, waiting: "「次へ →」を押してください" },
+  { target: "journal-debit", pane: "work", title: "借方(左)に書く", body: "科目に「現金」、金額に 100000 と入れます。科目は途中まで打つと候補が出ます。", done: (c) => hasLine(c.debit, "cash", 100000), waiting: "借方に 現金 100,000 を入れてください" },
+  { target: "journal-credit", pane: "work", title: "貸方(右)に書く", body: "科目に「資本金」、金額に 100000 と入れます。", done: (c) => hasLine(c.credit, "capital_stock", 100000), waiting: "貸方に 資本金 100,000 を入れてください" },
+  { target: "impact", pane: "work", title: "影響がその場で見える", body: "資産 +100,000、純資産 +100,000。借方と貸方の合計も一致しました。記帳する前に、何が動くかが分かります。" },
+  { target: "post-button", pane: "work", title: "記帳する", body: "「記帳する」を押します(金額欄で Enter でも記帳できます)。", done: (c) => c.postedCount >= 1, waiting: "「記帳する」を押してください" },
+  { target: "statements", pane: "result", title: "ここは結果", body: "貸借対照表に現金と資本金が現れ、▲ が付きました。記帳のたびにここが動きます。科目名に触れると意味が出ます。" },
+  { target: "shape", pane: "result", title: "会社のかたち", body: "上の帯は、左の資産が右の負債と純資産でまかなわれている様子です。帯の幅が記帳で変わっていきます。" },
+  { target: "hint", pane: "guide", title: "迷ったら", body: "「ヒントを見る」で手がかりが出ます。2 回間違えると「答えを見る」も使えます。" },
   { target: "help-button", title: "困ったら「使い方」", body: "右上の「使い方」から、各機能の説明と、このチュートリアルのやり直しができます。" },
   { title: "できました", body: "使い方は以上です。ここからは 3 級パスの最初の単元で、カフェを開業するところから始めましょう。" },
 ];
 
-export function TutorialTour({ ctx, onExit }: { ctx: TourContext; onExit: () => void }) {
+export function TutorialTour({ ctx, onExit, onPane }: { ctx: TourContext; onExit: () => void; onPane: (pane: TourPane) => void }) {
   const [index, setIndex] = useState(0);
   const step = STEPS[index];
   const rect = useTargetRect(step.target);
@@ -60,6 +64,8 @@ export function TutorialTour({ ctx, onExit }: { ctx: TourContext; onExit: () => 
   };
   const next = () => {
     if (last) return finish();
+    const pane = STEPS[index + 1].pane;
+    if (pane) onPane(pane);
     setIndex(index + 1);
   };
 
