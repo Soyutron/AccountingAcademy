@@ -11,6 +11,7 @@
 #   ISSUE_MAX_FAILS  Issue 固有の失敗(終了コード 3〜4)がこの回数連続したら停止(既定 3)。人手待ち(2)は数えない
 #   ISSUE_PAUSE      反復間の待ち秒(既定 20)
 #   ISSUE_PARALLEL   同時に処理する Issue の数(既定 1。3 程度まで。main への統合は issue-agent 側で 1 件ずつ)
+#   ISSUE_WAIT=1     対象の Issue が無くても終了時刻まで待つ(トリアージと並走させるとき)
 #   ISSUE_LOG_DIR    ログ置き場(既定 logs/issue-agent)
 #   そのほか issue-agent.sh の環境変数はそのまま渡る
 set -u
@@ -67,7 +68,10 @@ while :; do
   # 空いた枠を埋める(停止が決まっていれば埋めない)
   while [ -z "$stop_reason" ] && [ "${#pids[@]}" -lt "$PARALLEL" ]; do
     n=$(next_issue)
-    if [ -z "$n" ]; then [ "${#pids[@]}" -eq 0 ] && stop_reason="対象の Issue がありません(ラベル $LABEL)"; break; fi
+    if [ -z "$n" ]; then
+      if [ "${#pids[@]}" -eq 0 ] && [ "${ISSUE_WAIT:-0}" != 1 ]; then stop_reason="対象の Issue がありません(ラベル $LABEL)"; fi
+      break
+    fi
     # 統合済みの Issue がまた選ばれるのはラベルや close が効いていないときだけ(needs-human を人が外した取り直しは通す)
     case "$processed" in *" $n "*) stop_reason="統合済みの Issue #$n がまた選ばれました(ラベルを更新できていない可能性があります)"; break ;; esac
     slot=$(free_slot)
