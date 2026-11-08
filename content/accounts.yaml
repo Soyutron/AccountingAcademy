@@ -1,4 +1,5 @@
 # 勘定科目マスタ。要素分類の演習と仕訳エディタの影響表示の両方が参照する
+# この並びが財務諸表の行順になる。資産・負債は流動性配列(換金・支払いの早い順)に保つ
 accounts:
   - id: cash
     name: 現金
@@ -8,6 +9,30 @@ accounts:
     why: 会社が持っていて、いつでも支払いに使える財産だからです。
     example: レジの中の売上金や、金庫に入れてある紙幣・硬貨。
     concepts: [asset]
+  - id: petty_cash
+    name: 小口現金
+    reading: [こぐちげんきん]
+    short: 日々の細かい支払いのために担当者へ前もって渡してある現金
+    element: asset
+    why: 担当者の手元に移っただけで、まだ使っていない会社のお金だからです。使った分だけが費用になります。
+    example: 文房具代やお茶代に使うために、総務の担当者へ前もって渡しておいた 3 万円。
+    concepts: [asset, petty_cash]
+  - id: cash_over_and_short
+    name: 現金過不足
+    reading: [げんきんかぶそく]
+    short: 帳簿の現金と実際の現金が合わないとき、原因が分かるまで差額を置いておく科目
+    element: asset
+    why: 現金の差額を一時的に置いておく「仮の置き場」で、現金の仲間として資産の側で扱うからです。原因が分かれば本来の科目へ移し、決算まで分からなければ雑損か雑益に振り替えて、財務諸表には残しません。
+    example: 帳簿では 5 万円あるはずの現金を数えたら 4 万 9,000 円しかなかったときの、原因不明の差額 1,000 円。
+    concepts: [cash_over_and_short]
+  - id: checking_account
+    name: 当座預金
+    reading: [とうざよきん]
+    short: 小切手で支払うための預金。利息は付かない
+    element: asset
+    why: 銀行に預けてある会社の財産で、小切手を振り出して支払いに使えるからです。
+    example: 仕入先への支払いに小切手を使うために、銀行の当座口座へ入れておいた 100 万円。
+    concepts: [asset, checking_account]
   - id: bank_deposit
     name: 普通預金
     aliases: [預金]
@@ -26,24 +51,59 @@ accounts:
     why: 後で現金を受け取る権利であり、将来お金に変わる財産だからです。
     example: 商品を 3 万円で売り、代金は来月末に受け取ると約束したときの 3 万円。
     concepts: [asset]
-  - id: accounts_payable
-    name: 買掛金
-    aliases: [買い掛け金]
-    reading: [かいかけきん]
-    short: 商品を仕入れたが、まだ支払っていない代金
-    element: liability
-    why: 後で現金を支払わなければならない義務だからです。
-    example: 商品を 2 万円で仕入れ、代金は来月末に払うと約束したときの 2 万円。
-    concepts: [liability]
-  - id: loans_payable
-    name: 借入金
-    aliases: [借り入れ金, 借入れ金]
-    reading: [かりいれきん]
-    short: 銀行などから借りていて、返さなければならないお金
-    element: liability
-    why: 将来返済しなければならない義務だからです。受け取った現金は資産ですが、返す義務は負債として別に記録します。
-    example: 銀行から借りて、3 年かけて返す 100 万円。
-    concepts: [liability]
+  - id: merchandise_inventory
+    name: 繰越商品
+    aliases: [商品]
+    reading: [くりこししょうひん]
+    short: 決算の日に売れ残っていた商品の仕入値
+    element: asset
+    why: まだ売れていない商品は、これから売ってお金に変わる会社の財産だからです。売れた分だけが費用(売上原価)になります。
+    example: 決算の日に棚に残っていた、仕入値 8 万円分の商品。
+    concepts: [asset, ending_inventory, cost_of_goods_sold]
+  - id: loans_receivable
+    name: 貸付金
+    aliases: [貸し付け金, 貸付け金]
+    reading: [かしつけきん]
+    short: 他の人や会社に貸していて、後で返してもらうお金
+    element: asset
+    why: 後で返してもらう権利で、将来お金に変わる財産だからです。
+    example: 取引先に貸して、1 年後に返してもらう 50 万円。
+    concepts: [asset, loan]
+  - id: accounts_receivable_other
+    name: 未収入金
+    reading: [みしゅうにゅうきん]
+    short: 商品以外の物(備品など)を売って、まだ受け取っていない代金
+    element: asset
+    why: 後で現金を受け取る権利で、将来お金に変わる財産だからです。商品の売上代金なら売掛金、それ以外なら未収入金です。
+    example: 使わなくなった棚を 2 万円で売り、代金は来月受け取ると約束したときの 2 万円。
+    concepts: [asset, non_trade_receivable_payable]
+  - id: advance_payment
+    name: 前払金
+    aliases: [前渡金, 前払い金]
+    reading: [まえばらいきん, まえわたしきん]
+    short: 商品を受け取る前に払った手付金
+    element: asset
+    why: 商品を受け取る権利を先に買ってある状態で、将来商品に変わる財産だからです。まだ仕入ではありません。
+    example: 来月届く商品 10 万円を注文して、手付金として先に払った 2 万円。
+    concepts: [asset, advance_payment_receipt]
+  - id: advances_paid
+    name: 立替金
+    aliases: [立て替え金, 立替え金]
+    reading: [たてかえきん]
+    short: 従業員や取引先の代わりに一時的に払ってあげたお金
+    element: asset
+    why: 後で本人から返してもらう権利で、将来お金に変わる財産だからです。会社の費用ではありません。
+    example: 従業員が個人で負担すべき保険料を、会社が代わりに払っておいた 1 万円。
+    concepts: [asset, advances_and_deposits]
+  - id: suspense_payment
+    name: 仮払金
+    aliases: [仮払い金]
+    reading: [かりばらいきん]
+    short: 出張の旅費など、いくら何に使うかが確定する前に渡しておいたお金
+    element: asset
+    why: 使い道と金額が決まるまでは、まだ会社のお金が手元を離れただけの状態だからです。精算して初めて費用になります。
+    example: 出張に行く従業員へ、旅費の概算として渡しておいた 5 万円。
+    concepts: [asset, suspense_accounts]
   - id: building
     name: 建物
     reading: [たてもの]
@@ -69,6 +129,78 @@ accounts:
     why: 長い期間にわたって事業に使える会社の財産だからです。
     example: 商品の配達に使うために買った軽トラック。
     concepts: [asset, tangible_fixed_assets]
+  - id: accumulated_depreciation
+    name: 減価償却累計額
+    aliases: [建物減価償却累計額, 備品減価償却累計額, 車両運搬具減価償却累計額]
+    reading: [げんかしょうきゃくるいけいがく]
+    short: これまでに計上した減価償却費の合計。固定資産の価値がどれだけ減ったかを表す
+    element: asset
+    contra: true
+    why: 固定資産の勘定の金額(取得原価)を直接減らさず、取得原価と減価の累計を別々に見せるための「資産のマイナス」項目だからです。支払う義務ではないので負債ではありません。
+    example: 100 万円のトラックを毎年 20 万円ずつ償却して 2 年たったときの 40 万円。トラックの帳簿価額は 60 万円になる。
+    concepts: [contra_account, depreciation, indirect_method]
+  - id: accounts_payable
+    name: 買掛金
+    aliases: [買い掛け金]
+    reading: [かいかけきん]
+    short: 商品を仕入れたが、まだ支払っていない代金
+    element: liability
+    why: 後で現金を支払わなければならない義務だからです。
+    example: 商品を 2 万円で仕入れ、代金は来月末に払うと約束したときの 2 万円。
+    concepts: [liability]
+  - id: accounts_payable_other
+    name: 未払金
+    aliases: [未払い金]
+    reading: [みばらいきん]
+    short: 商品以外の物(備品など)を買って、まだ支払っていない代金
+    element: liability
+    why: 後で現金を支払う義務だからです。商品の仕入代金なら買掛金、それ以外なら未払金です。
+    example: 事務所のパソコンを 15 万円で買い、代金は来月払うと約束したときの 15 万円。
+    concepts: [liability, non_trade_receivable_payable]
+  - id: advance_received
+    name: 前受金
+    aliases: [前受け金]
+    reading: [まえうけきん]
+    short: 商品を渡す前に受け取った手付金
+    element: liability
+    why: 商品を渡す義務(渡せなければ返す義務)を負っている状態だからです。まだ売上ではありません。
+    example: 来月渡す商品 10 万円の注文を受けて、手付金として先に受け取った 2 万円。
+    concepts: [liability, advance_payment_receipt]
+  - id: deposits_received
+    name: 預り金
+    aliases: [預かり金]
+    reading: [あずかりきん]
+    short: 従業員の給料から差し引いた税金など、後で代わりに納めるために一時的に預かっているお金
+    element: liability
+    why: 本人の代わりに納める義務を負っている他人のお金だからです。会社のもうけではありません。
+    example: 給料から差し引いて、後で会社が代わりに税務署へ納める所得税 1 万円。
+    concepts: [liability, advances_and_deposits]
+  - id: suspense_receipt
+    name: 仮受金
+    aliases: [仮受け金]
+    reading: [かりうけきん]
+    short: 正体の分からない入金を、理由が分かるまで置いておく科目
+    element: liability
+    why: 何のお金か分からないうちは、返す必要があるかもしれないお金として扱うからです。理由が分かれば本来の科目へ移します。
+    example: 銀行口座に振り込まれたものの、何の入金か分からない 3 万円。
+    concepts: [liability, suspense_accounts]
+  - id: bank_overdraft
+    name: 当座借越
+    reading: [とうざかりこし]
+    short: 当座預金の残高を超えて小切手を振り出し、銀行に立て替えてもらっている金額
+    element: liability
+    why: 銀行が一時的に立て替えたお金で、返さなければならない義務だからです。預金という名前が付いていても負債です。
+    example: 当座預金の残高が 10 万円のときに 15 万円の小切手を振り出して、銀行に立て替えてもらった 5 万円。
+    concepts: [liability, bank_overdraft]
+  - id: loans_payable
+    name: 借入金
+    aliases: [借り入れ金, 借入れ金]
+    reading: [かりいれきん]
+    short: 銀行などから借りていて、返さなければならないお金
+    element: liability
+    why: 将来返済しなければならない義務だからです。受け取った現金は資産ですが、返す義務は負債として別に記録します。
+    example: 銀行から借りて、3 年かけて返す 100 万円。
+    concepts: [liability]
   - id: capital_stock
     name: 資本金
     reading: [しほんきん]
@@ -154,16 +286,6 @@ accounts:
     why: 固定資産の取得原価のうち、当期の使用によって消費された部分を費用として認識するためです。
     example: 100 万円のトラックを 5 年使うなら、1 年目の減価償却費は 20 万円。
     concepts: [expense, depreciation, cost_allocation]
-  - id: accumulated_depreciation
-    name: 減価償却累計額
-    aliases: [建物減価償却累計額, 備品減価償却累計額, 車両運搬具減価償却累計額]
-    reading: [げんかしょうきゃくるいけいがく]
-    short: これまでに計上した減価償却費の合計。固定資産の価値がどれだけ減ったかを表す
-    element: asset
-    contra: true
-    why: 固定資産の勘定の金額(取得原価)を直接減らさず、取得原価と減価の累計を別々に見せるための「資産のマイナス」項目だからです。支払う義務ではないので負債ではありません。
-    example: 100 万円のトラックを毎年 20 万円ずつ償却して 2 年たったときの 40 万円。トラックの帳簿価額は 60 万円になる。
-    concepts: [contra_account, depreciation, indirect_method]
   - id: gain_on_sale_of_fixed_assets
     name: 固定資産売却益
     reading: [こていしさんばいきゃくえき]
@@ -180,15 +302,6 @@ accounts:
     why: 売却によって純資産が減った分だからです。
     example: 帳簿価額 30 万円の備品を 25 万円で売ったときの差額 5 万円。
     concepts: [expense, book_value]
-  - id: merchandise_inventory
-    name: 繰越商品
-    aliases: [商品]
-    reading: [くりこししょうひん]
-    short: 決算の日に売れ残っていた商品の仕入値
-    element: asset
-    why: まだ売れていない商品は、これから売ってお金に変わる会社の財産だからです。売れた分だけが費用(売上原価)になります。
-    example: 決算の日に棚に残っていた、仕入値 8 万円分の商品。
-    concepts: [asset, ending_inventory, cost_of_goods_sold]
   - id: shipping_expense
     name: 発送費
     reading: [はっそうひ]
@@ -197,14 +310,6 @@ accounts:
     why: 売上を得るために使った犠牲で、純資産を減らす原因だからです。仕入れるときの運賃(仕入諸掛)とは違い、仕入には含めません。
     example: 売った商品をお客さんへ宅配便で送った送料 800 円。
     concepts: [expense, incidental_costs]
-  - id: cash_over_and_short
-    name: 現金過不足
-    reading: [げんきんかぶそく]
-    short: 帳簿の現金と実際の現金が合わないとき、原因が分かるまで差額を置いておく科目
-    element: asset
-    why: 現金の差額を一時的に置いておく「仮の置き場」で、現金の仲間として資産の側で扱うからです。原因が分かれば本来の科目へ移し、決算まで分からなければ雑損か雑益に振り替えて、財務諸表には残しません。
-    example: 帳簿では 5 万円あるはずの現金を数えたら 4 万 9,000 円しかなかったときの、原因不明の差額 1,000 円。
-    concepts: [cash_over_and_short]
   - id: miscellaneous_loss
     name: 雑損
     aliases: [雑損失]
@@ -240,39 +345,6 @@ accounts:
     why: 移動や出張のために使った犠牲で、財産として残らないからです。
     example: 取引先へ行くために使った往復の電車代 1,200 円。
     concepts: [expense]
-  - id: checking_account
-    name: 当座預金
-    reading: [とうざよきん]
-    short: 小切手で支払うための預金。利息は付かない
-    element: asset
-    why: 銀行に預けてある会社の財産で、小切手を振り出して支払いに使えるからです。
-    example: 仕入先への支払いに小切手を使うために、銀行の当座口座へ入れておいた 100 万円。
-    concepts: [asset, checking_account]
-  - id: bank_overdraft
-    name: 当座借越
-    reading: [とうざかりこし]
-    short: 当座預金の残高を超えて小切手を振り出し、銀行に立て替えてもらっている金額
-    element: liability
-    why: 銀行が一時的に立て替えたお金で、返さなければならない義務だからです。預金という名前が付いていても負債です。
-    example: 当座預金の残高が 10 万円のときに 15 万円の小切手を振り出して、銀行に立て替えてもらった 5 万円。
-    concepts: [liability, bank_overdraft]
-  - id: petty_cash
-    name: 小口現金
-    reading: [こぐちげんきん]
-    short: 日々の細かい支払いのために担当者へ前もって渡してある現金
-    element: asset
-    why: 担当者の手元に移っただけで、まだ使っていない会社のお金だからです。使った分だけが費用になります。
-    example: 文房具代やお茶代に使うために、総務の担当者へ前もって渡しておいた 3 万円。
-    concepts: [asset, petty_cash]
-  - id: loans_receivable
-    name: 貸付金
-    aliases: [貸し付け金, 貸付け金]
-    reading: [かしつけきん]
-    short: 他の人や会社に貸していて、後で返してもらうお金
-    element: asset
-    why: 後で返してもらう権利で、将来お金に変わる財産だからです。
-    example: 取引先に貸して、1 年後に返してもらう 50 万円。
-    concepts: [asset, loan]
   - id: interest_income
     name: 受取利息
     aliases: [受け取り利息]
@@ -282,74 +354,3 @@ accounts:
     why: お金を貸したことで得られたもうけで、純資産を増やす原因だからです。返してもらう元本とは別です。
     example: 取引先に貸した 50 万円に対して、1 年分として受け取る 1 万円。
     concepts: [revenue, interest]
-  - id: accounts_receivable_other
-    name: 未収入金
-    reading: [みしゅうにゅうきん]
-    short: 商品以外の物(備品など)を売って、まだ受け取っていない代金
-    element: asset
-    why: 後で現金を受け取る権利で、将来お金に変わる財産だからです。商品の売上代金なら売掛金、それ以外なら未収入金です。
-    example: 使わなくなった棚を 2 万円で売り、代金は来月受け取ると約束したときの 2 万円。
-    concepts: [asset, non_trade_receivable_payable]
-  - id: accounts_payable_other
-    name: 未払金
-    aliases: [未払い金]
-    reading: [みばらいきん]
-    short: 商品以外の物(備品など)を買って、まだ支払っていない代金
-    element: liability
-    why: 後で現金を支払う義務だからです。商品の仕入代金なら買掛金、それ以外なら未払金です。
-    example: 事務所のパソコンを 15 万円で買い、代金は来月払うと約束したときの 15 万円。
-    concepts: [liability, non_trade_receivable_payable]
-  - id: advance_payment
-    name: 前払金
-    aliases: [前渡金, 前払い金]
-    reading: [まえばらいきん, まえわたしきん]
-    short: 商品を受け取る前に払った手付金
-    element: asset
-    why: 商品を受け取る権利を先に買ってある状態で、将来商品に変わる財産だからです。まだ仕入ではありません。
-    example: 来月届く商品 10 万円を注文して、手付金として先に払った 2 万円。
-    concepts: [asset, advance_payment_receipt]
-  - id: advance_received
-    name: 前受金
-    aliases: [前受け金]
-    reading: [まえうけきん]
-    short: 商品を渡す前に受け取った手付金
-    element: liability
-    why: 商品を渡す義務(渡せなければ返す義務)を負っている状態だからです。まだ売上ではありません。
-    example: 来月渡す商品 10 万円の注文を受けて、手付金として先に受け取った 2 万円。
-    concepts: [liability, advance_payment_receipt]
-  - id: advances_paid
-    name: 立替金
-    aliases: [立て替え金, 立替え金]
-    reading: [たてかえきん]
-    short: 従業員や取引先の代わりに一時的に払ってあげたお金
-    element: asset
-    why: 後で本人から返してもらう権利で、将来お金に変わる財産だからです。会社の費用ではありません。
-    example: 従業員が個人で負担すべき保険料を、会社が代わりに払っておいた 1 万円。
-    concepts: [asset, advances_and_deposits]
-  - id: deposits_received
-    name: 預り金
-    aliases: [預かり金]
-    reading: [あずかりきん]
-    short: 従業員の給料から差し引いた税金など、後で代わりに納めるために一時的に預かっているお金
-    element: liability
-    why: 本人の代わりに納める義務を負っている他人のお金だからです。会社のもうけではありません。
-    example: 給料から差し引いて、後で会社が代わりに税務署へ納める所得税 1 万円。
-    concepts: [liability, advances_and_deposits]
-  - id: suspense_payment
-    name: 仮払金
-    aliases: [仮払い金]
-    reading: [かりばらいきん]
-    short: 出張の旅費など、いくら何に使うかが確定する前に渡しておいたお金
-    element: asset
-    why: 使い道と金額が決まるまでは、まだ会社のお金が手元を離れただけの状態だからです。精算して初めて費用になります。
-    example: 出張に行く従業員へ、旅費の概算として渡しておいた 5 万円。
-    concepts: [asset, suspense_accounts]
-  - id: suspense_receipt
-    name: 仮受金
-    aliases: [仮受け金]
-    reading: [かりうけきん]
-    short: 正体の分からない入金を、理由が分かるまで置いておく科目
-    element: liability
-    why: 何のお金か分からないうちは、返す必要があるかもしれないお金として扱うからです。理由が分かれば本来の科目へ移します。
-    example: 銀行口座に振り込まれたものの、何の入金か分からない 3 万円。
-    concepts: [liability, suspense_accounts]
