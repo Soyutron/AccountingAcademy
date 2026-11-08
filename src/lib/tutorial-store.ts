@@ -17,6 +17,8 @@ const DEFAULT: TutorialState = { status: "pending", enabled: true };
 const SERVER: TutorialState = { status: "done", enabled: false };
 const listeners = new Set<() => void>();
 let cache: TutorialState | null = null;
+// 保存に失敗した変更は cache にしかないので、読み直して失わないようにする
+let unsaved = false;
 
 function read(): TutorialState {
   if (cache) return cache;
@@ -30,18 +32,34 @@ function read(): TutorialState {
 }
 
 export function updateTutorial(patch: Partial<TutorialState>) {
+  // storage イベントが届く前に別タブが書いた値も潰さないよう、書く直前に読み直す
+  if (!unsaved) cache = null;
   cache = { ...read(), ...patch };
   try {
     localStorage.setItem(KEY, JSON.stringify(cache));
+    unsaved = false;
   } catch {
     // 保存できない環境では、このページを開いている間だけ有効
+    unsaved = true;
   }
   listeners.forEach((l) => l());
 }
 
+// key が null になるのは別タブの localStorage.clear()
+function onStorage(e: StorageEvent) {
+  if (e.key !== KEY && e.key !== null) return;
+  cache = null;
+  unsaved = false;
+  listeners.forEach((l) => l());
+}
+
 function subscribe(listener: () => void) {
+  if (listeners.size === 0) window.addEventListener("storage", onStorage);
   listeners.add(listener);
-  return () => listeners.delete(listener);
+  return () => {
+    listeners.delete(listener);
+    if (listeners.size === 0) window.removeEventListener("storage", onStorage);
+  };
 }
 
 export function useTutorialState(): TutorialState {
