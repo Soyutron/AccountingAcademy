@@ -1,0 +1,115 @@
+/* 帳簿用紙。緑がかった帳簿用紙、青い罫線、赤い欄線。紙の元帳を開いたときの「書く場所が決まっている」感覚 */
+[data-theme="ledger-paper"] {
+  --background: #eef3ec;
+  --foreground: #1c2622;
+  --card: #ffffff;
+  --card-foreground: #1c2622;
+  --popover: #ffffff;
+  --popover-foreground: #1c2622;
+  --primary: #2e5c9e;
+  --primary-foreground: #ffffff;
+  --secondary: #e7eee4;
+  --secondary-foreground: #1c2622;
+  --muted: #e7eee4;
+  --muted-foreground: #5b6761;
+  --accent: #dde6da;
+  --accent-foreground: #1c2622;
+  --destructive: #b5321f;
+  --border: #c9d6cf;
+  --input: #c9d6cf;
+  --ring: #2e5c9e;
+  --brand-accent: #c5392c;
+  --rule: #bdd1e6;
+  --surface-guide: #e7eee4;
+  --surface-work: #ffffff;
+  --surface-result: #ffffff;
+
+  --el-asset-fg: #1b5fa8;
+  --el-asset-bg: #e3ecf8;
+  --el-asset-border: #9dbbe3;
+  --el-asset-bar: #4a82cf;
+  --el-liability-fg: #a4303c;
+  --el-liability-bg: #f8e6e8;
+  --el-liability-border: #e0a3aa;
+  --el-liability-bar: #c85a66;
+  --el-equity-fg: #6d47a3;
+  --el-equity-bg: #efe9f8;
+  --el-equity-border: #c2ade2;
+  --el-equity-bar: #8f6cc7;
+  --el-revenue-fg: #2a7a47;
+  --el-revenue-bg: #e3f2e8;
+  --el-revenue-border: #9bd1b0;
+  --el-revenue-bar: #3e9c68;
+  --el-expense-fg: #946000;
+  --el-expense-bg: #faf0d8;
+  --el-expense-border: #e7cd86;
+  --el-expense-bar: #d9a233;
+
+  --ok-bg: #e4ecf8;
+  --ok-fg: #27497e;
+  --hint-bg: #e7eee4;
+  --hint-fg: #1c2622;
+  --diff-fg: #b5321f;
+  --error-fg: #b5321f;
+  --changed-bg: #e2e9e0;
+
+  --radius: 0.25rem;
+  --type-heading: var(--font-zen-old-mincho);
+  --type-body: var(--font-noto-sans-jp);
+  --type-mono: var(--font-ibm-plex-mono);
+}
+
+[data-theme="ledger-paper"][data-mode="dark"] {
+  --background: #141a17;
+  --foreground: #e3e9e4;
+  --card: #1b2320;
+  --card-foreground: #e3e9e4;
+  --popover: #1b2320;
+  --popover-foreground: #e3e9e4;
+  --primary: #86aee6;
+  --primary-foreground: #0f1a2b;
+  --secondary: #22302a;
+  --secondary-foreground: #e3e9e4;
+  --muted: #22302a;
+  --muted-foreground: #94a39b;
+  --accent: #283831;
+  --accent-foreground: #e3e9e4;
+  --destructive: #ef7e70;
+  --border: #2e3a34;
+  --input: #2e3a34;
+  --ring: #86aee6;
+  --brand-accent: #ef7e70;
+  --rule: #2f4258;
+  --surface-guide: #182019;
+  --surface-work: #1b2320;
+  --surface-result: #1b2320;
+
+  --el-asset-fg: #8fb8ef;
+  --el-asset-bg: #16294a;
+  --el-asset-border: #2b4a7f;
+  --el-asset-bar: #4a82cf;
+  --el-liability-fg: #f09aa3;
+  --el-liability-bg: #3d1c22;
+  --el-liability-border: #6d3440;
+  --el-liability-bar: #c85a66;
+  --el-equity-fg: #c6adee;
+  --el-equity-bg: #2b2240;
+  --el-equity-border: #4b3c70;
+  --el-equity-bar: #8f6cc7;
+  --el-revenue-fg: #86d3a4;
+  --el-revenue-bg: #163120;
+  --el-revenue-border: #2a6a45;
+  --el-revenue-bar: #3e9c68;
+  --el-expense-fg: #efc55f;
+  --el-expense-bg: #3a2c10;
+  --el-expense-border: #6b5322;
+  --el-expense-bar: #d9a233;
+
+  --ok-bg: #1c2a40;
+  --ok-fg: #c3d5f1;
+  --hint-bg: #182019;
+  --hint-fg: #e3e9e4;
+  --diff-fg: #ef7e70;
+  --error-fg: #ef7e70;
+  --changed-bg: #212a26;
+}

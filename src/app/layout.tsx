@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Noto_Sans_JP } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
-
-const notoSansJp = Noto_Sans_JP({ subsets: ["latin"], weight: ["400", "500", "700"], variable: "--font-noto-sans-jp", display: "swap" });
+import { fontVariables } from "@/themes/fonts";
+import { DEFAULT_THEME, themeBootScript } from "@/themes";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 
 export const metadata: Metadata = {
   title: "AccountingAcademy",
@@ -12,14 +12,19 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ja" className={notoSansJp.variable}>
+    // サーバーは既定テーマ・ライトで描き、<head> のスクリプトが描画前に localStorage の設定で属性を置き換える。
+    // その差分は意図したものなので suppressHydrationWarning
+    <html lang="ja" className={fontVariables} data-theme={DEFAULT_THEME} data-mode="light" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeBootScript() }} />
+      </head>
       <body className="min-h-dvh bg-background text-foreground antialiased font-sans">
         <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-background focus:p-2">
           本文へ移動
         </a>
         <header className="border-b">
-          <nav className="mx-auto flex max-w-4xl items-center gap-5 px-4 py-3 text-sm">
-            <Link href="/" className="font-semibold">
+          <nav className="mx-auto flex max-w-4xl items-center gap-5 px-4 py-2 text-sm">
+            <Link href="/" className="font-heading font-bold">
               AccountingAcademy
             </Link>
             <Link href="/paths/boki-3" className="text-muted-foreground hover:text-foreground">
@@ -28,6 +33,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Link href="/glossary" className="text-muted-foreground hover:text-foreground">
               用語集
             </Link>
+            <span className="flex-1" />
+            <ThemeSwitcher />
           </nav>
         </header>
         <main id="main">{children}</main>

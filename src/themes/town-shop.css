@@ -1,0 +1,116 @@
+/* 街の小さな会社(既定テーマ)。カフェ「マメノキ」の物語を主役にする。オートミール色の紙、豆の木の緑、はちみつ色の差し色、丸みのある書体。
+   主色は青寄りの緑、収益は黄緑に寄せて色相で離す。はちみつ色は装飾だけに使い、状態には使わない(docs/design-system.md 5 章) */
+[data-theme="town-shop"] {
+  --background: #fbf7f1;
+  --foreground: #2b251f;
+  --card: #ffffff;
+  --card-foreground: #2b251f;
+  --popover: #ffffff;
+  --popover-foreground: #2b251f;
+  --primary: #1e6b62;
+  --primary-foreground: #ffffff;
+  --secondary: #f5eee3;
+  --secondary-foreground: #2b251f;
+  --muted: #f5eee3;
+  --muted-foreground: #6b6158;
+  --accent: #f0e6d6;
+  --accent-foreground: #2b251f;
+  --destructive: #b3402e;
+  --border: #e3d9cb;
+  --input: #e3d9cb;
+  --ring: #1e6b62;
+  --brand-accent: #e0a23a;
+  --rule: #efe7da;
+  --surface-guide: #f5eee3;
+  --surface-work: #ffffff;
+  --surface-result: #ffffff;
+
+  --el-asset-fg: #1a6c9e;
+  --el-asset-bg: #e3f0f8;
+  --el-asset-border: #a0c9e3;
+  --el-asset-bar: #4a9bd1;
+  --el-liability-fg: #b2383a;
+  --el-liability-bg: #fae7e6;
+  --el-liability-border: #e8a7a5;
+  --el-liability-bar: #d46a6b;
+  --el-equity-fg: #7a4ba8;
+  --el-equity-bg: #f1eaf9;
+  --el-equity-border: #cbb3e6;
+  --el-equity-bar: #9c78cc;
+  --el-revenue-fg: #4a7510;
+  --el-revenue-bg: #eef5df;
+  --el-revenue-border: #bcd58e;
+  --el-revenue-bar: #8db83a;
+  --el-expense-fg: #8f5208;
+  --el-expense-bg: #fcefd8;
+  --el-expense-border: #efc98c;
+  --el-expense-bar: #e08a3c;
+
+  --ok-bg: #e3f1ec;
+  --ok-fg: #1b5a4a;
+  --hint-bg: #f5eee3;
+  --hint-fg: #2b251f;
+  --diff-fg: #5b3a22;
+  --error-fg: #b3402e;
+  --changed-bg: #f3ebdd;
+
+  --radius: 0.75rem;
+  --type-heading: var(--font-zen-maru-gothic);
+  --type-body: var(--font-biz-udpgothic);
+  --type-mono: var(--font-ibm-plex-mono);
+}
+
+[data-theme="town-shop"][data-mode="dark"] {
+  --background: #1b1714;
+  --foreground: #f0ebe3;
+  --card: #241f1a;
+  --card-foreground: #f0ebe3;
+  --popover: #241f1a;
+  --popover-foreground: #f0ebe3;
+  --primary: #5cc0ad;
+  --primary-foreground: #0e2a22;
+  --secondary: #2a241e;
+  --secondary-foreground: #f0ebe3;
+  --muted: #2a241e;
+  --muted-foreground: #a39a8f;
+  --accent: #332c25;
+  --accent-foreground: #f0ebe3;
+  --destructive: #f29c8a;
+  --border: #3a332c;
+  --input: #3a332c;
+  --ring: #5cc0ad;
+  --brand-accent: #f2bd5b;
+  --rule: #342e27;
+  --surface-guide: #201b17;
+  --surface-work: #241f1a;
+  --surface-result: #241f1a;
+
+  --el-asset-fg: #86c2ea;
+  --el-asset-bg: #16293a;
+  --el-asset-border: #2a4b66;
+  --el-asset-bar: #4a9bd1;
+  --el-liability-fg: #f0999a;
+  --el-liability-bg: #3e1d1e;
+  --el-liability-border: #6e3738;
+  --el-liability-bar: #d46a6b;
+  --el-equity-fg: #cbb1ee;
+  --el-equity-bg: #2d2341;
+  --el-equity-border: #4f3e70;
+  --el-equity-bar: #9c78cc;
+  --el-revenue-fg: #b5d97a;
+  --el-revenue-bg: #26361a;
+  --el-revenue-border: #46662a;
+  --el-revenue-bar: #8db83a;
+  --el-expense-fg: #f3c47c;
+  --el-expense-bg: #3f2c11;
+  --el-expense-border: #70501f;
+  --el-expense-bar: #e08a3c;
+
+  --ok-bg: #173129;
+  --ok-fg: #b4e6d4;
+  --hint-bg: #201b17;
+  --hint-fg: #f0ebe3;
+  --diff-fg: #e6cdb0;
+  --error-fg: #f29c8a;
+  --changed-bg: #3a3020;
+}

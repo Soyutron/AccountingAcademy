@@ -78,7 +78,7 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
                     const n = Number(e.target.value.replaceAll(",", ""));
                     if (e.target.value.trim() && Number.isInteger(n)) update(side, i, { amount: formatAmount(n) });
                   }}
-                  className="min-w-24 flex-[2] text-right bg-background"
+                  className="min-w-24 flex-[2] text-right bg-background font-mono tabular-nums"
                 />
                 {!readOnly && (
                   <Button type="button" variant="ghost" size="icon" className="shrink-0" aria-label="行を削除" disabled={value[side].length <= 1} onClick={() => removeLine(side, i)}>
@@ -95,7 +95,7 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
                     <span className="text-muted-foreground truncate">{account.short}</span>
                   </>
                 ) : line.accountName.trim() && !matchesSomeAccount(line.accountName, accounts) ? (
-                  <span className="text-rose-700">この名前の科目はありません</span>
+                  <span className="text-error-fg">この名前の科目はありません</span>
                 ) : null}
               </div>
             </div>
@@ -133,18 +133,18 @@ function ImpactPanel({ impact }: { impact: ReturnType<typeof computeImpact> }) {
           return (
             <span key={el} className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-colors ${value !== 0 ? `${s.bg} ${s.border} ${s.text}` : "text-muted-foreground"}`}>
               <span aria-hidden>{s.symbol}</span>
-              {s.label} <span className="tabular-nums font-medium">{sign(value)}</span>
+              {s.label} <span className="font-mono tabular-nums font-medium">{sign(value)}</span>
             </span>
           );
         })}
         <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs ${impact.netIncome !== 0 ? "font-medium" : "text-muted-foreground"}`}>
-          当期純利益 <span className="ml-1 tabular-nums">{sign(impact.netIncome)}</span>
+          当期純利益 <span className="ml-1 font-mono tabular-nums">{sign(impact.netIncome)}</span>
         </span>
       </div>
       <div className="mt-1 text-xs text-muted-foreground">
         借方合計 {formatAmount(impact.debitTotal)} / 貸方合計 {formatAmount(impact.creditTotal)}
         {impact.debitTotal + impact.creditTotal > 0 && (
-          <span className={impact.balanced ? " text-emerald-700" : " text-rose-700"}>{impact.balanced ? " 一致" : " 不一致"}</span>
+          <span className={impact.balanced ? " text-ok-fg" : " text-error-fg"}>{impact.balanced ? " 一致" : " 不一致"}</span>
         )}
         <span className="ml-2">純資産は当期純利益による増減を含みます。</span>
       </div>

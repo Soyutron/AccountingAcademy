@@ -134,7 +134,7 @@ right: { title: 間接法, figure: { type: elements, items: [...] } }
 
 - 置き場所: 図解はコード(`src/components/figures/`)とコンテンツ(```figure)。外部イラストは `public/illustrations/<source>/<name>.svg`。
 - 台帳: `docs/assets-ledger.md` に、ファイル名 / 出所 URL / ライセンス / 取得日 / 使用箇所を 1 行ずつ記録する。外部素材を足すときは必ず同時に書く。
-- 再着色: unDraw の SVG はダウンロード時に本サービスの基調色(sky-500 `#0ea5e9`)を指定する。手で色を変えない。
+- 再着色: unDraw の SVG はダウンロード時に既定テーマの差し色(`--brand-accent`。docs/design-system.md)を指定する。手で色を変えない。テーマごとの再着色は将来の課題(design-system.md 7 章)。
 - アクセシビリティ: 図解ブロックは `alt` 必須(ビルドで検査)。図の中の文字は 12px 以上。装飾のイラストは `aria-hidden`。
 - ダークモード: 図解は CSS 変数で配色を切り替える。イラストは背景が透過のものだけ使う。
 - 命名と粒度: 1 図 1 メッセージ。1 ステップに図は 1 つまで。説明文の 2〜4 文を超える図解は置かない。

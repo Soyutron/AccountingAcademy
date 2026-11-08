@@ -18,7 +18,7 @@ export function TimelineFigure({ total, periods, unit, label }: { total: number;
               {i + 1}
               {unit}目
             </div>
-            <div className={`text-xs font-medium tabular-nums ${ELEMENT_STYLE.expense.text}`}>{formatAmount(each)}</div>
+            <div className={`text-xs font-medium font-mono tabular-nums ${ELEMENT_STYLE.expense.text}`}>{formatAmount(each)}</div>
           </li>
         ))}
       </ol>

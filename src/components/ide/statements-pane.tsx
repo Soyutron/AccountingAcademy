@@ -58,7 +58,7 @@ export function StatementsPane({ accounts, balances, diff, company }: Props) {
             <Total label="負債・純資産合計" amount={st.totalLiabilities + st.totalEquity} />
           </div>
         </div>
-        <p className={`mt-1 text-xs ${balanced ? "text-muted-foreground" : "text-rose-700"}`}>{balanced ? "左右の合計は一致しています。" : "左右の合計が一致していません。"}</p>
+        <p className={`mt-1 text-xs ${balanced ? "text-muted-foreground" : "text-error-fg"}`}>{balanced ? "左右の合計は一致しています。" : "左右の合計が一致していません。"}</p>
       </section>
 
       <section aria-label="損益計算書">
@@ -83,7 +83,7 @@ export function StatementsPane({ accounts, balances, diff, company }: Props) {
                   {s.label}
                   <span aria-hidden>{d > 0 ? "▲" : "▼"}</span>
                   <span className="sr-only">{d > 0 ? "増加" : "減少"}</span>
-                  <span className="tabular-nums">{formatAmount(Math.abs(d))}</span>
+                  <span className="font-mono tabular-nums">{formatAmount(Math.abs(d))}</span>
                 </li>
               );
             })}
@@ -140,9 +140,9 @@ function Group({ element, lines, diff, accounts, children }: { element: Element;
 function Row({ id, name, amount, delta }: { id?: string; name: React.ReactNode; amount: number; delta: number }) {
   const changed = delta !== 0;
   return (
-    <div data-account={id} className={`flex flex-wrap items-baseline justify-between gap-x-2 rounded px-1 ${changed ? "bg-amber-50 motion-safe:animate-highlight" : ""}`}>
+    <div data-account={id} className={`flex flex-wrap items-baseline justify-between gap-x-2 rounded px-1 ${changed ? "bg-changed motion-safe:animate-highlight" : ""}`}>
       <span className="min-w-0">{name}</span>
-      <span className="ml-auto tabular-nums whitespace-nowrap">
+      <span className="ml-auto font-mono tabular-nums whitespace-nowrap">
         {amount < 0 ? (
           <>
             <span aria-hidden>△</span>
@@ -153,7 +153,7 @@ function Row({ id, name, amount, delta }: { id?: string; name: React.ReactNode; 
           formatAmount(amount)
         )}
         {changed && (
-          <span className={`ml-1 text-xs ${delta > 0 ? "text-emerald-700" : "text-rose-700"}`}>
+          <span className="ml-1 text-xs text-muted-foreground">
             <span aria-hidden>{delta > 0 ? "▲" : "▼"}</span>
             <span className="sr-only">{delta > 0 ? "増加 " : "減少 "}</span>
             {formatAmount(Math.abs(delta))}
@@ -166,9 +166,9 @@ function Row({ id, name, amount, delta }: { id?: string; name: React.ReactNode; 
 
 function Total({ label, amount }: { label: string; amount: number }) {
   return (
-    <div className="mt-auto flex flex-wrap items-baseline justify-between gap-x-2 border-t pt-1 font-medium">
+    <div className="mt-auto flex flex-wrap items-baseline justify-between gap-x-2 border-t border-foreground/60 pt-1 font-medium">
       <span className="min-w-0">{label}</span>
-      <span className="ml-auto tabular-nums whitespace-nowrap">{formatAmount(amount)}</span>
+      <span className="ml-auto font-mono tabular-nums whitespace-nowrap">{formatAmount(amount)}</span>
     </div>
   );
 }
