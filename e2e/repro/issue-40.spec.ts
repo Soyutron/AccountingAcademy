@@ -11,7 +11,6 @@ test("スマホ幅のツアーで対象のあるペインが表示される", as
   await tour.getByRole("button", { name: "はじめる" }).click();
   await next.click();
   await page.getByRole("button", { name: "次へ →" }).click();
-  await next.click();
 
   await expect(tour).toContainText("4 / 12");
   await expect(page.getByRole("tab", { name: "ワークスペース" })).toHaveAttribute("aria-selected", "true");
@@ -27,7 +26,6 @@ test("スマホ幅のツアーで対象のあるペインが表示される", as
   await next.click(); // 影響の説明
   await next.click(); // 記帳する待ち
   await page.getByRole("region", { name: "ワークスペース" }).getByRole("button", { name: "記帳する" }).click();
-  await next.click();
 
   await expect(tour).toContainText("8 / 12");
   await expect(page.getByRole("region", { name: "結果" })).toBeVisible();

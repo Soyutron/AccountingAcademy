@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { type ReactNode, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
+import type { GlossaryAccount } from "@/lib/content";
 import { type AccountInfo, type Change, type Element, type JournalEntry, type Side, ELEMENT_LABELS, ELEMENTS, computeImpact, toChange } from "@/lib/accounting";
 import { splitAmounts } from "@/lib/task-text";
 import { ElementBadge } from "@/components/element-badge";
@@ -61,7 +62,7 @@ export interface MisconceptionInfo {
 
 interface Props {
   unit: IdeUnit;
-  accounts: AccountInfo[];
+  accounts: GlossaryAccount[];
   misconceptions: Record<string, MisconceptionInfo>;
   // ステップごとの説明文(サーバーで Markdown を描画済み)
   narratives: ReactNode[];
@@ -161,13 +162,23 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [helpOpen, setHelpOpen] = useState(false);
   // 「?」の「もっと詳しく」から開いたときに見せる話題
   const [helpFocus, setHelpFocus] = useState<string | null>(null);
+  // 「?」や note の「くわしく」から開いたときの、閉じたあとのフォーカスの戻り先(Issue #101)
+  const helpReturnTo = useRef<HTMLElement | null>(null);
   // 「場所を示す」で光らせている対象(data-tour の値)
   const [spotlight, setSpotlight] = useState<string | null>(null);
   const forceTour = useSyncExternalStore(noop, readForceTour, () => false);
   const isTutorialUnit = unit.id === TUTORIAL_UNIT_ID;
   const [tourExited, setTourExited] = useState(false);
   const [tourKey, setTourKey] = useState(0);
-  const tourActive = isTutorialUnit && !tourExited && (tutorial.status !== "done" || forceTour || tourKey > 0);
+  const tourActive = isTutorialUnit && !tourExited && (tutorial.status === "pending" || forceTour || tourKey > 0);
+  const exitTour = () => {
+    setTourExited(true);
+    if (!forceTour) return;
+    // ?tour=1 は一度きりの指示。URL に残すと reload のたびにツアーが始まり直す(Issue #81)
+    const url = new URL(window.location.href);
+    url.searchParams.delete("tour");
+    window.history.replaceState(null, "", url);
+  };
   const restartTour = () => {
     setPosted(replayEntries(unit.steps, 0));
     answered.current.clear();
@@ -429,7 +440,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   // 何か入れたのに記帳できないとき、足りない側か途中の行を伝える(ボタンが無言で無効のままにならないように。Issue #43, #71)
   const missingSides = [entryDraft.debit.length === 0 && "借方", entryDraft.credit.length === 0 && "貸方"].filter(Boolean);
   const touched = [...draft.debit, ...draft.credit].some((l) => l.accountName.trim() || l.amount.trim());
-  const sideHint = draftReady || !touched ? null : draftHasBothSides ? "入力が途中の行があります。科目と金額をそろえるか、その行を削除すると記帳できます。" : `${missingSides.join("と")}にも科目と金額を入れると記帳できます。`;
+  // 未確定の行は entryDraft から落ちるので、先に見ないと入力済みの側を「足りない側」と案内してしまう(Issue #97)
+  const sideHint = draftReady || !touched ? null : draftIncomplete ? "入力が途中の行があります。科目と金額をそろえるか、その行を削除すると記帳できます。" : `${missingSides.join("と")}にも科目と金額を入れると記帳できます。`;
   const predictReady = ELEMENTS.every((el) => effect[el]);
 
   useEffect(() => {
@@ -561,7 +573,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const misIds = result && "misconceptions" in result ? result.misconceptions : result?.misconception ? [result.misconception] : [];
   const misList = misIds.flatMap((id) => misconceptions[id] ?? []);
   const helpCtx: HelpContext = { taskType: task.type, postedCount: posted.length, isLast, hasHint: Boolean(hint) };
-  const openHelpTopic = (id: string) => {
+  const openHelpTopic = (id: string, returnTo: HTMLElement | null) => {
+    helpReturnTo.current = returnTo;
     setHelpFocus(id);
     setHelpOpen(true);
   };
@@ -605,6 +618,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
             if (!o) setHelpFocus(null);
           }}
           focusTopic={helpFocus}
+          returnToRef={helpReturnTo}
           ctx={helpCtx}
           stepLabel={`ステップ ${stepIndex + 1}「${step.title}」`}
           onRestartTour={isTutorialUnit ? restartTour : undefined}
@@ -697,7 +711,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         </section>
 
         <section ref={workPane} id="pane-work" role="region" aria-label="ワークスペース" tabIndex={-1} className={`${paneClass("work")} bg-surface-work lg:border-r space-y-4 ${FOCUS_TARGET_CLASS}`}>
-          {showFirstTime && <FirstTimeNote topic={firstTime} onMore={() => openHelpTopic(firstTime.id)} onDismiss={() => {
+          {showFirstTime && <FirstTimeNote topic={firstTime} onMore={(button) => openHelpTopic(firstTime.id, button)} onDismiss={() => {
             // 入力欄へ移すとスマートフォンでキーボードが開くので、ペイン自体へ移す
             workPane.current?.focus();
             markSeen(firstTime.id);
@@ -931,7 +945,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         <TutorialTour
           key={tourKey}
           ctx={{ stepIndex, postedCount: posted.length, debit: entryDraft.debit, credit: entryDraft.credit }}
-          onExit={() => setTourExited(true)}
+          onExit={exitTour}
           onPane={setPane}
         />
       )}
