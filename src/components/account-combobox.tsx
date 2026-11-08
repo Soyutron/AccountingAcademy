@@ -105,7 +105,8 @@ export function AccountCombobox({ accounts, value, onChange, onCompositionChange
           }}
           onCompositionStart={() => onCompositionChange?.(true)}
           onCompositionEnd={() => onCompositionChange?.(false)}
-          onFocus={() => setOpen(true)}
+          // onFocus で開くと「行を追加」からのフォーカス移動でも開き、リストが「行を追加」を覆って次の押下が候補に当たる(Issue #104)
+          onClick={() => setOpen(true)}
           onBlur={() => setOpen(false)}
           onKeyDown={onKeyDown}
         />
