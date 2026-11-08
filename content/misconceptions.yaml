@@ -126,6 +126,12 @@ misconceptions:
     correct: まず現金過不足という仮の置き場に差額を入れ、原因を調べる。記帳漏れが見つかれば本来の科目へ移し、決算まで分からなかった分だけが雑損になる
     concepts: [cash_over_and_short, miscellaneous_loss_gain]
     remediation: cash-and-deposits/cash-over-and-short
+  - id: shortage_is_gain
+    name: 足りない分を雑益にする
+    description: 決算まで原因が分からなかった現金の不足を、雑益(収益)に振り替えてしまう
+    correct: 現金が足りなかったのなら損なので雑損(費用)、多かったのなら得なので雑益(収益)。不足は現金過不足の左に預けてあるので、右に書いて消し、左に雑損を書く
+    concepts: [cash_over_and_short, miscellaneous_loss_gain]
+    remediation: cash-and-deposits/cash-over-and-short
   - id: check_is_cash
     name: 小切手を渡したら現金が減る
     description: 小切手を振り出して支払うと、手元の現金が減ると考えている
