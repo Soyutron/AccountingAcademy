@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { flushSync } from "react-dom";
-import { toHiragana } from "@/lib/accounting";
+import { normalizeSearchText } from "@/lib/accounting";
 import type { GlossaryEntry } from "@/lib/content";
 import { ElementBadge } from "@/components/element-badge";
 import { Input } from "@/components/ui/input";
@@ -20,10 +20,10 @@ export function GlossarySearch({
   domainOf: Record<string, string>;
 }) {
   const [query, setQuery] = useState("");
-  const q = toHiragana(query.trim());
-  const hits = q ? entries.filter((e) => [e.name, ...e.aliases, ...e.reading, e.short].some((t) => toHiragana(t).includes(q))) : entries;
+  const q = normalizeSearchText(query);
+  const hits = q ? entries.filter((e) => [e.name, ...e.aliases, ...e.reading, e.short].some((t) => normalizeSearchText(t).includes(q))) : entries;
   // 説明文にだけ語を含む項目が分野の順で先に並ぶと、探している項目が埋もれる(Issue #86)
-  const exact = q ? hits.filter((e) => [e.name, ...e.aliases, ...e.reading].some((t) => toHiragana(t) === q)) : [];
+  const exact = q ? hits.filter((e) => [e.name, ...e.aliases, ...e.reading].some((t) => normalizeSearchText(t) === q)) : [];
   const others = hits.filter((e) => !exact.includes(e));
   const concepts = others.filter((e) => e.kind === "concept");
   const accounts = others.filter((e) => e.kind === "account");
