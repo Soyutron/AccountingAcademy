@@ -89,6 +89,18 @@ describe("その他の課題", () => {
     expect(gradeClassify(task, { cash: "asset", loans_payable: "liability", sales: "revenue" }, accounts).correct).toBe(true);
   });
 
+  it("classify は間違えた科目それぞれの誤解を重複なしで返す(Issue #95)", () => {
+    const task: TaskOf<"classify"> = {
+      type: "classify",
+      accounts: ["cash", "loans_payable", "capital_stock", "sales"],
+      misconceptions: { cash: { expense: "expense_at_payment" }, loans_payable: { revenue: "revenue_equals_cash_in" }, capital_stock: { revenue: "revenue_equals_cash_in" } },
+    };
+    const r = gradeClassify(task, { cash: "expense", loans_payable: "revenue", capital_stock: "revenue", sales: "revenue" }, accounts);
+    expect(r.misconceptions).toEqual(["expense_at_payment", "revenue_equals_cash_in"]);
+    expect(r.misconception).toBe("expense_at_payment");
+    expect(gradeClassify(task, { cash: "asset", loans_payable: "liability", capital_stock: "equity", sales: "revenue" }, accounts).misconceptions).toEqual([]);
+  });
+
   it("tweak は式の出力が目標と一致したら正解", () => {
     const task: TaskOf<"tweak"> = {
       type: "tweak",
