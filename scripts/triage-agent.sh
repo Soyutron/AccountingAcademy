@@ -98,7 +98,7 @@ triage_one() {
 case "${1:-}" in
   loop)
     while :; do
-      n=$(gh issue list --state open --label needs-triage --json number --jq 'sort_by(.number) | .[0].number // empty')
+      n=$(gh issue list --state open --label needs-triage --limit 200 --json number --jq 'sort_by(.number) | .[0].number // empty')
       [ -n "$n" ] || { log "needs-triage の Issue はありません"; break; }
       triage_one "$n"; rc=$?
       case $rc in

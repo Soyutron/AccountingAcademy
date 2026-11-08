@@ -21,10 +21,14 @@ export function GlossarySearch({
   const [query, setQuery] = useState("");
   const q = query.trim();
   const hits = q ? entries.filter((e) => e.name.includes(q) || e.aliases.some((a) => a.includes(q)) || e.short.includes(q)) : entries;
-  const concepts = hits.filter((e) => e.kind === "concept");
-  const accounts = hits.filter((e) => e.kind === "account");
+  // 説明文にだけ語を含む項目が分野の順で先に並ぶと、探している項目が埋もれる(Issue #86)
+  const exact = q ? hits.filter((e) => e.name === q || e.aliases.includes(q)) : [];
+  const others = hits.filter((e) => !exact.includes(e));
+  const concepts = others.filter((e) => e.kind === "concept");
+  const accounts = others.filter((e) => e.kind === "account");
 
   const groups: { title: string; items: GlossaryEntry[] }[] = [
+    { title: "一致する用語", items: exact },
     ...Object.entries(domainTitles).map(([id, title]) => ({ title, items: concepts.filter((c) => domainOf[c.id] === id) })),
     { title: "勘定科目", items: accounts },
   ].filter((g) => g.items.length > 0);

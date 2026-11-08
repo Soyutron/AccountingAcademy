@@ -113,6 +113,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [attempts, setAttempts] = useState(0);
   const [showHint, setShowHint] = useState(false);
   const [pane, setPane] = useState<Pane>("guide");
+  // 初回バナーの判定。進捗を読み終えるまでは false にして、記録のある学習者にバナーが一瞬出ないようにする
+  const [noRecord, setNoRecord] = useState(false);
   const [resumeStep, setResumeStep] = useState<number | null>(null);
   const [resumeSolved, setResumeSolved] = useState(false);
   // 再開するステップの最後の回答。predict は誤答でも進めるので、その予想を復元する(Issue #10)
@@ -131,6 +133,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const gradedAnswer = useRef<string | null>(null);
   // 保存済みの step。見直しや案内前の「次へ」で保存する step を下げないために持つ
   const savedStep = useRef(0);
+  // 失敗した回答は最新の 1 件だけ持ち、次の保存の前に再送する。進捗は次の upsert が最新で上書きするので持たない
+  const failedAttempt = useRef<(() => Promise<void>) | null>(null);
   // 帳簿をさかのぼる: 何件目までの記帳で財務諸表を見るか(null は最新)
   const [viewUpto, setViewUpto] = useState<number | null>(null);
   // 取引の流れのアニメーション。記帳が成功した仕訳を次の描画で測って飛ばす
@@ -199,6 +203,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   useEffect(() => {
     fetchProgress()
       .then((p) => {
+        setNoRecord(!p || (Object.keys(p.units).length === 0 && Object.keys(p.answers).length === 0));
         const saved = p?.units[unit.id];
         // ステップを減らした単元では保存値が範囲外になる。そのまま持つと最後に着いても完了にならないので無視する
         if (saved && saved.step < unit.steps.length) savedStep.current = saved.step;
@@ -232,11 +237,25 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   }, [viewUpto, posted, balancesNow, diff, unit.opening, accountMap]);
 
   // 失敗の詳細(RLS の英文など)は console に出し、学習者には取るべき行動だけ見せる
-  const save = (fn: () => Promise<void>) =>
-    fn().catch((e: Error) => {
+  const trySave = async (fn: () => Promise<void>, isAttempt: boolean) => {
+    try {
+      await fn();
+      return true;
+    } catch (e) {
       console.error(e);
-      setSaveError("保存できませんでした。ページを再読み込みしてから、もう一度お試しください。");
-    });
+      if (isAttempt) failedAttempt.current = fn;
+      return false;
+    }
+  };
+  const save = async (fn: () => Promise<void>, isAttempt = false) => {
+    const retry = failedAttempt.current;
+    failedAttempt.current = null;
+    // 再開時は最後の回答が勝つので、再送を先に終えてから新しい保存を送る
+    const retried = !retry || (await trySave(retry, true));
+    const saved = await trySave(fn, isAttempt);
+    if (!retried || !saved) setSaveError("保存できませんでした。ページを再読み込みしてから、もう一度お試しください。");
+    else if (!failedAttempt.current) setSaveError(null);
+  };
   const celebrate = () => {
     if (celebratedSteps.current.has(stepIndex)) return;
     celebratedSteps.current.add(stepIndex);
@@ -246,7 +265,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   };
 
   const record = (r: GradeResult, answer: unknown) =>
-    save(() => recordAttempt({ unitId: unit.id, exerciseId: `${unit.id}#${stepIndex}`, correct: r.correct, misconceptionId: r.misconception, answer }));
+    save(() => recordAttempt({ unitId: unit.id, exerciseId: `${unit.id}#${stepIndex}`, correct: r.correct, misconceptionId: r.misconception, answer }), true);
 
   // 条件を動かすたびに式を評価し、目標に届いた瞬間に 1 回だけ記録する
   const onTweakChange = (values: Record<string, number>) => {
@@ -598,7 +617,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       <div className="grid flex-1 min-h-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)]">
         <section id="pane-guide" role="region" aria-label="ガイド" className={`${paneClass("guide")} bg-surface-guide lg:border-r`} data-tour="guide">
           <h2 className="text-lg font-semibold mb-2">{step.title}</h2>
-          {!isTutorialUnit && tutorial.status === "pending" && tutorial.enabled && (
+          {!isTutorialUnit && noRecord && tutorial.status === "pending" && tutorial.enabled && (
             <div className="mb-3 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm flex flex-wrap items-center gap-2" role="note">
               <span className="flex-1">初めてですか? 2 分のチュートリアルで、実際に 1 件記帳しながら使い方を覚えられます。</span>
               <Button size="sm" asChild>

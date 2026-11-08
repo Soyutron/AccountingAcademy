@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { type AccountInfo, ELEMENTS } from "@/lib/accounting";
+import { type AccountInfo, ELEMENTS, matchesAccountQuery } from "@/lib/accounting";
 import { ELEMENT_STYLE } from "@/lib/elements";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
@@ -13,20 +13,13 @@ interface Props {
   accounts: AccountInfo[];
   value: string;
   onChange: (value: string) => void;
+  onCompositionChange?: (composing: boolean) => void;
   "aria-label": string;
   placeholder?: string;
   className?: string;
 }
 
-function matchesQuery(account: AccountInfo, query: string): boolean {
-  return account.name.includes(query) || account.aliases.some((alias) => alias.includes(query));
-}
-
-function isExactName(account: AccountInfo, query: string): boolean {
-  return account.name === query || account.aliases.includes(query);
-}
-
-export function AccountCombobox({ accounts, value, onChange, placeholder, className, "aria-label": ariaLabel }: Props) {
+export function AccountCombobox({ accounts, value, onChange, onCompositionChange, placeholder, className, "aria-label": ariaLabel }: Props) {
   const id = useId();
   const listId = `${id}-list`;
   const optionId = (accountId: string) => `${id}-${accountId}`;
@@ -36,12 +29,12 @@ export function AccountCombobox({ accounts, value, onChange, placeholder, classN
 
   const query = value.trim();
   const groups = useMemo(() => {
-    const matched = query ? accounts.filter((a) => matchesQuery(a, query)) : accounts;
+    const matched = query ? accounts.filter((a) => matchesAccountQuery(a, query)) : accounts;
     return ELEMENTS.map((element) => ({ element, items: matched.filter((a) => a.element === element) })).filter((g) => g.items.length > 0);
   }, [accounts, query]);
   const options = useMemo(() => groups.flatMap((g) => g.items), [groups]);
-  // 候補が 1 件だけで、それが入力と完全に一致したら選び終えたとみなして閉じる
-  const shown = open && options.length > 0 && !(options.length === 1 && isExactName(options[0], query));
+  // 候補が 1 件だけで、それが正式名と完全に一致したら選び終えたとみなして閉じる。別名では閉じず、正式名を見せる
+  const shown = open && options.length > 0 && !(options.length === 1 && options[0].name === query);
   const activeIndex = Math.min(active, options.length - 1);
   const activeOption = shown ? options[activeIndex] : undefined;
 
@@ -56,6 +49,8 @@ export function AccountCombobox({ accounts, value, onChange, placeholder, classN
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // 変換中の Enter や矢印は IME のもの。読みで候補が出ていても奪わない
+    if (e.nativeEvent.isComposing) return;
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
@@ -108,6 +103,8 @@ export function AccountCombobox({ accounts, value, onChange, placeholder, classN
             setActive(0);
             setOpen(true);
           }}
+          onCompositionStart={() => onCompositionChange?.(true)}
+          onCompositionEnd={() => onCompositionChange?.(false)}
           onFocus={() => setOpen(true)}
           onBlur={() => setOpen(false)}
           onKeyDown={onKeyDown}
