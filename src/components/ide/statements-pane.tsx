@@ -53,6 +53,7 @@ export function StatementsPane({ accounts, balances, diff, company }: Props) {
                   name={<span>{st.netIncome >= 0 ? "当期純利益" : "当期純損失"}</span>}
                   amount={st.netIncome}
                   delta={netIncomeDelta}
+                  magnitude
                 />
               )}
             </Group>
@@ -134,17 +135,17 @@ function Group({ element, lines, diff, accounts, children }: { element: Element;
       {lines.length === 0 && !children && <div className="text-xs text-muted-foreground/60 px-1">—</div>}
       {lines.map((l) => {
         const account = accounts.get(l.account);
-        return <Row key={l.account} id={l.account} name={account ? <AccountName account={account} /> : l.name} amount={l.amount} delta={diff.get(l.account) ?? 0} />;
+        return <Row key={l.account} id={l.account} name={account ? <AccountName account={account} /> : l.name} amount={l.amount} delta={diff.get(l.account) ?? 0} magnitude={l.contra} />;
       })}
       {children}
     </div>
   );
 }
 
-function Row({ id, name, amount, delta }: { id?: string; name: React.ReactNode; amount: number; delta: number }) {
+function Row({ id, name, amount, delta, magnitude = false }: { id?: string; name: React.ReactNode; amount: number; delta: number; magnitude?: boolean }) {
   const changed = delta !== 0;
-  // △ 表示の行(当期純損失・評価勘定)は絶対値を見せているので、増減もその絶対値の向きで示す
-  const shown = amount < 0 ? -delta : delta;
+  // 当期純損失・評価勘定の △ は損失額・控除額の大きさなので、増減もその大きさの向きで示す。通常の科目のマイナス残高は符号どおり
+  const shown = magnitude && amount < 0 ? -delta : delta;
   return (
     <div data-account={id} className={`flex flex-wrap items-baseline justify-between gap-x-2 rounded px-1 ${changed ? "bg-changed motion-safe:animate-highlight" : ""}`}>
       <span className="min-w-0">{name}</span>
