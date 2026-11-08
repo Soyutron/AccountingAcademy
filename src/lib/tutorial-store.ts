@@ -37,7 +37,10 @@ function read(): TutorialState {
 export function updateTutorial(patch: Partial<TutorialState>) {
   // storage イベントが届く前に別タブが書いた値も潰さないよう、書く直前に読み直す
   if (!unsaved) cache = null;
-  cache = { ...read(), ...patch };
+  const current = read();
+  // やり直しのツアーをスキップしても、完了の記録は下げない(Issue #81)
+  const status = current.status === "done" && patch.status === "skipped" ? "done" : (patch.status ?? current.status);
+  cache = { ...current, ...patch, status };
   try {
     localStorage.setItem(KEY, JSON.stringify(cache));
     unsaved = false;

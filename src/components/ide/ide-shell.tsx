@@ -167,7 +167,15 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const isTutorialUnit = unit.id === TUTORIAL_UNIT_ID;
   const [tourExited, setTourExited] = useState(false);
   const [tourKey, setTourKey] = useState(0);
-  const tourActive = isTutorialUnit && !tourExited && (tutorial.status !== "done" || forceTour || tourKey > 0);
+  const tourActive = isTutorialUnit && !tourExited && (tutorial.status === "pending" || forceTour || tourKey > 0);
+  const exitTour = () => {
+    setTourExited(true);
+    if (!forceTour) return;
+    // ?tour=1 は一度きりの指示。URL に残すと reload のたびにツアーが始まり直す(Issue #81)
+    const url = new URL(window.location.href);
+    url.searchParams.delete("tour");
+    window.history.replaceState(null, "", url);
+  };
   const restartTour = () => {
     setPosted(replayEntries(unit.steps, 0));
     answered.current.clear();
@@ -931,7 +939,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         <TutorialTour
           key={tourKey}
           ctx={{ stepIndex, postedCount: posted.length, debit: entryDraft.debit, credit: entryDraft.credit }}
-          onExit={() => setTourExited(true)}
+          onExit={exitTour}
           onPane={setPane}
         />
       )}
