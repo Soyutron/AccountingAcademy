@@ -54,6 +54,9 @@ wrong_patterns:
   - match: { credit: [{ account: cash }] }
     misconception: check_is_cash
     feedback: 小切手で渡したので、減るのは当座預金です。
+  - match: { debit: [{ account: cash }] }
+    misconception: petty_cash_is_cash
+    feedback: 担当者に渡したお金は、店の金庫の現金とは分けて小口現金という科目で管理します。増えるのは現金ではなく小口現金です。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 30,000 にしましょう。
 hint: 左に小口現金 30,000、右に当座預金 30,000 です。
@@ -82,6 +85,13 @@ wrong_patterns:
     feedback: 費用は左で増え、小口現金は右で減ります。
   - match: { credit: [{ account: checking_account }] }
     feedback: 支払ったのは担当者の手元の小口現金です。まず小口現金を減らします。補給は次のステップです。
+  - match: { credit: [{ account: cash }] }
+    misconception: petty_cash_is_cash
+    feedback: 担当者の手元のお金は、店の金庫の現金とは分けて小口現金という科目で管理しています。支払いに使ったので、減るのは小口現金です。
+  - match: { debit: [{ account: supplies_expense, amount: 4000 }] }
+    feedback: 切手代 4,000 円は、郵便のための代金なので通信費です。消耗品費にするのは文房具代 6,500 円だけです。
+  - match: { debit: [{ account: supplies_expense, amount: 10500 }] }
+    feedback: 切手代 4,000 円は、郵便のための代金なので通信費です。消耗品費にするのは文房具代 6,500 円だけです。
   - match: { unbalanced: true }
     feedback: 左の 3 つの費用の合計(12,500)と、右の小口現金がそろっていません。
 hint: 左に通信費 4,000、消耗品費 6,500、旅費交通費 2,000 の 3 行。右に小口現金 12,500 です。「行を追加」で行を増やせます。
