@@ -101,6 +101,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [effect, setEffect] = useState<Partial<EffectAnswer>>({});
   const [params, setParams] = useState<Record<string, number>>({});
   const [placed, setPlaced] = useState<Partial<Record<string, Element>>>({});
+  // classify を最後に採点したときの配置。採点後に移した科目を見分ける(Issue #66)
+  const [gradedPlaced, setGradedPlaced] = useState<Partial<Record<string, Element>>>({});
   const [calcValue, setCalcValue] = useState("");
   // calc の入力が金額として読めないときの理由。採点も記録もしない(Issue #43)
   const [calcError, setCalcError] = useState<string | null>(null);
@@ -471,6 +473,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           answeredStep.current = stepIndex;
           answered.current.set(stepIndex, placed);
         }
+        setGradedPlaced(placed);
         setResult(r);
         setAttempts((k) => k + 1);
         record(r, placed);
@@ -507,7 +510,13 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     (result?.correct ?? false);
   const hint = "hint" in task ? task.hint : undefined;
   const canReveal = attempts >= 2 && (task.type === "post" || task.type === "calc" || task.type === "classify") && !result?.correct;
-  const misIds = result && "misconceptions" in result ? result.misconceptions : result?.misconception ? [result.misconception] : [];
+  // 採点後に箱を移した科目は採点結果の表示から外し、全部移したら結果も消す(Issue #66)。件数と誤解も残りの科目で出し直す
+  const shownResult = ((): typeof result => {
+    if (task.type !== "classify" || !result || result.correct) return result;
+    const r = gradeClassify({ ...task, accounts: task.accounts.filter((id) => placed[id] === gradedPlaced[id]) }, placed, accountMap);
+    return r.correct ? null : r;
+  })();
+  const misIds = shownResult && "misconceptions" in shownResult ? shownResult.misconceptions : shownResult?.misconception ? [shownResult.misconception] : [];
   const misList = misIds.flatMap((id) => misconceptions[id] ?? []);
   const helpCtx: HelpContext = { taskType: task.type, postedCount: posted.length, isLast, hasHint: Boolean(hint) };
   const openHelpTopic = (id: string) => {
@@ -670,7 +679,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           )}
           {task.type === "classify" && (
             <div className="space-y-2">
-              <ClassifyBoard accounts={task.accounts.map((id) => accountMap.get(id)!)} placed={placed} onChange={setPlaced} wrong={new Set(result && "wrong" in result ? result.wrong.map((w) => w.account) : [])} disabled={result?.correct === true} />
+              <ClassifyBoard accounts={task.accounts.map((id) => accountMap.get(id)!)} placed={placed} onChange={setPlaced} wrong={new Set(shownResult && "wrong" in shownResult ? shownResult.wrong.map((w) => w.account) : [])} disabled={result?.correct === true} />
               {!result?.correct && (
                 <Button onClick={check} disabled={task.accounts.some((id) => !placed[id])}>
                   確認する
@@ -822,23 +831,23 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         />
       )}
       <div ref={bottomBar} className="border-t bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm space-y-2 sticky bottom-0 max-h-[50dvh] overflow-y-auto">
-        {result && (
-          <div ref={statusBox} tabIndex={-1} role="status" aria-live="polite" className={`rounded-md p-3 space-y-2 focus:outline-none motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 ${result.correct ? "bg-ok text-ok-fg" : "bg-hint text-hint-fg"}`}>
+        {shownResult && (
+          <div ref={statusBox} tabIndex={-1} role="status" aria-live="polite" className={`rounded-md p-3 space-y-2 focus:outline-none motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 ${shownResult.correct ? "bg-ok text-ok-fg" : "bg-hint text-hint-fg"}`}>
             {/* 正解はアイコンと見出しを大きくして、色だけに頼らず「もう一歩」と見分けられるようにする */}
-            <p className={`flex items-center gap-1.5 ${result.correct ? "text-base font-bold" : "font-semibold"}`}>
-              {result.correct ? <CheckCircle2 className="size-5" aria-hidden /> : <CircleAlert className="size-4" aria-hidden />}
-              {result.correct ? "できました" : "もう一歩"}
+            <p className={`flex items-center gap-1.5 ${shownResult.correct ? "text-base font-bold" : "font-semibold"}`}>
+              {shownResult.correct ? <CheckCircle2 className="size-5" aria-hidden /> : <CircleAlert className="size-4" aria-hidden />}
+              {shownResult.correct ? "できました" : "もう一歩"}
             </p>
-            <p className="whitespace-pre-wrap">{result.feedback}</p>
-            {task.type === "post" && !result.correct && draftReady && (
+            <p className="whitespace-pre-wrap">{shownResult.feedback}</p>
+            {task.type === "post" && !shownResult.correct && draftReady && (
               <div className="rounded bg-background/70 p-2">
                 <ImpactCompare yours={entryDraft} expected={task.answer} accounts={accountMap} />
               </div>
             )}
             {task.type === "predict" && <PredictCompare predicted={effect as EffectAnswer} entry={task.entry} accounts={accountMap} />}
-            {"wrong" in result && result.wrong.length > 0 && (
+            {"wrong" in shownResult && shownResult.wrong.length > 0 && (
               <ul className="list-disc pl-5 space-y-0.5">
-                {result.wrong.map((w) => (
+                {shownResult.wrong.map((w) => (
                   <li key={w.account}>{w.feedback}</li>
                 ))}
               </ul>
