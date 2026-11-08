@@ -40,6 +40,9 @@ wrong_patterns:
   - match: { credit: [{ account: sales }] }
     misconception: revenue_equals_cash_in
     feedback: このお金はコーヒーを売ってもうけたものではなく、あなたが出した元手です。右は資本金にしてみましょう。
+  - match: { credit: [{ account: loans_payable }] }
+    misconception: capital_loan_confused
+    feedback: 借入金は、いつか返す義務があるお金です。このお金はあなたが出した元手で、返す義務はありません。右は資本金にしてみましょう。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 1,000,000 にしましょう。
 hint: 増えた現金を左に、その元手である資本金を右に書きます。
@@ -95,6 +98,7 @@ wrong_patterns:
     misconception: revenue_equals_cash_in
     feedback: お金は入りましたが、もうけではありません。同じ金額を返す義務が生まれています。右は借入金にしてみましょう。
   - match: { credit: [{ account: capital_stock }] }
+    misconception: capital_loan_confused
     feedback: 資本金はあなたが出した元手です。銀行から借りたお金は返す義務なので、借入金を使います。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 300,000 にしましょう。
