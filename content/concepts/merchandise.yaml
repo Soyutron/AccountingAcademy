@@ -27,7 +27,7 @@ concepts:
     summary: 商品を手に入れる取引。三分法では、買った時点で仕入という費用の勘定科目に記録する。備品のような長く使う物の購入とは違い、資産にはしない。
     example: コーヒー豆 30,000 円を現金で仕入れたら、左に仕入 30,000、右に現金 30,000。
     requires: [merchandise, expense]
-    related: [three_account_method, payable, incidental_costs]
+    related: [three_account_method, accounts_payable, incidental_costs]
     contrasts: []
   - id: credit_transaction
     name: 掛け取引
@@ -36,26 +36,26 @@ concepts:
     summary: 商品の受け渡しと代金の支払いの時期がずれる取引。売る側は「後で受け取る権利」を売掛金、買う側は「後で払う義務」を買掛金として記録する。お金が動いていなくても、売上や仕入はその場で記録する。
     example: 近所の会社に豆 60,000 円分を納品し、代金は月末払い。納品の日に売上 60,000 と売掛金 60,000 を記録する。
     requires: [transaction, journal_entry]
-    related: [receivable, payable]
+    related: [accounts_receivable, accounts_payable]
     contrasts: []
-  - id: receivable
+  - id: accounts_receivable
     name: 売掛金
     reading: [うりかけきん]
     short: 商品を売って、後で代金を受け取る権利。現金に変わる前の資産
     summary: 掛けで売ったときに生まれる「代金を受け取る権利」。まだお金は入っていないが、将来お金に変わるので資産。回収すると現金や預金に姿を変え、売上はもう一度記録しない。
     example: 掛けで 60,000 円分を納品すると売掛金が 60,000 増え、月末に入金されると売掛金が減って預金が増える。
     requires: [credit_transaction, asset]
-    related: [payable, revenue]
-    contrasts: [payable]
-  - id: payable
+    related: [accounts_payable, revenue]
+    contrasts: [accounts_payable]
+  - id: accounts_payable
     name: 買掛金
     reading: [かいかけきん]
     short: 商品を仕入れて、後で代金を払う義務。借入金と同じ負債の仲間
     summary: 掛けで仕入れたときに生まれる「代金を払う義務」。商品はもう受け取っているので仕入はその場で記録し、払う義務を買掛金(負債)として残す。支払うと買掛金が減り、仕入はもう一度記録しない。
     example: 問屋から豆 40,000 円分を掛けで仕入れると買掛金が 40,000 増え、月末に払うと買掛金と現金が減る。
     requires: [credit_transaction, liability]
-    related: [receivable, purchase]
-    contrasts: [receivable]
+    related: [accounts_receivable, purchase]
+    contrasts: [accounts_receivable]
   - id: returns
     name: 返品
     reading: [へんぴん]

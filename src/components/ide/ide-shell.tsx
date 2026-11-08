@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { type ReactNode, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
+import type { GlossaryAccount } from "@/lib/content";
 import { type AccountInfo, type Change, type Element, type JournalEntry, type Side, ELEMENT_LABELS, ELEMENTS, computeImpact, toChange } from "@/lib/accounting";
 import { splitAmounts } from "@/lib/task-text";
 import { ElementBadge } from "@/components/element-badge";
@@ -61,7 +62,7 @@ export interface MisconceptionInfo {
 
 interface Props {
   unit: IdeUnit;
-  accounts: AccountInfo[];
+  accounts: GlossaryAccount[];
   misconceptions: Record<string, MisconceptionInfo>;
   // ステップごとの説明文(サーバーで Markdown を描画済み)
   narratives: ReactNode[];
@@ -437,7 +438,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   // 何か入れたのに記帳できないとき、足りない側か途中の行を伝える(ボタンが無言で無効のままにならないように。Issue #43, #71)
   const missingSides = [entryDraft.debit.length === 0 && "借方", entryDraft.credit.length === 0 && "貸方"].filter(Boolean);
   const touched = [...draft.debit, ...draft.credit].some((l) => l.accountName.trim() || l.amount.trim());
-  const sideHint = draftReady || !touched ? null : draftHasBothSides ? "入力が途中の行があります。科目と金額をそろえるか、その行を削除すると記帳できます。" : `${missingSides.join("と")}にも科目と金額を入れると記帳できます。`;
+  // 未確定の行は entryDraft から落ちるので、先に見ないと入力済みの側を「足りない側」と案内してしまう(Issue #97)
+  const sideHint = draftReady || !touched ? null : draftIncomplete ? "入力が途中の行があります。科目と金額をそろえるか、その行を削除すると記帳できます。" : `${missingSides.join("と")}にも科目と金額を入れると記帳できます。`;
   const predictReady = ELEMENTS.every((el) => effect[el]);
 
   useEffect(() => {

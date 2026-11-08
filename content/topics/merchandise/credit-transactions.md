@@ -4,7 +4,7 @@ title: 掛けで売る、掛けで買う
 summary: カフェ 3 か月目、近所の会社への納品と問屋からの仕入を「代金は後で」の掛け取引で記帳しながら、売掛金と買掛金の正体を身につける
 level: 1
 order: 2
-introduces: [credit_transaction, receivable, payable]
+introduces: [credit_transaction, accounts_receivable, accounts_payable]
 concepts: [asset, liability, revenue, expense]
 requires: [merchandise/three-account-method]
 scenario:
@@ -32,7 +32,7 @@ highlight: 1
 
 ## 問屋から掛けで仕入れる
 問屋からコーヒー豆を 40,000 円分仕入れました。豆は受け取りましたが、代金は月末に払います。
-商品を受け取ったので、左は先月と同じ「仕入 40,000」です。右は現金ではありません。まだ払っていないからです。代わりに「後で払う義務」を書きます。この義務が [[payable|買掛金]] で、借入金と同じ負債の仲間です。
+商品を受け取ったので、左は先月と同じ「仕入 40,000」です。右は現金ではありません。まだ払っていないからです。代わりに「後で払う義務」を書きます。この義務が [[accounts_payable|買掛金]] で、借入金と同じ負債の仲間です。
 
 ```figure
 type: elements
@@ -94,7 +94,7 @@ success: 左に現れた「売掛金」が、後で代金を受け取る権利�
 ```
 
 ## 月末、代金が振り込まれる
-月末になり、会社から 60,000 円が普通預金に振り込まれました。納品の日に左に書いた「後で受け取る権利」が [[receivable|売掛金]] です。その権利が、預金というお金に変わった瞬間です。
+月末になり、会社から 60,000 円が普通預金に振り込まれました。納品の日に左に書いた「後で受け取る権利」が [[accounts_receivable|売掛金]] です。その権利が、預金というお金に変わった瞬間です。
 売上はもう納品の日に記録してあります。ここで売上をもう一度書いてしまうと、二重になってしまいます。何が増えて何が減るかだけを書いてみましょう。
 
 ```task
@@ -103,15 +103,15 @@ transaction: 月末、納品した会社から代金 60,000 円が普通預金�
 answer:
   debit: [{ account: bank_deposit, amount: 60000 }]
   credit: [{ account: accounts_receivable, amount: 60000 }]
-alternatives:
-  - debit: [{ account: cash, amount: 60000 }]
-    credit: [{ account: accounts_receivable, amount: 60000 }]
 wrong_patterns:
   - match: { swapped: true }
     feedback: 増えた預金は左、減った売掛金は右です。左右を入れ替えてみましょう。
   - match: { credit: [{ account: sales }] }
     misconception: receivable_collection_is_sale
     feedback: 売上は納品の日に記録済みです。ここでは売掛金(権利)が預金に変わっただけなので、右は売掛金です。
+  - match: { debit: [{ account: cash }] }
+    misconception: deposit_is_cash
+    feedback: 代金は銀行の口座に振り込まれたので、手元の現金は増えていません。左は普通預金です。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 60,000 にしましょう。
 hint: 左に普通預金 60,000、右に売掛金 60,000 です。
