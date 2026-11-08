@@ -25,6 +25,7 @@
 #   ISSUE_FORCE=1         agent:in-progress / agent:needs-human が付いていても引き継ぐ
 #   ISSUE_FRESH=1         既存の worktree とブランチを捨てて作り直す
 #   ISSUE_LOG_DIR         ログ置き場(既定 logs/issue-agent)
+#   ISSUE_E2E_PORT        関門の E2E が本番ビルドを起動するポート(既定 3100。issue-loop が並列のワーカーごとに変える)
 #   ISSUE_IMPL_MODEL      実装側のモデル(既定 opus)
 #   ISSUE_REVIEW_MODEL    レビュー側のモデル(既定 fable)
 set -u
@@ -91,8 +92,9 @@ mkdir -p "$ISSUE_DIR"
 exec > >(tee -a "$ISSUE_DIR/run.log") 2>&1
 export ISSUE WT BRANCH MAX_ROUNDS
 
-exec 9>"$LOG_DIR/lock"
-flock -n 9 || { log "別の issue-agent が動いています($LOG_DIR/lock)"; exit 5; }
+# ロックは Issue ごと(別の Issue とは並走できる)。main への統合は 7 で $LOG_DIR/lock により直列化する
+exec 9>"$ISSUE_DIR/lock"
+flock -n 9 || { log "Issue #$ISSUE は別の issue-agent が処理中です($ISSUE_DIR/lock)"; exit 6; }
 
 comment() { printf '%s\n\n%s\n' "$AI_NOTE" "$1" | gh issue comment "$ISSUE" --body-file - >/dev/null; }
 
@@ -170,7 +172,7 @@ $protected"; return 2; fi
     GATE_REPORT="回帰テストがありません(ファイル名に issue-$ISSUE を含むテストを e2e/repro/ か src/lib/ に追加してください)"; return 1
   fi
   log "scripts/check.sh($checklog)"
-  if ! (cd "$WT" && E2E_PORT=3100 scripts/check.sh) >"$checklog" 2>&1; then
+  if ! (cd "$WT" && E2E_PORT="${ISSUE_E2E_PORT:-3100}" scripts/check.sh) >"$checklog" 2>&1; then
     GATE_REPORT="scripts/check.sh が失敗しました。出力の末尾:
 $(tail -n 80 "$checklog")"; return 1
   fi
@@ -294,6 +296,9 @@ $(findings_md "$review")"
 done
 
 # ---------- 7. 統合 ----------
+# main の取り込みから push・再検証までは 1 件ずつ。並走する issue-agent はここで順番を待つ
+exec 8>"$LOG_DIR/lock"
+flock -n 8 || { log "別の issue-agent の統合を待ちます($LOG_DIR/lock)"; flock 8; }
 head_before=$(git -C "$WT" rev-parse HEAD)
 log "main を取り込みます"
 if ! git -C "$WT" merge --no-edit main >"$ISSUE_DIR/merge.log" 2>&1; then

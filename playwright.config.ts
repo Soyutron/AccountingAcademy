@@ -10,6 +10,9 @@ const prod = ci || process.env.E2E_SERVER === "start";
 export default defineConfig({
   testDir: "e2e",
   timeout: prod ? 180_000 : 60_000,
+  // 関門は issue-loop の並列ワーカーやトリアージと同時に走るので、ブラウザの並列数を抑え、負荷由来の 1 回きりの失敗は再試行で吸収する
+  workers: prod ? 4 : undefined,
+  retries: prod ? 1 : 0,
   use: { baseURL: `http://localhost:${port}` },
   webServer: {
     // 関門では scripts/check.sh がビルド済みなので start だけ。CI はビルドから

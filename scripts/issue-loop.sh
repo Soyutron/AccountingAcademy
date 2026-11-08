@@ -10,6 +10,7 @@
 #   ISSUE_LABEL      対象ラベル(既定 ready-for-agent)
 #   ISSUE_MAX_FAILS  Issue 固有の失敗(終了コード 3〜4)がこの回数連続したら停止(既定 3)。人手待ち(2)は数えない
 #   ISSUE_PAUSE      反復間の待ち秒(既定 20)
+#   ISSUE_PARALLEL   同時に処理する Issue の数(既定 1。3 程度まで。main への統合は issue-agent 側で 1 件ずつ)
 #   ISSUE_LOG_DIR    ログ置き場(既定 logs/issue-agent)
 #   そのほか issue-agent.sh の環境変数はそのまま渡る
 set -u
@@ -29,46 +30,75 @@ UNTIL="${ISSUE_UNTIL:?ISSUE_UNTIL を指定してください(例: ISSUE_UNTIL=0
 LABEL="${ISSUE_LABEL:-ready-for-agent}"
 MAX_FAILS="${ISSUE_MAX_FAILS:-3}"
 PAUSE="${ISSUE_PAUSE:-20}"
+PARALLEL="${ISSUE_PARALLEL:-1}"
 # 1 件の実測は 4〜7 分なので、残りがこれを切ったら新しい Issue を始めない(処理中のものは最後まで行う)
 MARGIN="${ISSUE_MARGIN:-900}"
 mkdir -p "$LOG_DIR"; rm -f "$STOP_FILE"
 
 deadline=$(date -d "$UNTIL" +%s) || exit 1
 if [ "$deadline" -le "$(date +%s)" ] && [[ "$UNTIL" != *-* ]]; then deadline=$(date -d "tomorrow $UNTIL" +%s); fi
-echo "終了予定: $(date -d "@$deadline" '+%Y-%m-%d %H:%M') / ラベル: $LABEL / ログ: $LOG_DIR"
+echo "終了予定: $(date -d "@$deadline" '+%Y-%m-%d %H:%M') / ラベル: $LABEL / 並列: $PARALLEL / ログ: $LOG_DIR"
 
 # 対象ラベルが付いていて、誰も触っておらず、ブロッカーが無いものを古い順に 1 件。
+# 起票直後で agent:in-progress がまだ付いていない Issue は issue-agent のロック(Issue ごと)で見分ける。
 next_issue() {
-  gh api --paginate "repos/{owner}/{repo}/issues?state=open&labels=$LABEL&per_page=100&sort=created&direction=asc" \
+  local n
+  for n in $(gh api --paginate "repos/{owner}/{repo}/issues?state=open&labels=$LABEL&per_page=100&sort=created&direction=asc" \
     --jq '[ .[]
             | select(.pull_request == null)
             | select(([.labels[].name] | any(startswith("agent:") or . == "needs-info" or . == "ready-for-human" or . == "wontfix")) | not)
             | select((.assignees | length) == 0)
             | select((.issue_dependencies_summary.blocked_by // 0) == 0)
-          ] | sort_by(.number) | .[0].number // empty' | head -n 1
+          ] | sort_by(.number) | .[].number'); do
+    if [ -e "$LOG_DIR/$n/lock" ] && ! flock -n "$LOG_DIR/$n/lock" true; then continue; fi
+    echo "$n"; return
+  done
 }
 
-i=0 fails=0 merged=0 skipped=0 processed=" "
+# PARALLEL 本まで issue-agent を同時に走らせる。pids / issues / slots は同じ添字で対応し、slot が E2E のポート(3100 + slot)を決める。
+declare -a pids=() issues=() slots=()
+i=0 fails=0 merged=0 skipped=0 offtarget=0 processed=" " stop_reason=""
+free_slot() { local k; for ((k = 0; k < PARALLEL; k++)); do case " ${slots[*]-} " in *" $k "*) ;; *) echo "$k"; return ;; esac; done; }
 while :; do
-  remaining=$((deadline - $(date +%s)))
-  if [ "$remaining" -lt "$MARGIN" ]; then echo "終了時刻です"; break; fi
-  if [ -e "$STOP_FILE" ]; then echo "stop ファイルを検出しました"; break; fi
-  n=$(next_issue)
-  if [ -z "$n" ]; then echo "対象の Issue がありません(ラベル $LABEL)"; break; fi
-  case "$processed" in *" $n "*) echo "Issue #$n がまた選ばれました(ラベルを更新できていない可能性があります)。停止します"; break ;; esac
-
-  echo "[$(date '+%H:%M:%S')] 反復 $((i + 1)): Issue #$n"
-  scripts/issue-agent.sh "$n"; rc=$?
-  if [ "$rc" -eq 7 ]; then scripts/claude-usage-limit.sh wait $((deadline - MARGIN)) "$STOP_FILE" || break; continue; fi
-  processed="$processed$n "
-  case $rc in
-    0) fails=0; merged=$((merged + 1)) ;;
-    2) skipped=$((skipped + 1)); echo "Issue #$n は人手が必要と判断されました。次へ進みます" ;;
-    6) skipped=$((skipped + 1)); echo "Issue #$n は対象外でした。次へ進みます" ;;
-    5) echo "環境の問題で停止します(終了コード 5)"; break ;;
-    *) fails=$((fails + 1)); echo "Issue #$n は終了コード $rc で失敗しました($fails 回連続)"
-       if [ "$fails" -ge "$MAX_FAILS" ]; then echo "$MAX_FAILS 回連続で失敗したため終了します"; break; fi ;;
-  esac
-  i=$((i + 1)); sleep "$PAUSE"
+  if [ -z "$stop_reason" ]; then
+    if [ $((deadline - $(date +%s))) -lt "$MARGIN" ]; then stop_reason="終了時刻です"
+    elif [ -e "$STOP_FILE" ]; then stop_reason="stop ファイルを検出しました"; fi
+  fi
+  # 空いた枠を埋める(停止が決まっていれば埋めない)
+  while [ -z "$stop_reason" ] && [ "${#pids[@]}" -lt "$PARALLEL" ]; do
+    n=$(next_issue)
+    if [ -z "$n" ]; then [ "${#pids[@]}" -eq 0 ] && stop_reason="対象の Issue がありません(ラベル $LABEL)"; break; fi
+    case "$processed" in *" $n "*) stop_reason="Issue #$n がまた選ばれました(ラベルを更新できていない可能性があります)"; break ;; esac
+    slot=$(free_slot)
+    echo "[$(date '+%H:%M:%S')] 反復 $((i + 1)): Issue #$n(並列 $((${#pids[@]} + 1))/$PARALLEL、E2E ポート $((3100 + slot)))"
+    ( set -o pipefail; ISSUE_E2E_PORT=$((3100 + slot)) scripts/issue-agent.sh "$n" 2>&1 | sed -u "s/^/[#$n] /" ) &
+    pids+=($!); issues+=("$n"); slots+=("$slot"); i=$((i + 1))
+    sleep 5  # 次の選択までに issue-agent がロックとラベルを取れるようにする
+  done
+  [ "${#pids[@]}" -gt 0 ] || break
+  wait -n "${pids[@]}" 2>/dev/null
+  # 終わったものを回収する
+  for idx in "${!pids[@]}"; do
+    kill -0 "${pids[$idx]}" 2>/dev/null && continue
+    wait "${pids[$idx]}"; rc=$?; n="${issues[$idx]}"
+    unset 'pids[idx]' 'issues[idx]' 'slots[idx]'
+    pids=("${pids[@]}"); issues=("${issues[@]}"); slots=("${slots[@]}")
+    case $rc in
+      7) # 利用上限: 走っているものを待ち切ってから、リセットまで待って同じ Issue を取り直す
+         wait "${pids[@]}" 2>/dev/null; pids=() issues=() slots=()
+         scripts/claude-usage-limit.sh wait $((deadline - MARGIN)) "$STOP_FILE" || stop_reason="利用上限が解除されませんでした" ;;
+      0) fails=0 offtarget=0; merged=$((merged + 1)); processed="$processed$n " ;;
+      2) skipped=$((skipped + 1)); processed="$processed$n "; echo "Issue #$n は人手が必要と判断されました。次へ進みます" ;;
+      6) skipped=$((skipped + 1)); offtarget=$((offtarget + 1)); echo "Issue #$n は対象外でした(別のワーカーが処理中など)。次へ進みます"
+         [ "$offtarget" -lt 5 ] || stop_reason="対象外の Issue が 5 回続いたため終了します(gh の一覧とラベルが食い違っている可能性があります)" ;;
+      5) processed="$processed$n "; stop_reason="環境の問題で停止します(終了コード 5)" ;;
+      *) fails=$((fails + 1)); processed="$processed$n "; echo "Issue #$n は終了コード $rc で失敗しました($fails 回連続)"
+         [ "$fails" -lt "$MAX_FAILS" ] || stop_reason="$MAX_FAILS 回連続で失敗したため終了します" ;;
+    esac
+    break
+  done
+  [ -n "$stop_reason" ] && [ "${#pids[@]}" -eq 0 ] && break
+  [ -z "$stop_reason" ] && sleep "$PAUSE"
 done
+[ -n "$stop_reason" ] && echo "$stop_reason"
 echo "反復回数: $i、統合: $merged 件、スキップ: $skipped 件。ログは $LOG_DIR/"
