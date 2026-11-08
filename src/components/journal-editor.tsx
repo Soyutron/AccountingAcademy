@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ElementBadge } from "@/components/element-badge";
 import { AccountCombobox } from "@/components/account-combobox";
+import { HelpIcon } from "@/components/ide/help-icon";
 
 // 仕訳エディタ。入力に応じて 5 要素の増減と当期純利益への影響をその場で表示する(要件 4.1)
 
@@ -152,6 +153,7 @@ function ImpactPanel({ impact }: { impact: ReturnType<typeof computeImpact> }) {
         <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs ${impact.netIncome !== 0 ? "font-medium" : "text-muted-foreground"}`}>
           当期純利益 <span className="ml-1 font-mono tabular-nums">{sign(impact.netIncome)}</span>
         </span>
+        <HelpIcon topic="impact" />
       </div>
       <div className="mt-1 text-xs text-muted-foreground">
         借方合計 {formatAmount(impact.debitTotal)} / 貸方合計 {formatAmount(impact.creditTotal)}
