@@ -5,7 +5,7 @@ summary: 古いショーケースを後払いで売り、新しい椅子を後�
 level: 1
 order: 2
 introduces: [non_trade_receivable_payable, advance_payment_receipt]
-concepts: [receivable, payable, asset, liability]
+concepts: [accounts_receivable, accounts_payable, asset, liability]
 requires: [receivables-and-payables/loans, merchandise/credit-transactions]
 scenario:
   company: カフェ「マメノキ」
@@ -31,7 +31,7 @@ scenario:
 
 ## 商品以外の売り買い
 夏の模様替え。古いショーケースを近所の雑貨店に売り、新しい椅子を家具店から買うことにしました。どちらも代金は来月です。
-商品の後払いなら [[receivable|売掛金]] と [[payable|買掛金]] でした。でもショーケースや椅子は売り物ではありません。商品以外の後払いには、別の科目を使います。[[non_trade_receivable_payable|未収入金・未払金]] です。
+商品の後払いなら [[accounts_receivable|売掛金]] と [[accounts_payable|買掛金]] でした。でもショーケースや椅子は売り物ではありません。商品以外の後払いには、別の科目を使います。[[non_trade_receivable_payable|未収入金・未払金]] です。
 
 ```figure
 type: compare
