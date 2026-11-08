@@ -5,7 +5,7 @@ summary: カフェ 4 か月目、傷んだ豆の返品と、仕入れ・発送�
 level: 1
 order: 3
 introduces: [returns, incidental_costs]
-concepts: [purchase, payable, receivable, expense]
+concepts: [purchase, accounts_payable, accounts_receivable, expense]
 requires: [merchandise/credit-transactions]
 scenario:
   company: カフェ「マメノキ」

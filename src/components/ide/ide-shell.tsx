@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { type ReactNode, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
+import type { GlossaryAccount } from "@/lib/content";
 import { type AccountInfo, type Change, type Element, type JournalEntry, type Side, ELEMENT_LABELS, ELEMENTS, computeImpact, toChange } from "@/lib/accounting";
 import { splitAmounts } from "@/lib/task-text";
 import { ElementBadge } from "@/components/element-badge";
@@ -61,7 +62,7 @@ export interface MisconceptionInfo {
 
 interface Props {
   unit: IdeUnit;
-  accounts: AccountInfo[];
+  accounts: GlossaryAccount[];
   misconceptions: Record<string, MisconceptionInfo>;
   // ステップごとの説明文(サーバーで Markdown を描画済み)
   narratives: ReactNode[];
