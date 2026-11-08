@@ -142,7 +142,7 @@ content/
   name: 減価償却費
   short: 固定資産の購入代金のうち、今年の分として費用にした金額
   element: expense            # asset | liability | equity | revenue | expense
-  why: 固定資産の取得原価のうち当期の使用によって消費された部分を費用として認識するため
+  why: 固定資産の取得原価のうち当期の使用によって消費された部分を費用として認識するためです。   # 文として閉じる。誤答説明と「費用に分類する理由:」に続けて出す
   example: 100 万円のトラックを 5 年使うなら、1 年目の減価償却費は 20 万円。   # 用語集・ポップオーバーの「例:」
   concepts: [cost_allocation]
 - id: accumulated_depreciation
@@ -151,7 +151,7 @@ content/
   reading: [げんかしょうきゃくるいけいがく]   # ひらがなの読み。科目欄の候補検索と用語集の検索で引く(別名とは分ける)
   element: asset
   contra: true                # 評価勘定。資産の控除項目で、増加は貸方
-  why: 固定資産の帳簿価額を直接減らさず、取得原価と減価の累計を別々に見せるため
+  why: 固定資産の帳簿価額を直接減らさず、取得原価と減価の累計を別々に見せるためです。
   concepts: [cost_allocation, contra_account]
 ```
 

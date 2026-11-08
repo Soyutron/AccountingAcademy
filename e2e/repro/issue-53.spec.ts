@@ -31,7 +31,7 @@ test("390px の calc の「やること」と汎用の不正解文が「右の�
   const work = page.getByRole("region", { name: "ワークスペース" });
   await work.getByPlaceholder("金額(円)").fill("1");
   await work.getByRole("button", { name: "確認する" }).click();
-  const status = page.getByRole("status").filter({ hasText: "何が動くはずか" });
+  const status = page.getByRole("status").filter({ hasText: "計算の式" });
   await expect(status).toBeVisible();
   await expect(status).not.toContainText("右の");
 });
