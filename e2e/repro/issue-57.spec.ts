@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-const GENERIC = "右の「結果」で何が動くはずか";
+const GENERIC = "結果の表で何が動くはずか";
 
 // Issue #57: 小口現金を「現金」と書く、切手代を消耗品費にする誤りに誤答パターンが無く、汎用文だけが出ていた
 test("小口現金の単元で、小口現金を現金と書く・切手代を消耗品費にすると専用の説明が出る", async ({ page }) => {

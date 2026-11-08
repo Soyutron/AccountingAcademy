@@ -94,7 +94,7 @@ wrong_patterns:
     misconception: debit_means_increase
     feedback: 現金は左(借方)で増えます。入れ替えてみましょう。
 hint: 現金が増えるので左、その元手である資本金が右です。
-success: 右の貸借対照表に、現金と資本金が同時に現れました。
+success: 結果の貸借対照表に、現金と資本金が同時に現れました。
 ```
 
 ## ふりかえり
