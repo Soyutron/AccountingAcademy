@@ -25,6 +25,8 @@ import { type Burst, Celebration } from "./celebration";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TutorialTour } from "./tutorial-tour";
 import { HelpDialog } from "./help-dialog";
+import { HelpControlsContext, HelpIcon } from "./help-icon";
+import type { HelpContext } from "@/lib/help-topics";
 import { TUTORIAL_UNIT_ID, updateTutorial, useTutorialState } from "@/lib/tutorial-store";
 
 // 会計 IDE の本体。ステップの進行、帳簿(記帳済みの仕訳)、課題の確認と記録をまとめて持つ(docs/ide-design.md)
@@ -138,6 +140,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const statusBox = useRef<HTMLDivElement>(null);
   const focusStatus = useRef(false);
   const tutorial = useTutorialState();
+  const [helpOpen, setHelpOpen] = useState(false);
+  // 「?」の「もっと詳しく」から開いたときに見せる話題
+  const [helpFocus, setHelpFocus] = useState<string | null>(null);
   const forceTour = useSyncExternalStore(noop, readForceTour, () => false);
   const isTutorialUnit = unit.id === TUTORIAL_UNIT_ID;
   const [tourExited, setTourExited] = useState(false);
@@ -500,11 +505,17 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const canReveal = attempts >= 2 && (task.type === "post" || task.type === "calc" || task.type === "classify") && !result?.correct;
   const misIds = result && "misconceptions" in result ? result.misconceptions : result?.misconception ? [result.misconception] : [];
   const misList = misIds.flatMap((id) => misconceptions[id] ?? []);
+  const helpCtx: HelpContext = { taskType: task.type, postedCount: posted.length, isLast, hasHint: Boolean(hint) };
+  const openHelpTopic = (id: string) => {
+    setHelpFocus(id);
+    setHelpOpen(true);
+  };
 
   // min-w-0: スマホ幅(1 列の grid)で、仕訳帳の摘要(truncate の nowrap)の min-content 幅が列を押し広げないようにする(Issue #28)
   const paneClass = (p: Pane) => `${pane === p ? "block" : "hidden"} lg:block min-h-0 min-w-0 lg:overflow-y-auto p-4`;
 
   return (
+    <HelpControlsContext value={{ openTopic: openHelpTopic, hidden: tourActive }}>
     <div className="flex flex-col lg:h-[calc(100dvh-49px)]">
       <div className="flex items-center gap-3 border-b px-4 py-2 text-sm">
         <span className="font-semibold truncate">{unit.title}</span>
@@ -519,7 +530,17 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           ステップ {stepIndex + 1} / {unit.steps.length}
         </span>
         <span className="flex-1" />
-        <HelpDialog onRestartTour={isTutorialUnit ? restartTour : undefined} />
+        <HelpDialog
+          open={helpOpen}
+          onOpenChange={(o) => {
+            setHelpOpen(o);
+            if (!o) setHelpFocus(null);
+          }}
+          focusTopic={helpFocus}
+          ctx={helpCtx}
+          stepLabel={`ステップ ${stepIndex + 1}「${step.title}」`}
+          onRestartTour={isTutorialUnit ? restartTour : undefined}
+        />
       </div>
 
       <div className="lg:hidden grid grid-cols-3 border-b text-sm" role="tablist" aria-label="ペインの切り替え">
@@ -591,7 +612,10 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
                 check();
               }}
             >
-              <h3 className="text-sm font-semibold">仕訳帳に書く</h3>
+              <div className="flex items-center gap-1">
+                <h3 className="text-sm font-semibold">仕訳帳に書く</h3>
+                <HelpIcon topic="journal" />
+              </div>
               <JournalEditor accounts={accounts} value={draft} onChange={setDraft} readOnly={result?.correct === true} />
               {!result?.correct && (
                 <Button type="submit" disabled={!draftReady} data-tour="post-button" aria-describedby={sideHint ? "post-side-hint" : undefined}>
@@ -751,7 +775,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         <section id="pane-result" role="region" aria-label="結果" className={`${paneClass("result")} bg-surface-result`} data-tour="statements">
           {posted.length > 1 && (
             <div className="mb-3 rounded-md border p-2 text-xs space-y-1">
-              <label className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1">
+              <label className="flex flex-1 items-center justify-between gap-2">
                 <span className="font-medium">帳簿をさかのぼる</span>
                 <span className="text-muted-foreground font-mono tabular-nums">
                   {viewUpto === null || viewUpto >= posted.length ? "最新" : viewUpto === 0 ? "記帳前" : `${viewUpto} 件目まで`}
@@ -766,6 +791,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
                   aria-valuetext={viewUpto === null || viewUpto >= posted.length ? "最新" : `${viewUpto} 件目まで`}
                 />
               </label>
+              <HelpIcon topic="rewind" />
+              </div>
               {viewUpto !== null && viewUpto < posted.length && (
                 <p className="text-muted-foreground">
                   {viewUpto === 0 ? "まだ何も記帳していない状態です。" : `「${posted[viewUpto - 1].memo}」を記帳した直後の姿です。`}
@@ -873,6 +900,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         </div>
       </div>
     </div>
+    </HelpControlsContext>
   );
 }
 

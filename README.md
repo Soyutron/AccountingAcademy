@@ -95,6 +95,7 @@ docs/vision.md          プロダクトビジョン(オープンソースの文�
 docs/roadmap.md         開発方針とマイルストーン
 docs/requirements.md    要件定義(正本)
 docs/ide-design.md      会計 IDE の画面構成・ステップの種類・学習フロー
+docs/help-design.md     ヘルプとチュートリアルの層(機能ヘルプ / 初出の案内 / 使い方 / ツアー)
 docs/visual-guidelines.md 図解・イラスト・アニメーションの方針と図解ブロックの仕様
 docs/assets-ledger.md   外部素材の台帳
 docs/testing-guide.md   自分でテストするときの見るポイントと指標の集計 SQL

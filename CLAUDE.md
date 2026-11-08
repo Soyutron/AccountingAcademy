@@ -20,7 +20,7 @@ Next.js の API は学習データと異なる可能性があるので、書く�
 ## 構成
 - `content/`: ステップ型の単元・概念・勘定科目・誤解・学習パス(docs/content-model.md)。`velite.config.ts` がスキーマと横断検査
 - `src/lib/accounting.ts`: 5 要素への影響計算。`src/lib/ledger.ts`: 帳簿から財務諸表を組み立てる。`src/lib/grading.ts`: 課題の採点(誤解 ID を返す)。`src/lib/formulas.ts`: 「条件を変える」の式
-- `src/components/ide/`: 会計 IDE(`ide-shell.tsx` が状態とステップ進行、各ペインは別ファイル。`tutorial-tour.tsx` が操作ツアー、`help-dialog.tsx` が「使い方」)
+- `src/components/ide/`: 会計 IDE(`ide-shell.tsx` が状態とステップ進行、各ペインは別ファイル。`tutorial-tour.tsx` が操作ツアー、`help-dialog.tsx` が「使い方」、`help-icon.tsx` が機能横の「?」。文言は `src/lib/help-topics.ts` が正本。docs/help-design.md)
 - 品質確認はローカルが正(ADR 0005)。`git config core.hooksPath .githooks` で push 前に lint・型・テストが走る。GitHub Actions は最小の 1 ジョブだけ
 - `src/lib/progress.ts`: 匿名サインインと回答・進捗の保存。`supabase/migrations/`: スキーマと RLS
 - `scripts/`: 無人ループ(`monkey-loop.sh` / `triage-agent.sh` / `issue-agent.sh` / `issue-loop.sh` / `issue-verify.sh` / `quality-night.sh`)、`scripts/monkey/session.mjs`(Monkey のオラクル)、`scripts/issue-agent/`(プロンプトとスキーマ、PreToolUse の guard)。`.claude/skills/monkey-test/`: 人格と手順。`e2e/repro/`: Issue の回帰テスト(`issue-<n>.spec.ts`)。`logs/` は gitignore
