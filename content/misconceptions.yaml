@@ -156,6 +156,12 @@ misconceptions:
     correct: 担当者の手元のお金は、金庫の現金とは分けて小口現金という科目で管理する。前渡しでは小口現金が増え、使った分の報告を受けたら小口現金が減る
     concepts: [petty_cash]
     remediation: cash-and-deposits/petty-cash
+  - id: petty_expenses_lumped
+    name: 使い道が違っても 1 つの費用にまとめてよい
+    description: 担当者から報告された使い道の違う支払いを、合計して 1 つの費用の科目で記録してしまう
+    correct: 費用は使い道ごとの科目で記録する。切手代は通信費、文房具代は消耗品費、電車代は旅費交通費のように分ける
+    concepts: [petty_cash, expense]
+    remediation: cash-and-deposits/petty-cash
   - id: interest_is_loan_return
     name: 利息も貸したお金の戻り
     description: 受け取った利息を、貸付金が戻ってきた分として貸付金を減らしてしまう
@@ -233,6 +239,18 @@ misconceptions:
     description: 返ってきた分も含めて、仮払いした金額をそのまま費用にしてしまう
     correct: 費用になるのは実際に使った分だけ。残りは現金として戻り、資産が形を変えるだけ
     concepts: [suspense_accounts, expense]
+    remediation: receivables-and-payables/temporary-and-deposits
+  - id: settlement_clears_only_spent
+    name: 精算では使った分だけ仮払金を消す
+    description: 精算で使った金額だけ仮払金を減らし、戻ってきたお金の記録を忘れて仮払金を残してしまう
+    correct: 精算で仮払金は全額消す。使った分は費用になり、戻ってきた分は現金になる
+    concepts: [suspense_accounts, asset]
+    remediation: receivables-and-payables/temporary-and-deposits
+  - id: settlement_credits_cash
+    name: 精算で現金を減らす
+    description: 仮払いのときに減らした現金を精算でもう一度減らし、仮払金を消さずに残してしまう
+    correct: 現金は仮払いのときに減っている。精算で消すのは仮払金で、現金は戻ってきた分だけ増える
+    concepts: [suspense_accounts, asset]
     remediation: receivables-and-payables/temporary-and-deposits
   - id: suspense_receipt_is_revenue
     name: 正体不明の入金は売上

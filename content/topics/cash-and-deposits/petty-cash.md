@@ -94,6 +94,9 @@ wrong_patterns:
     feedback: 切手代 4,000 円は、郵便のための代金なので通信費です。消耗品費にするのは文房具代 6,500 円だけです。
   - match: { unbalanced: true }
     feedback: 左の 3 つの費用の合計(12,500)と、右の小口現金がそろっていません。
+  - match: { debit: [{ account: communication_expense, amount: 12500 }] }
+    misconception: petty_expenses_lumped
+    feedback: 通信費になるのは切手代だけです。報告された 3 つの支払いは使い道が違うので、文房具代と電車代はそれぞれの費用の科目に分けます。
 hint: 左に通信費 4,000、消耗品費 6,500、旅費交通費 2,000 の 3 行。右に小口現金 12,500 です。「行を追加」で行を増やせます。
 success: 3 つの費用が損益計算書に現れ、小口現金は 17,500 に減りました。
 ```

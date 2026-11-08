@@ -159,6 +159,12 @@ wrong_patterns:
     feedback: 仮払金は精算で役目を終えます。右に書いて消します。
   - match: { unbalanced: true }
     feedback: 左の旅費交通費 18,000 + 現金 2,000 と、右の仮払金 20,000 がそろっていません。
+  - match: { credit: [{ account: suspense_payment, amount: 18000 }] }
+    misconception: settlement_clears_only_spent
+    feedback: 18,000 円だけ消すと、仮払金が 2,000 円残ってしまいます。精算では仮払金を全額消します。戻ってきた 2,000 円の現金も記録しましょう。
+  - match: { credit: [{ account: cash }] }
+    misconception: settlement_credits_cash
+    feedback: 現金は、出張の前に渡したときにもう減らしてあります。精算で消すのは、そのとき置いた仮払金です。
 hint: 左に旅費交通費 18,000 と現金 2,000 の 2 行。右に仮払金 20,000 です。「行を追加」で行を増やせます。
 success: 仮払金が消え、旅費交通費 18,000 が費用に、現金 2,000 が戻りました。
 ```
