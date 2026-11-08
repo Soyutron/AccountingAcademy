@@ -28,6 +28,7 @@ export default async function UnitPage({ params }: { params: Promise<{ topic: st
       unit={{
         id: unit.id,
         title: unit.title,
+        sourcePath: `content/${unit.path}.md`,
         company: unit.scenario.company,
         opening: unit.scenario.opening,
         steps: unit.steps.map((s) => ({ title: s.title, task: s.task })),
