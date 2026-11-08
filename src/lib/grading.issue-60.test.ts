@@ -36,11 +36,8 @@ describe("科目が合っていて金額だけ違う仕訳", () => {
   });
 
   it("alternatives の科目でも金額の説明になる", () => {
-    const alternative = postTask("merchandise/credit-transactions", "普通預金に振り込まれた");
-    const result = gradePost(alternative, {
-      debit: [{ account: "cash", amount: 6000 }],
-      credit: [{ account: "accounts_receivable", amount: 6000 }],
-    });
+    const alternative = { debit: [{ account: "cash", amount: 50000 }], credit: [{ account: "equipment", amount: 50000 }] };
+    const result = gradePost({ ...task, alternatives: [alternative] }, entry(5000, 5000, ["cash", "equipment"]));
     expect(result.correct).toBe(false);
     expect(result.feedback).toContain("金額");
     expect(result.feedback).not.toContain("何が動くはず");
