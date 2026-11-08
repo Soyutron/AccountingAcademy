@@ -44,13 +44,19 @@ export function gradePost(task: TaskOf<"post">, entry: JournalEntry): GradeResul
   return ng(pattern?.feedback, pattern?.misconception);
 }
 
-export function gradePredict(task: TaskOf<"predict">, effect: EffectAnswer): GradeResult {
+export interface PredictResult extends GradeResult {
+  // 外した要素それぞれの誤解(重複なし)。misconception はこの先頭で、attempts には 1 件だけ保存する
+  misconceptions: string[];
+}
+
+export function gradePredict(task: TaskOf<"predict">, effect: EffectAnswer): PredictResult {
   const keys = Object.keys(task.answer) as Element[];
-  if (keys.every((k) => effect[k] === task.answer[k])) return ok(task);
-  const pattern = task.wrong_patterns.find((p) =>
+  if (keys.every((k) => effect[k] === task.answer[k])) return { ...ok(task), misconceptions: [] };
+  const patterns = task.wrong_patterns.filter((p) =>
     (Object.entries(p.match) as [Element, Change | undefined][]).every(([k, v]) => v === undefined || effect[k] === v),
   );
-  return ng(pattern?.feedback, pattern?.misconception);
+  const misconceptions = [...new Set(patterns.flatMap((p) => p.misconception ?? []))];
+  return { ...ng(patterns.map((p) => p.feedback).join("\n") || undefined, misconceptions[0]), misconceptions };
 }
 
 export function gradeCalc(task: TaskOf<"calc">, value: number): GradeResult {
