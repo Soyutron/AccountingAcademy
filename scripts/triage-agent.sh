@@ -12,6 +12,8 @@
 #   TRIAGE_PHASE_TIMEOUT  claude -p 1 回の上限秒(既定 1800)
 #   TRIAGE_MAX_TURNS      ターン上限(既定 120)
 #   TRIAGE_LOG_DIR        ログ置き場(既定 logs/triage)
+#   TRIAGE_WAIT=1         loop で needs-triage が無くても終了せず待つ(Monkey と並走させるとき)
+# loop は複数同時に走らせてよい(Issue ごとのロックで同じ Issue を二重に判定しない)。
 set -u
 cd "$(dirname "$0")/.."
 ROOT=$PWD
@@ -37,6 +39,9 @@ print(d if not isinstance(d, (dict, list)) else json.dumps(d, ensure_ascii=False
 triage_one() {
   local n=$1 dir="$LOG_DIR/$1" out rc verdict prio reason brief dup labels
   mkdir -p "$dir"
+  # 同じ Issue を別の loop と同時に判定しない
+  exec 9>"$dir/lock"
+  flock -n 9 || { log "#$n は別のトリアージが処理中です"; return 6; }
   out="$dir/triage.json"
   labels=$(gh issue view "$n" --json state,labels --jq 'if .state != "OPEN" then "CLOSED" else ([.labels[].name] | join(" ")) end') || { log "#$n を取得できません"; return 6; }
   [ "$labels" != "CLOSED" ] || { log "#$n は open ではありません"; return 6; }
@@ -98,8 +103,15 @@ triage_one() {
 case "${1:-}" in
   loop)
     while :; do
-      n=$(gh issue list --state open --label needs-triage --limit 200 --json number --jq 'sort_by(.number) | .[0].number // empty')
-      [ -n "$n" ] || { log "needs-triage の Issue はありません"; break; }
+      n=""
+      for c in $(gh issue list --state open --label needs-triage --limit 200 --json number --jq 'sort_by(.number) | .[].number'); do
+        if [ -e "$LOG_DIR/$c/lock" ] && ! flock -n "$LOG_DIR/$c/lock" true; then continue; fi
+        n=$c; break
+      done
+      if [ -z "$n" ]; then
+        [ "${TRIAGE_WAIT:-0}" = 1 ] && { sleep 60; continue; }
+        log "needs-triage の Issue はありません"; break
+      fi
       triage_one "$n"; rc=$?
       case $rc in
         0|6) ;;
@@ -108,7 +120,7 @@ case "${1:-}" in
       esac
       # 同じ Issue を延々と回さない(ラベルを書けなかったとき)
       # gh の --jq は null を空で出すので、真偽値で判定する
-      [ "$(gh issue view "$n" --json labels --jq '[.labels[].name] | any(. == "needs-triage")')" = "false" ] || { log "#$n のラベルを更新できていません。停止します"; exit 5; }
+      [ "$rc" -ne 0 ] || [ "$(gh issue view "$n" --json labels --jq '[.labels[].name] | any(. == "needs-triage")')" = "false" ] || { log "#$n のラベルを更新できていません。停止します"; exit 5; }
     done ;;
   ""|*[!0-9]*) echo "使い方: scripts/triage-agent.sh <Issue 番号> | loop" >&2; exit 64 ;;
   *) triage_one "$1" ;;
