@@ -121,6 +121,19 @@ wrong_patterns:
     feedback: 売掛金と発送費は左、売上と減った現金は右です。
   - match: { unbalanced: true }
     feedback: 左の合計(売掛金 + 発送費)と右の合計(売上 + 現金)がそろっていません。どちらも 31,500 です。
+  - match: { credit: [{ account: shipping_expense }] }
+    misconception: debit_means_increase
+    feedback: 発送費は費用なので、増えるときは左です。運賃を払って現金は減ったので、現金は右です。左は売掛金と発送費、右は売上と現金になります。
+  - match: { debit: [{ account: accounts_receivable, amount: 30000 }], credit: [{ account: sales, amount: 31500 }] }
+    misconception: shipping_mixed_into_sale
+    feedback: 売上は焼き菓子の代金 30,000 のままです。運賃は売り上げたお金ではなく払ったお金なので、右は売上 30,000 と現金 1,500 の 2 行に分けます。
+  - match: { debit: [{ account: accounts_receivable, amount: 31500 }], credit: [{ account: sales, amount: 30000 }, { account: cash, amount: 1500 }] }
+    misconception: shipping_mixed_into_sale
+    feedback: 売掛金は焼き菓子の代金 30,000 のままです。運賃はお客さんから受け取るお金ではなく、お店が負担する費用なので、発送費として左に書きます。
+  - match: { debit: [{ account: accounts_receivable, amount: 30000 }, { account: shipping_expense }], credit: [{ account: sales, amount: 30000 }, { account: cash }] }
+    feedback: 科目は合っています。金額をもう一度確かめましょう。
+  - match: { debit: [{ account: accounts_receivable, amount: 30000 }], credit: [{ account: sales, amount: 30000 }] }
+    feedback: 売掛金と売上の 30,000 は合っています。運賃の支払いも同じ取引なので、左に発送費 1,500、右に現金 1,500 の行が要ります。
 hint: 左に売掛金 30,000 と発送費 1,500、右に売上 30,000 と現金 1,500 です。
 success: 売上は 30,000 のまま、発送費 1,500 が費用に並びました。同じ運賃でも、仕入れるときは仕入に含め、売るときは発送費。向きで扱いが変わります。
 ```
