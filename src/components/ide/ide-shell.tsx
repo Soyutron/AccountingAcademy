@@ -254,27 +254,32 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     }
   };
 
-  // 正解済み(predict は回答済み)のステップを、その答えで達成状態まで戻す。answer が無ければ模範解答を使う
+  // 正解済み(predict は回答済み)のステップを、その答えで達成状態まで戻す。answer が無ければ模範解答を使う。
+  // 使った答えを answered に登録し、続きからで戻したステップも「← 前へ」→「次へ →」で達成状態に戻せるようにする(Issue #48)
   const restoreStep = (index: number, answer?: unknown) => {
     const t = unit.steps[index].task;
     answeredStep.current = index;
     if (t.type === "post") {
       const entry = (answer as JournalEntry | undefined) ?? t.answer;
+      answered.current.set(index, entry);
       setDraft(fromJournalEntry(entry, accountMap));
       setResult(gradePost(t, entry));
     }
     if (t.type === "predict") {
       const predicted = (answer as EffectAnswer | undefined) ?? (t.answer as EffectAnswer);
+      answered.current.set(index, predicted);
       setEffect(predicted);
       setResult(gradePredict(t, predicted));
     }
     if (t.type === "calc") {
       const n = (answer as number | undefined) ?? t.answer;
+      answered.current.set(index, n);
       setCalcValue(String(n));
       setResult(gradeCalc(t, n));
     }
     if (t.type === "classify") {
       const placement = (answer as Record<string, Element> | undefined) ?? Object.fromEntries(t.accounts.map((id) => [id, accountMap.get(id)!.element]));
+      answered.current.set(index, placement);
       setPlaced(placement);
       setResult(gradeClassify(t, placement, accountMap));
     }
@@ -282,6 +287,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       setTweakDone(true);
       const values = answer as Record<string, number> | undefined;
       if (values) {
+        answered.current.set(index, values);
         setParams(values);
         setResult(gradeTweak(t, evaluateFormula(t.formula, values).outputs));
       }
