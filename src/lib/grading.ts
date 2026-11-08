@@ -16,6 +16,8 @@ export interface GradeResult {
 const GENERIC_WRONG = "まだ合っていません。結果の表で何が動くはずかを考えて、もう一度試してみましょう。";
 // 正解の金額は書かない。計算で求める課題では答えそのものになる
 const AMOUNT_WRONG = "科目は合っています。金額をもう一度確かめましょう。";
+// 計算問題では記帳しないので、結果の表の動きではなく計算そのものの見直しを促す
+const CALC_WRONG = "まだ合っていません。計算の式と、使う数字をもう一度確かめましょう。";
 
 function ok(task: { success?: string }): GradeResult {
   return { correct: true, feedback: task.success ?? "できました。" };
@@ -62,7 +64,7 @@ export function gradePredict(task: TaskOf<"predict">, effect: EffectAnswer): Pre
 export function gradeCalc(task: TaskOf<"calc">, value: number): GradeResult {
   if (value === task.answer) return ok(task);
   const pattern = task.wrong_patterns.find((p) => p.match === value);
-  return ng(pattern?.feedback, pattern?.misconception);
+  return ng(pattern?.feedback ?? CALC_WRONG, pattern?.misconception);
 }
 
 export function gradeTweak(task: TaskOf<"tweak">, outputs: Record<string, number>): GradeResult {
