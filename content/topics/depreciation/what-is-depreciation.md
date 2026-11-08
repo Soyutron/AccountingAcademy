@@ -43,6 +43,8 @@ wrong_patterns:
     feedback: 使ってしまった電気の代金は、その場で費用になります。
   - match: { equity: none }
     feedback: 費用が増えると当期純利益が減り、そのぶん純資産も減ります。
+  - match: { equity: increase }
+    feedback: 費用が増えると当期純利益は減ります。純資産も増えるのではなく、そのぶん減ります。
 hint: 現金(資産)が減り、水道光熱費(費用)が増えます。費用が増えれば利益も純資産も減ります。
 success: 使った分がその場で費用になり、利益が減りました。電気は使ってしまえば終わりなので、これでぴったりです。
 ```
@@ -120,6 +122,8 @@ wrong_patterns:
   - match: { debit: [{ amount: 600000 }] }
     misconception: no_cost_allocation
     feedback: 全額ではなく、6 年に分けた 1 年分の 100,000 だけを費用にします。
+  - match: { debit: [{ account: equipment }] }
+    feedback: 左に備品を書くと、マシンの金額が増えてしまいます。使った 1 年分は費用なので、左には減価償却費を書きましょう。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 100,000 にしましょう。
 hint: 左に減価償却費 100,000、右に減価償却累計額 100,000 です。
@@ -184,6 +188,9 @@ wrong_patterns:
   - match: { credit: [{ account: equipment }] }
     misconception: direct_writeoff_vs_contra
     feedback: 備品はそのまま残し、減った分は減価償却累計額に積みます。
+  - match: { credit: [{ account: cash }] }
+    misconception: depreciation_as_cash_outflow
+    feedback: 現金はマシンを買ったときにもう減っています。減価償却ではお金は動きません。
   - match: { debit: [{ amount: 500000 }] }
     feedback: 帳簿価額ではなく、1 年分の 100,000 を費用にします。
   - match: { unbalanced: true }
