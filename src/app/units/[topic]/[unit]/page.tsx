@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { units } from "#content";
-import { accountList, misconceptionMap, unitMap, unitsOfTopic } from "@/lib/content";
+import { accountList, misconceptionMap, nextUnit, unitMap } from "@/lib/content";
 import { Markdown } from "@/components/markdown";
 import { IdeShell, type MisconceptionInfo } from "@/components/ide/ide-shell";
 
@@ -15,8 +15,7 @@ export default async function UnitPage({ params }: { params: Promise<{ topic: st
   const { topic: topicId, unit: unitSlug } = await params;
   const unit = unitMap.get(`${topicId}/${unitSlug}`);
   if (!unit) notFound();
-  const siblings = unitsOfTopic(unit.topic);
-  const next = siblings[siblings.findIndex((u) => u.id === unit.id) + 1];
+  const next = nextUnit(unit);
 
   const misconceptions: Record<string, MisconceptionInfo> = {};
   for (const m of misconceptionMap.values()) {
