@@ -143,6 +143,7 @@ content/
   short: 固定資産の購入代金のうち、今年の分として費用にした金額
   element: expense            # asset | liability | equity | revenue | expense
   why: 固定資産の取得原価のうち当期の使用によって消費された部分を費用として認識するため
+  example: 100 万円のトラックを 5 年使うなら、1 年目の減価償却費は 20 万円。   # 用語集・ポップオーバーの「例:」
   concepts: [cost_allocation]
 - id: accumulated_depreciation
   name: 減価償却累計額
