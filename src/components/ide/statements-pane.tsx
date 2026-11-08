@@ -1,6 +1,7 @@
 "use client";
 
-import { type AccountInfo, type Element, ELEMENTS, formatAmount } from "@/lib/accounting";
+import { type Element, ELEMENTS, formatAmount } from "@/lib/accounting";
+import type { GlossaryAccount } from "@/lib/content";
 import { type Balances, type StatementLine, buildStatements } from "@/lib/ledger";
 import { ELEMENT_STYLE } from "@/lib/elements";
 import { AccountName } from "@/components/account-name";
@@ -10,7 +11,7 @@ import { HelpIcon } from "./help-icon";
 // 結果ペイン: 会社のかたち(資産 vs 負債 + 純資産の帯)、貸借対照表、損益計算書。前のステップからの差分を ▲▼ で示す
 
 interface Props {
-  accounts: ReadonlyMap<string, AccountInfo>;
+  accounts: ReadonlyMap<string, GlossaryAccount>;
   balances: Balances;
   diff: Map<string, number>;
   company: string;
@@ -126,7 +127,7 @@ function ShapeBars({ st }: { st: ReturnType<typeof buildStatements> }) {
   );
 }
 
-function Group({ element, lines, diff, accounts, children }: { element: Element; lines: StatementLine[]; diff: Map<string, number>; accounts: ReadonlyMap<string, AccountInfo>; children?: React.ReactNode }) {
+function Group({ element, lines, diff, accounts, children }: { element: Element; lines: StatementLine[]; diff: Map<string, number>; accounts: ReadonlyMap<string, GlossaryAccount>; children?: React.ReactNode }) {
   return (
     <div className="mb-2">
       <div className="mb-0.5">

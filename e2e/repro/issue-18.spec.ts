@@ -28,9 +28,7 @@ test("正解すると紙吹雪が 1 回出て消え、「次へ →」が一度�
   await expect(next).toHaveAttribute("aria-disabled", "false");
 
   // 正解済みの状態を復元したときは出ない
-  // スキップしたツアーは再訪で再び始まり、ツアー中は「続きから」が出ない(Issue #44)
   await page.reload();
-  await page.getByRole("dialog", { name: "チュートリアル" }).getByRole("button", { name: "スキップ" }).click();
   await page.getByRole("button", { name: "続きから" }).click();
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   await page.waitForTimeout(300);

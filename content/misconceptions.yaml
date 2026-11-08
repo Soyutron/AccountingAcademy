@@ -76,25 +76,25 @@ misconceptions:
     name: お金を受け取るまで売上ではない
     description: 商品を渡しても、代金を受け取るまでは売上にならないと思っている
     correct: 売上は商品を渡した(サービスを提供した)ときに記録する。代金が後払いなら、受け取る権利を売掛金(資産)として記録する
-    concepts: [credit_transaction, receivable, revenue]
+    concepts: [credit_transaction, accounts_receivable, revenue]
     remediation: merchandise/credit-transactions
   - id: receivable_is_cash
     name: 売掛金は現金
     description: 売掛金を、すでに受け取ったお金や売上そのものと混同している
     correct: 売掛金は「後で代金を受け取る権利」で、現金とは別の資産。回収したときに現金や預金に変わる
-    concepts: [receivable, asset]
+    concepts: [accounts_receivable, asset]
     remediation: merchandise/credit-transactions
   - id: receivable_collection_is_sale
     name: 回収のときにもう一度売上
     description: 売掛金や未収入金を回収したときに、売上をもう一度記録してしまう
     correct: 代金を受け取る権利(売掛金・未収入金)は、売ったときに記録済み。回収では権利(資産)が現金や預金(資産)に変わるだけで、売上は増えない
-    concepts: [receivable, revenue]
+    concepts: [accounts_receivable, revenue]
     remediation: merchandise/credit-transactions
   - id: payable_payment_is_purchase
     name: 支払いのときにもう一度仕入
     description: 買掛金を支払ったときに、仕入をもう一度記録してしまう
     correct: 仕入は商品を受け取ったときに記録済み。支払いでは買掛金(負債)が減り、現金(資産)が減るだけで、仕入は増えない
-    concepts: [payable, purchase]
+    concepts: [accounts_payable, purchase]
     remediation: merchandise/credit-transactions
   - id: return_as_new_transaction
     name: 返品を新しい取引として記録
@@ -202,7 +202,7 @@ misconceptions:
     name: 後払いなら何でも売掛金・買掛金
     description: 商品以外の物(備品など)を後払いで売り買いしたときにも、売掛金や買掛金を使ってしまう
     correct: 売掛金と買掛金は商品の売買専用。それ以外の物の代金は未収入金・未払金で記録し、本業の取引と区別する
-    concepts: [non_trade_receivable_payable, receivable, payable]
+    concepts: [non_trade_receivable_payable, accounts_receivable, accounts_payable]
     remediation: receivables-and-payables/other-receivables-and-payables
   - id: asset_sale_is_sales
     name: 備品を売ったら売上
