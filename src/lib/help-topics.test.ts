@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { HELP_CATEGORIES, HELP_TOPICS, currentTopics, helpTopic } from "./help-topics";
+import { HELP_CATEGORIES, HELP_TOPICS, currentTopics, helpTopic, topicBody } from "./help-topics";
 
 // 「いまの画面でできること」は、現在のステップで画面に出ている機能だけに絞る(docs/help-design.md 4 章)
 
@@ -29,6 +29,15 @@ describe("help topics", () => {
   it("最後の observe は自由に試す扱い", () => {
     const ids = currentTopics({ ...base, taskType: "observe", isLast: true }).map((t) => t.id);
     expect(ids).toEqual(["journal", "impact", "sandbox"]);
+  });
+
+  it("「答えを見る」は、それが出る課題の説明にだけ書く(Issue #113)", () => {
+    const hintBody = (taskType: "post" | "calc" | "classify" | "predict" | "tweak") => topicBody(helpTopic("hint"), { ...base, hasHint: true, taskType });
+    for (const taskType of ["post", "calc", "classify"] as const) expect(hintBody(taskType)).toContain("答えを見る");
+    for (const taskType of ["predict", "tweak"] as const) {
+      expect(hintBody(taskType)).toContain("ヒントを見る");
+      expect(hintBody(taskType)).not.toContain("答えを見る");
+    }
   });
 
   it("無い話題は例外", () => {

@@ -19,6 +19,11 @@ const AMOUNT_WRONG = "科目は合っています。金額をもう一度確か�
 // 計算問題では記帳しないので、結果の表の動きではなく計算そのものの見直しを促す
 const CALC_WRONG = "まだ合っていません。計算の式と、使う数字をもう一度確かめましょう。";
 
+/** 2 回誤答すると「答えを見る」が出る課題か。predict は 1 回で進み、tweak は目標に合わせるだけなので誤答が重ならない */
+export function canRevealAnswer(type: Task["type"]): boolean {
+  return type === "post" || type === "calc" || type === "classify";
+}
+
 function ok(task: { success?: string }): GradeResult {
   return { correct: true, feedback: task.success ?? "できました。" };
 }
