@@ -114,6 +114,12 @@ misconceptions:
     correct: 売るときにかかる運賃は発送費という費用。仕入に含めるのは、仕入れるときにかかった運賃だけ
     concepts: [incidental_costs, expense]
     remediation: merchandise/returns-and-costs
+  - id: shipping_mixed_into_sale
+    name: 売るときの運賃を代金に混ぜる
+    description: 売った商品を送るためにお店が払った運賃を、売上や売掛金に足して、商品の代金の一部として記録してしまう
+    correct: 売上と売掛金は商品の代金のまま。お店が負担する運賃は発送費という費用にして、別の行に書く
+    concepts: [incidental_costs, expense]
+    remediation: merchandise/returns-and-costs
   - id: purchases_equal_cogs
     name: 仕入の合計がそのまま売上原価
     description: 1 年に仕入れた金額の全部が、売った商品の原価だと思っている
