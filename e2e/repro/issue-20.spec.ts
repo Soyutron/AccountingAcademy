@@ -9,7 +9,6 @@ test("ツアーは借方・貸方の金額が違うまま 6 段目へ進まな�
   await tour.getByRole("button", { name: "はじめる" }).click();
   await next.click();
   await page.getByRole("button", { name: "次へ →" }).click();
-  await next.click();
 
   await work.getByLabel("借方の科目 1").fill("現金");
   await work.getByLabel("借方の金額 1").fill("10000");
