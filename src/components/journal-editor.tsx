@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo } from "react";
+import { useEffect, useId, useMemo, useRef } from "react";
 import { type AccountInfo, type Side, computeImpact, ELEMENTS, findAccountByName, formatAmount } from "@/lib/accounting";
 import { type EditableEntry, type EditableLine, parseAmount, toJournalEntry } from "@/lib/journal-editable";
 import { ELEMENT_STYLE } from "@/lib/elements";
@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ElementBadge } from "@/components/element-badge";
 import { AccountCombobox } from "@/components/account-combobox";
+import { HelpIcon } from "@/components/ide/help-icon";
 
 // 仕訳エディタ。入力に応じて 5 要素の増減と当期純利益への影響をその場で表示する(要件 4.1)
 
@@ -28,6 +29,8 @@ interface Props {
 
 export function JournalEditor({ accounts, value, onChange, readOnly = false, showImpact = true }: Props) {
   const idPrefix = useId();
+  const rootRef = useRef<HTMLDivElement>(null);
+  const focusLine = useRef<string | null>(null);
   const accountMap = useMemo(() => new Map(accounts.map((a) => [a.id, a])), [accounts]);
   const entry = useMemo(() => toJournalEntry(value, accounts), [value, accounts]);
   const impact = useMemo(() => computeImpact(entry, accountMap), [entry, accountMap]);
@@ -36,7 +39,18 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
     const lines = value[side].map((l, i) => (i === index ? { ...l, ...patch } : l));
     onChange?.({ ...value, [side]: lines });
   };
-  const addLine = (side: Side) => onChange?.({ ...value, [side]: [...value[side], { accountName: "", amount: "" }] });
+  const addLine = (side: Side) => {
+    focusLine.current = `${side}-${value[side].length}`;
+    onChange?.({ ...value, [side]: [...value[side], { accountName: "", amount: "" }] });
+  };
+  // 新しい行は「行を追加」より前に描画され、Tab では届かない(Issue #68)
+  // 解説ペインの読み取り専用エディタも同じ data-journal-line を持つので、自分の中だけを探す
+  useEffect(() => {
+    const line = focusLine.current;
+    if (!line) return;
+    focusLine.current = null;
+    rootRef.current?.querySelector<HTMLInputElement>(`[data-journal-line="${line}"] input`)?.focus();
+  }, [value]);
   const removeLine = (side: Side, index: number) => {
     if (value[side].length <= 1) return;
     onChange?.({ ...value, [side]: value[side].filter((_, i) => i !== index) });
@@ -124,7 +138,7 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
 
   return (
     // 借方・貸方の並べ方は画面幅ではなくカード自身の幅で決める(3 ペインでは画面が広くてもカードが狭い。Issue #33)
-    <div className="@container rounded-lg border bg-card p-3 space-y-3 not-prose">
+    <div ref={rootRef} className="@container rounded-lg border bg-card p-3 space-y-3 not-prose">
       <div className="flex flex-col @lg:flex-row gap-3">
         {renderSide("debit", "借方")}
         {renderSide("credit", "貸方")}
@@ -152,6 +166,7 @@ function ImpactPanel({ impact }: { impact: ReturnType<typeof computeImpact> }) {
         <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs ${impact.netIncome !== 0 ? "font-medium" : "text-muted-foreground"}`}>
           当期純利益 <span className="ml-1 font-mono tabular-nums">{sign(impact.netIncome)}</span>
         </span>
+        <HelpIcon topic="impact" />
       </div>
       <div className="mt-1 text-xs text-muted-foreground">
         借方合計 {formatAmount(impact.debitTotal)} / 貸方合計 {formatAmount(impact.creditTotal)}
