@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { useState } from "react";
 import { flushSync } from "react-dom";
+import { toHiragana } from "@/lib/accounting";
 import type { GlossaryEntry } from "@/lib/content";
 import { ElementBadge } from "@/components/element-badge";
 import { Input } from "@/components/ui/input";
 
-// 用語集の検索。名前・別名・short の部分一致。規模が小さいので配列のフィルタで足りる
+// 用語集の検索。名前・別名・読み・short の部分一致。規模が小さいので配列のフィルタで足りる
 
 export function GlossarySearch({
   entries,
@@ -19,10 +20,10 @@ export function GlossarySearch({
   domainOf: Record<string, string>;
 }) {
   const [query, setQuery] = useState("");
-  const q = query.trim();
-  const hits = q ? entries.filter((e) => e.name.includes(q) || e.aliases.some((a) => a.includes(q)) || e.short.includes(q)) : entries;
+  const q = toHiragana(query.trim());
+  const hits = q ? entries.filter((e) => [e.name, ...e.aliases, ...e.reading, e.short].some((t) => toHiragana(t).includes(q))) : entries;
   // 説明文にだけ語を含む項目が分野の順で先に並ぶと、探している項目が埋もれる(Issue #86)
-  const exact = q ? hits.filter((e) => e.name === q || e.aliases.includes(q)) : [];
+  const exact = q ? hits.filter((e) => [e.name, ...e.aliases, ...e.reading].some((t) => toHiragana(t) === q)) : [];
   const others = hits.filter((e) => !exact.includes(e));
   const concepts = others.filter((e) => e.kind === "concept");
   const accounts = others.filter((e) => e.kind === "account");
@@ -80,7 +81,9 @@ export function GlossarySearch({
           </dl>
         </section>
       ))}
-      {hits.length === 0 && <p className="text-sm text-muted-foreground">該当する用語がありません。</p>}
+      {hits.length === 0 && (
+        <p className="text-sm text-muted-foreground">該当する用語がありません。読みで見つからないときは、漢字の一部(例: 「現」)で試してください。</p>
+      )}
     </div>
   );
 }

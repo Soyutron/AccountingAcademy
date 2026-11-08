@@ -116,7 +116,7 @@ export function findAccountByName(name: string, accounts: Iterable<AccountInfo>)
   return undefined;
 }
 
-const toHiragana = (text: string) => text.replace(/[ァ-ヶ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));
+export const toHiragana = (text: string) => text.replace(/[ァ-ヶ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));
 
 /** 入力途中の文字が科目名・別名・読みのどこかに部分一致するか。カタカナはひらがなとして比べる */
 export function matchesAccountQuery(account: AccountInfo, query: string): boolean {
