@@ -15,6 +15,8 @@ export interface AccountInfo {
   // 一文の説明と、なぜその要素に属するか。ホバー解説と要素分類のフィードバックに使う
   short: string;
   why: string;
+  // 用語集とポップオーバーの「例:」
+  example?: string;
 }
 
 export interface JournalLine {
@@ -34,6 +36,11 @@ export const ELEMENT_LABELS: Record<Element, string> = {
   revenue: "収益",
   expense: "費用",
 };
+
+// why は「なぜその要素か」の答えなので、問いが読めるように見出しを付けて用語の説明にする
+export function accountSummary(account: Pick<AccountInfo, "element" | "why">): string {
+  return `${ELEMENT_LABELS[account.element]}に分類する理由: ${account.why}`;
+}
 
 export const ELEMENTS: Element[] = ["asset", "liability", "equity", "revenue", "expense"];
 
