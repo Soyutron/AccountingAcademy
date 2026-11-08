@@ -109,3 +109,7 @@ export const glossary: GlossaryEntry[] = [
 ];
 
 export const glossaryMap = new Map(glossary.map((g) => [g.id, g]));
+
+// 結果ペインの科目名も本文と同じ説明を開く。このモジュールをクライアントで読むと全単元が同梱されるので、ページから項目ごと渡す(Issue #82)
+export type GlossaryAccount = AccountInfo & { glossary: GlossaryEntry };
+export const glossaryAccountList: GlossaryAccount[] = accountList.map((a) => ({ ...a, glossary: glossaryMap.get(a.id)! }));

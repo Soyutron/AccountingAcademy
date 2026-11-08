@@ -8,7 +8,7 @@ test("用語集の検索で、名前が検索語と一致する項目が先頭�
   await expect(page.locator("#cash")).toBeVisible();
   await expect(page.locator("main div[id]").first()).toHaveAttribute("id", "cash");
   // 一致しなかった項目は従来どおり分野のグループに残り、同じ項目は二重に出ない
-  await expect(page.locator('main div[id="receivable"]')).toHaveCount(1);
+  await expect(page.locator('main div[id="accounts_receivable"]')).toHaveCount(1);
   await expect(page.locator('main div[id="cash"]')).toHaveCount(1);
 });
 

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { units } from "#content";
-import { accountList, misconceptionMap, nextUnit, unitMap } from "@/lib/content";
+import { glossaryAccountList, misconceptionMap, nextUnit, unitMap } from "@/lib/content";
 import { Markdown } from "@/components/markdown";
 import { IdeShell, type MisconceptionInfo } from "@/components/ide/ide-shell";
 
@@ -34,7 +34,7 @@ export default async function UnitPage({ params }: { params: Promise<{ topic: st
         steps: unit.steps.map((s) => ({ title: s.title, task: s.task })),
         next: next ? { id: next.id, title: next.title } : undefined,
       }}
-      accounts={accountList}
+      accounts={glossaryAccountList}
       misconceptions={misconceptions}
       narratives={unit.steps.map((s, i) => (
         <Markdown key={i} body={s.narrative} />
