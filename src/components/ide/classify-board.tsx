@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { type AccountInfo, type Element, ELEMENTS } from "@/lib/accounting";
 import { ELEMENT_STYLE } from "@/lib/elements";
 
@@ -16,6 +17,7 @@ interface Props {
 
 export function ClassifyBoard({ accounts, placed, onChange, wrong, disabled }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
+  const poolChips = useRef<HTMLDivElement>(null);
   const pool = accounts.filter((a) => !placed[a.id]);
 
   const place = (el: Element) => {
@@ -26,14 +28,19 @@ export function ClassifyBoard({ accounts, placed, onChange, wrong, disabled }: P
   const unplace = (id: string) => {
     const next = { ...placed };
     delete next[id];
-    onChange(next);
-    setSelected(id);
+    // 箱の中の chip は消え、プールには別の DOM ノードとして描かれるので、描画後に移す(Issue #85)
+    flushSync(() => {
+      onChange(next);
+      setSelected(id);
+    });
+    poolChips.current?.querySelector<HTMLElement>(`[data-chip="${id}"]`)?.focus();
   };
 
   const chip = (a: AccountInfo, inBin: boolean) => (
     <button
       key={a.id}
       type="button"
+      data-chip={a.id}
       disabled={disabled}
       onClick={() => (inBin ? unplace(a.id) : setSelected(selected === a.id ? null : a.id))}
       aria-pressed={inBin ? undefined : selected === a.id}
@@ -48,7 +55,7 @@ export function ClassifyBoard({ accounts, placed, onChange, wrong, disabled }: P
     <div className="space-y-3" role="group" aria-label="仕分けボード">
       <div className="rounded-md border border-dashed p-2 min-h-10">
         <div className="text-xs text-muted-foreground mb-1">科目を選んでから、入れる箱を押します</div>
-        <div className="flex flex-wrap gap-1">{pool.map((a) => chip(a, false))}</div>
+        <div ref={poolChips} className="flex flex-wrap gap-1">{pool.map((a) => chip(a, false))}</div>
         {pool.length === 0 && <div className="text-xs text-muted-foreground">全部の科目を箱に入れました。</div>}
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
