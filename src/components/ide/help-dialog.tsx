@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { type HelpContext, type HelpTopic, HELP_CATEGORIES, HELP_TOPICS, currentTopics, helpTopic } from "@/lib/help-topics";
+import { type HelpContext, type HelpTopic, HELP_CATEGORIES, HELP_TOPICS, canShowTarget, currentTopics, helpTopic } from "@/lib/help-topics";
 import { TUTORIAL_UNIT_ID, updateTutorial, useTutorialState } from "@/lib/tutorial-store";
 
 // 「使い方」: いまの画面に出ている機能を先に、残りは分類ごとに畳んで出す。末尾にチュートリアルの設定(docs/help-design.md 5.3)
@@ -17,9 +17,11 @@ interface Props {
   ctx: HelpContext;
   stepLabel: string;
   onRestartTour?: () => void;
+  // 「場所を示す」: ダイアログを閉じて対象を光らせる
+  onShowTarget: (topic: HelpTopic) => void;
 }
 
-export function HelpDialog({ open, onOpenChange, focusTopic, ctx, stepLabel, onRestartTour }: Props) {
+export function HelpDialog({ open, onOpenChange, focusTopic, ctx, stepLabel, onRestartTour, onShowTarget }: Props) {
   const state = useTutorialState();
   const current = currentTopics(ctx);
   const focusCategory = focusTopic ? helpTopic(focusTopic).category : null;
@@ -64,7 +66,7 @@ export function HelpDialog({ open, onOpenChange, focusTopic, ctx, stepLabel, onR
               いまの画面でできること
               <span className="text-xs font-normal text-muted-foreground">{stepLabel}</span>
             </h3>
-            <TopicList topics={current} idPrefix="now" />
+            <TopicList topics={current} idPrefix="now" ctx={ctx} onShowTarget={onShowTarget} />
           </section>
         )}
 
@@ -84,7 +86,7 @@ export function HelpDialog({ open, onOpenChange, focusTopic, ctx, stepLabel, onR
                   </span>
                 </summary>
                 <div className="border-t px-3 py-2">
-                  <TopicList topics={topics} idPrefix="help" />
+                  <TopicList topics={topics} idPrefix="help" ctx={ctx} onShowTarget={onShowTarget} />
                 </div>
               </details>
             );
@@ -125,13 +127,23 @@ export function HelpDialog({ open, onOpenChange, focusTopic, ctx, stepLabel, onR
   );
 }
 
-function TopicList({ topics, idPrefix }: { topics: HelpTopic[]; idPrefix: string }) {
+function TopicList({ topics, idPrefix, ctx, onShowTarget }: { topics: HelpTopic[]; idPrefix: string; ctx: HelpContext; onShowTarget: (topic: HelpTopic) => void }) {
   return (
     <dl className="space-y-2 text-sm">
       {topics.map((t) => (
         <div key={t.id} id={`${idPrefix}-${t.id}`} tabIndex={-1} className="-mx-1 rounded-sm px-1 focus:bg-muted/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           <dt className="font-semibold">{t.title}</dt>
-          <dd className="text-muted-foreground">{t.body}</dd>
+          <dd className="text-muted-foreground">
+            {t.body}
+            {canShowTarget(t, ctx) && (
+              // 閉じたダイアログがフォーカスを「使い方」へ戻すので、光る対象を見失わない
+              <DialogClose asChild>
+                <button type="button" className="ml-2 text-xs underline" onClick={() => onShowTarget(t)}>
+                  場所を示す →
+                </button>
+              </DialogClose>
+            )}
+          </dd>
         </div>
       ))}
     </dl>
