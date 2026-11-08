@@ -149,10 +149,12 @@ function Row({ id, name, amount, delta, magnitude = false }: { id?: string; name
   return (
     <div data-account={id} className={`flex flex-wrap items-baseline justify-between gap-x-2 rounded px-1 ${changed ? "bg-changed motion-safe:animate-highlight" : ""}`}>
       <span className="min-w-0">{name}</span>
-      <span className="ml-auto font-mono tabular-nums whitespace-nowrap">
-        <SignedAmount amount={amount} />
+      <span className="ml-auto flex min-w-0 flex-wrap items-baseline justify-end gap-x-1 font-mono tabular-nums">
+        <span className="min-w-0 wrap-anywhere">
+          <SignedAmount amount={amount} />
+        </span>
         {changed && (
-          <span className="ml-1 text-xs text-muted-foreground">
+          <span className="min-w-0 wrap-anywhere text-xs text-muted-foreground">
             <span aria-hidden>{shown > 0 ? "▲" : "▼"}</span>
             <span className="sr-only">{shown > 0 ? "増加 " : "減少 "}</span>
             {formatAmount(Math.abs(delta))}
@@ -167,7 +169,7 @@ function Total({ label, amount }: { label: string; amount: number }) {
   return (
     <div className="mt-auto flex flex-wrap items-baseline justify-between gap-x-2 border-t border-foreground/60 pt-1 font-medium">
       <span className="min-w-0">{label}</span>
-      <span className="ml-auto font-mono tabular-nums whitespace-nowrap">
+      <span className="ml-auto min-w-0 wrap-anywhere font-mono tabular-nums">
         <SignedAmount amount={amount} />
       </span>
     </div>
