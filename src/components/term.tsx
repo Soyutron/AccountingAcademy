@@ -20,7 +20,9 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
   const content = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
-  const schedule = (next: boolean, delay: number) => {
+  // ホバーの開閉はマウスだけ。タップ後にブラウザが出す互換の mouseleave で閉じないよう、pointer イベントの種類で区別する
+  const schedule = (e: React.PointerEvent, next: boolean, delay: number) => {
+    if (e.pointerType !== "mouse") return;
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => {
       byHover.current = next;
@@ -60,8 +62,8 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
               content.current?.querySelector<HTMLElement>("button, a")?.focus();
             }
           }}
-          onMouseEnter={() => schedule(true, 150)}
-          onMouseLeave={() => schedule(false, 250)}
+          onPointerEnter={(e) => schedule(e, true, 150)}
+          onPointerLeave={(e) => schedule(e, false, 250)}
         >
           {children}
         </button>
@@ -73,8 +75,8 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
           if (byHover.current) e.preventDefault();
         }}
         aria-label={entry.name}
-        onMouseEnter={() => timer.current && clearTimeout(timer.current)}
-        onMouseLeave={() => schedule(false, 250)}
+        onPointerEnter={(e) => e.pointerType === "mouse" && timer.current && clearTimeout(timer.current)}
+        onPointerLeave={(e) => schedule(e, false, 250)}
       >
         <div className="font-semibold flex items-center gap-2">
           {entry.name}
