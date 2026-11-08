@@ -76,7 +76,7 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
             <div key={i} data-journal-line={`${side}-${i}`} className={`rounded-md border p-1.5 transition-colors ${style ? `${style.border} ${style.bg}` : "bg-background"}`}>
               <div className="flex gap-1 items-center">
                 {readOnly ? (
-                  <Input aria-label={`${label}の科目 ${i + 1}`} placeholder="科目" value={line.accountName} readOnly className="min-w-24 flex-[3] bg-background" />
+                  <Input aria-label={`${label}の科目 ${i + 1}`} placeholder="科目" value={line.accountName} readOnly className="min-w-24 flex-[6] @lg:flex-[3] px-1.5 bg-background" />
                 ) : (
                   <AccountCombobox
                     accounts={accounts}
@@ -85,7 +85,7 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
                     value={line.accountName}
                     onChange={(accountName) => update(side, i, { accountName })}
                     onCompositionChange={(composing) => setComposingLine(composing ? `${side}-${i}` : null)}
-                    className="min-w-24 flex-[3] bg-background"
+                    className="min-w-24 flex-[6] @lg:flex-[3] px-1.5 bg-background"
                   />
                 )}
                 <Input
@@ -102,7 +102,8 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
                     const p = parseAmount(e.target.value);
                     if ("value" in p) update(side, i, { amount: formatAmount(p.value) });
                   }}
-                  className="min-w-24 flex-[2] text-right bg-background font-mono tabular-nums"
+                  // 借方・貸方が縦積みの幅では 390px でも 1,000,000,000 と 7 文字の科目名の両方が入る比にする。横並びは 1 行が狭く、科目名を優先する(Issue #116)
+                  className="min-w-24 flex-[7] @lg:flex-[2] px-1.5 text-right bg-background font-mono tabular-nums"
                 />
                 {!readOnly && (
                   <Button type="button" variant="ghost" size="icon" className="shrink-0" aria-label="行を削除" disabled={value[side].length <= 1} onClick={() => removeLine(side, i)}>
