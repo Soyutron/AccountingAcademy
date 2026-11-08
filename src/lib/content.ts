@@ -50,6 +50,8 @@ export interface GlossaryEntry {
   name: string;
   // 勘定科目の別名。概念は空
   aliases: string[];
+  // ひらがなの読み。用語集の検索で引く
+  reading: string[];
   short: string;
   summary: string;
   example?: string;
@@ -75,6 +77,7 @@ export const glossary: GlossaryEntry[] = [
       kind: "concept" as const,
       name: c.name,
       aliases: account?.aliases ?? [],
+      reading: [...c.reading, ...(account?.reading ?? [])],
       short: c.short,
       summary: c.summary,
       example: c.example,
@@ -95,6 +98,7 @@ export const glossary: GlossaryEntry[] = [
       kind: "account" as const,
       name: a.name,
       aliases: a.aliases,
+      reading: a.reading,
       short: a.short,
       summary: a.why,
       element: a.element,
