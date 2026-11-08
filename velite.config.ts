@@ -17,6 +17,8 @@ const account = s.object({
   element,
   contra: s.boolean().default(false),
   why: s.string(),
+  // 用語集とポップオーバーの「例:」。概念と同じ役割(docs/content-model.md 4 節)
+  example: s.string().optional(),
   concepts: idList,
 });
 
