@@ -145,8 +145,13 @@ wrong_patterns:
   - match: { debit: [{ account: purchases, amount: 30000 }] }
     misconception: advance_is_expense
     feedback: 仕入は豆の全額 40,000 です。手付金の 10,000 も、今日仕入に変わります。
+  - match: { credit: [{ account: advance_received }] }
+    feedback: 前受金は手付金を受け取った側の科目です。払ってあったのは前払金です。
   - match: { unbalanced: true }
     feedback: 左の仕入 40,000 と、右の前払金 10,000 + 買掛金 30,000 がそろっていません。
+  - match: { debit: [{ account: purchases, amount: 40000 }], credit: [{ account: accounts_payable, amount: 40000 }] }
+    misconception: advance_not_cleared_on_receipt
+    feedback: 先に払った手付金 10,000 は前払金として資産に残っています。右に前払金 10,000 を書いて消し、買掛金は残りの 30,000 だけです。
 hint: 左に仕入 40,000。右に前払金 10,000 と買掛金 30,000 の 2 行です。「行を追加」で行を増やせます。
 success: 前払金が消えて仕入 40,000 になり、残りの 30,000 は買掛金に並びました。
 ```
