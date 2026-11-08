@@ -92,7 +92,6 @@ answer:
   credit: [{ account: checking_account, amount: 25000 }]
 wrong_patterns:
   - match: { swapped: true }
-    misconception: debit_means_increase
     feedback: 仕入は費用なので左、当座預金は減るので右です。
   - match: { credit: [{ account: cash }] }
     misconception: check_is_cash
