@@ -14,12 +14,19 @@ export interface GradeResult {
 }
 
 const GENERIC_WRONG = "まだ合っていません。右の「結果」で何が動くはずかを考えて、もう一度試してみましょう。";
+// 正解の金額は書かない。計算で求める課題では答えそのものになる
+const AMOUNT_WRONG = "科目は合っています。金額をもう一度確かめましょう。";
 
 function ok(task: { success?: string }): GradeResult {
   return { correct: true, feedback: task.success ?? "できました。" };
 }
 function ng(feedback?: string, misconception?: string): GradeResult {
   return { correct: false, misconception, feedback: feedback ?? GENERIC_WRONG };
+}
+
+function sameAccounts(a: JournalEntry, b: JournalEntry): boolean {
+  const key = (lines: JournalEntry["debit"]) => [...new Set(lines.map((l) => l.account))].sort().join(",");
+  return key(a.debit) === key(b.debit) && key(a.credit) === key(b.credit);
 }
 
 export function gradePost(task: TaskOf<"post">, entry: JournalEntry): GradeResult {
@@ -33,6 +40,7 @@ export function gradePost(task: TaskOf<"post">, entry: JournalEntry): GradeResul
       (wanted ?? []).every((w) => lines.some((l) => (w.account === undefined || l.account === w.account) && (w.amount === undefined || l.amount === w.amount)));
     return linesMatch(m.debit, entry.debit) && linesMatch(m.credit, entry.credit);
   });
+  if (!pattern && [task.answer, ...task.alternatives].some((e) => sameAccounts(e, entry))) return ng(AMOUNT_WRONG);
   return ng(pattern?.feedback, pattern?.misconception);
 }
 
