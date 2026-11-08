@@ -121,7 +121,16 @@ for (const unit of units) {
         case "observe":
           break;
       }
-      if (i < unit.steps.length - 1) await page.getByRole("button", { name: "次へ →" }).click();
+      if (i < unit.steps.length - 1) {
+        // 最後の「次へ →」の完了保存を待たずに遷移すると、負荷の高いときに保存が打ち切られる
+        const completed =
+          i === unit.steps.length - 2 &&
+          page.waitForResponse(
+            (r) => r.request().method() === "POST" && r.url().includes("/rest/v1/unit_progress") && r.request().postDataJSON()?.status === "completed",
+          );
+        await page.getByRole("button", { name: "次へ →" }).click();
+        if (completed) await completed;
+      }
     }
     // 最後のステップに到達すると完了として保存される
     await page.goto(`/topics/${unit.id.split("/")[0]}`);
