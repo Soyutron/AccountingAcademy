@@ -189,7 +189,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     fetchProgress()
       .then((p) => {
         const saved = p?.units[unit.id];
-        if (saved) savedStep.current = saved.step;
+        // ステップを減らした単元では保存値が範囲外になる。そのまま持つと最後に着いても完了にならないので無視する
+        if (saved && saved.step < unit.steps.length) savedStep.current = saved.step;
         if (saved && saved.step > 0 && saved.step < unit.steps.length) {
           const answer = p.answers[unit.id]?.[saved.step];
           setResumeStep(saved.step);
