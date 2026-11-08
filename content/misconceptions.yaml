@@ -210,6 +210,12 @@ misconceptions:
     correct: 商品を受け取るまでは前払金(資産)。商品が届いたときに仕入へ振り替える
     concepts: [advance_payment_receipt, purchase]
     remediation: receivables-and-payables/other-receivables-and-payables
+  - id: advance_not_cleared_on_receipt
+    name: 手付金を消さずに買掛金を全額にする
+    description: 商品が届いたときに手付金を差し引かず、代金の全額を買掛金にして、前払金を資産に残したままにしてしまう
+    correct: 商品が届いたら前払金は貸方に書いて消す。買掛金にするのは手付金を差し引いた残りだけ。全額にすると払った分まで負債に載る
+    concepts: [advance_payment_receipt, liability]
+    remediation: receivables-and-payables/other-receivables-and-payables
   - id: advance_received_is_revenue
     name: 手付金を受け取ったら売上
     description: 商品を渡す前に受け取った手付金を、その時点で売上(収益)にしてしまう
