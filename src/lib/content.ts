@@ -17,6 +17,21 @@ export function unitsOfTopic(topicId: string): Unit[] {
   return units.filter((u) => u.topic === topicId).sort((a, b) => a.level - b.level || a.order - b.order);
 }
 
+/** ふりかえりから進む次の単元。テーマ末尾では次のテーマ(知識の正本の順。ADR 0002)の最初の単元 */
+export function nextUnit(unit: Unit): Unit | undefined {
+  const siblings = unitsOfTopic(unit.topic);
+  const inTopic = siblings[siblings.findIndex((u) => u.id === unit.id) + 1];
+  if (inTopic) return inTopic;
+  // 非表示テーマ(チュートリアル)は順序の外なので、通常のテーマへはつながない
+  const topicIdx = sortedTopics.findIndex((t) => t.id === unit.topic);
+  if (topicIdx < 0) return undefined;
+  for (const t of sortedTopics.slice(topicIdx + 1)) {
+    const first = unitsOfTopic(t.id)[0];
+    if (first) return first;
+  }
+  return undefined;
+}
+
 export function getPath(id: string) {
   return paths.find((p) => p.id === id);
 }
