@@ -22,8 +22,8 @@ interface Piece {
   delay: number;
 }
 
-// 5 要素の配色から(docs/ide-design.md 8 章)。色だけに意味は持たせない
-const COLORS = ["bg-emerald-400", "bg-sky-400", "bg-violet-400", "bg-amber-400", "bg-rose-400"];
+// 5 要素の帯の色とブランドの差し色(テーマが決める)。色だけに意味は持たせない
+const COLORS = ["bg-revenue-bar", "bg-asset-bar", "bg-equity-bar", "bg-expense-bar", "bg-liability-bar", "bg-brand-accent"];
 
 function makePieces(big: boolean): Piece[] {
   const count = big ? 48 : 24;

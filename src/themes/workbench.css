@@ -1,0 +1,116 @@
+/* ワークベンチ。開発ツールの作法で作る会計 IDE。冷たいグレーの面、青緑の単一アクセント、等幅の数字。
+   資産の青は主色の青緑から離して、はっきりした青にする */
+[data-theme="workbench"] {
+  --background: #f4f6f9;
+  --foreground: #161b23;
+  --card: #ffffff;
+  --card-foreground: #161b23;
+  --popover: #ffffff;
+  --popover-foreground: #161b23;
+  --primary: #0f766e;
+  --primary-foreground: #ffffff;
+  --secondary: #eef1f6;
+  --secondary-foreground: #161b23;
+  --muted: #eef1f6;
+  --muted-foreground: #5c6676;
+  --accent: #e4e9f0;
+  --accent-foreground: #161b23;
+  --destructive: #b42333;
+  --border: #d5dae3;
+  --input: #d5dae3;
+  --ring: #0f766e;
+  --brand-accent: #0f766e;
+  --rule: #e4e8ef;
+  --surface-guide: #eef1f6;
+  --surface-work: #ffffff;
+  --surface-result: #ffffff;
+
+  --el-asset-fg: #1d5fd1;
+  --el-asset-bg: #e4ecfc;
+  --el-asset-border: #a6bff2;
+  --el-asset-bar: #4d83e8;
+  --el-liability-fg: #b7273f;
+  --el-liability-bg: #fbe7ea;
+  --el-liability-border: #eaa4b0;
+  --el-liability-bar: #d6566c;
+  --el-equity-fg: #7140b8;
+  --el-equity-bg: #f0e9fb;
+  --el-equity-border: #c7ade8;
+  --el-equity-bar: #9a72d6;
+  --el-revenue-fg: #19703e;
+  --el-revenue-bg: #e3f5ea;
+  --el-revenue-border: #9cd8b4;
+  --el-revenue-bar: #2fa862;
+  --el-expense-fg: #9a4607;
+  --el-expense-bg: #fdeedc;
+  --el-expense-border: #f0c08e;
+  --el-expense-bar: #e0813a;
+
+  --ok-bg: #e3f3f1;
+  --ok-fg: #0f5f59;
+  --hint-bg: #eef1f6;
+  --hint-fg: #161b23;
+  --diff-fg: #0b5c55;
+  --error-fg: #b42333;
+  --changed-bg: #e9edf3;
+
+  --radius: 0.5rem;
+  --type-heading: var(--font-m-plus-1-code);
+  --type-body: var(--font-m-plus-1-code);
+  --type-mono: var(--font-m-plus-1-code);
+}
+
+[data-theme="workbench"][data-mode="dark"] {
+  --background: #0f1319;
+  --foreground: #e6eaf0;
+  --card: #171c25;
+  --card-foreground: #e6eaf0;
+  --popover: #171c25;
+  --popover-foreground: #e6eaf0;
+  --primary: #2dd4bf;
+  --primary-foreground: #06201d;
+  --secondary: #1e2531;
+  --secondary-foreground: #e6eaf0;
+  --muted: #1e2531;
+  --muted-foreground: #8b95a5;
+  --accent: #242c3a;
+  --accent-foreground: #e6eaf0;
+  --destructive: #f58a99;
+  --border: #28303d;
+  --input: #28303d;
+  --ring: #2dd4bf;
+  --brand-accent: #2dd4bf;
+  --rule: #222a36;
+  --surface-guide: #121720;
+  --surface-work: #171c25;
+  --surface-result: #171c25;
+
+  --el-asset-fg: #8fb3f5;
+  --el-asset-bg: #16264a;
+  --el-asset-border: #2a4580;
+  --el-asset-bar: #4d83e8;
+  --el-liability-fg: #f297a6;
+  --el-liability-bg: #3e1a24;
+  --el-liability-border: #6f3142;
+  --el-liability-bar: #d6566c;
+  --el-equity-fg: #c9aef0;
+  --el-equity-bg: #2c2143;
+  --el-equity-border: #4e3c74;
+  --el-equity-bar: #9a72d6;
+  --el-revenue-fg: #84d6a5;
+  --el-revenue-bg: #153222;
+  --el-revenue-border: #2a6a47;
+  --el-revenue-bar: #2fa862;
+  --el-expense-fg: #f3b57a;
+  --el-expense-bg: #3e2812;
+  --el-expense-border: #70481f;
+  --el-expense-bar: #e0813a;
+
+  --ok-bg: #12302d;
+  --ok-fg: #9fe7dc;
+  --hint-bg: #121720;
+  --hint-fg: #e6eaf0;
+  --diff-fg: #5eead4;
+  --error-fg: #f58a99;
+  --changed-bg: #1f2633;
+}

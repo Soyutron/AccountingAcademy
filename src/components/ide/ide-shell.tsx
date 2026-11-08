@@ -254,27 +254,32 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     }
   };
 
-  // 正解済み(predict は回答済み)のステップを、その答えで達成状態まで戻す。answer が無ければ模範解答を使う
+  // 正解済み(predict は回答済み)のステップを、その答えで達成状態まで戻す。answer が無ければ模範解答を使う。
+  // 使った答えを answered に登録し、続きからで戻したステップも「← 前へ」→「次へ →」で達成状態に戻せるようにする(Issue #48)
   const restoreStep = (index: number, answer?: unknown) => {
     const t = unit.steps[index].task;
     answeredStep.current = index;
     if (t.type === "post") {
       const entry = (answer as JournalEntry | undefined) ?? t.answer;
+      answered.current.set(index, entry);
       setDraft(fromJournalEntry(entry, accountMap));
       setResult(gradePost(t, entry));
     }
     if (t.type === "predict") {
       const predicted = (answer as EffectAnswer | undefined) ?? (t.answer as EffectAnswer);
+      answered.current.set(index, predicted);
       setEffect(predicted);
       setResult(gradePredict(t, predicted));
     }
     if (t.type === "calc") {
       const n = (answer as number | undefined) ?? t.answer;
+      answered.current.set(index, n);
       setCalcValue(String(n));
       setResult(gradeCalc(t, n));
     }
     if (t.type === "classify") {
       const placement = (answer as Record<string, Element> | undefined) ?? Object.fromEntries(t.accounts.map((id) => [id, accountMap.get(id)!.element]));
+      answered.current.set(index, placement);
       setPlaced(placement);
       setResult(gradeClassify(t, placement, accountMap));
     }
@@ -282,6 +287,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       setTweakDone(true);
       const values = answer as Record<string, number> | undefined;
       if (values) {
+        answered.current.set(index, values);
         setParams(values);
         setResult(gradeTweak(t, evaluateFormula(t.formula, values).outputs));
       }
@@ -330,8 +336,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       setAttempts(resumeWrong);
       return;
     }
-    // predict 以外は正解の保存値が無くても模範解答で戻せる。predict は保存した予想(誤答でも)で戻す
-    restoreStep(resumeStep, unit.steps[resumeStep].task.type === "predict" ? resumeAnswer : undefined);
+    // post / calc / classify は模範解答で戻せる。predict は保存した予想(誤答でも)、tweak は模範解答が無いので達成時の値で戻す
+    const type = unit.steps[resumeStep].task.type;
+    restoreStep(resumeStep, type === "predict" || type === "tweak" ? resumeAnswer : undefined);
   };
 
   const entryDraft = toJournalEntry(draft, accounts);
@@ -536,7 +543,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       </div>
 
       <div className="grid flex-1 min-h-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)]">
-        <section id="pane-guide" role="region" aria-label="ガイド" className={`${paneClass("guide")} lg:border-r`} data-tour="guide">
+        <section id="pane-guide" role="region" aria-label="ガイド" className={`${paneClass("guide")} bg-surface-guide lg:border-r`} data-tour="guide">
           <h2 className="text-lg font-semibold mb-2">{step.title}</h2>
           {!isTutorialUnit && tutorial.status === "pending" && tutorial.enabled && (
             <div className="mb-3 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm flex flex-wrap items-center gap-2" role="note">
@@ -558,12 +565,12 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               </Button>
             </div>
           )}
-          <div className="prose prose-neutral prose-sm max-w-none">{narratives[stepIndex]}</div>
+          <div className="prose prose-sm max-w-none">{narratives[stepIndex]}</div>
           <TaskBox task={task} onAmount={task.type === "post" && !result?.correct ? insertAmount : undefined} />
           {hint && (
             <div className="mt-3 text-sm" data-tour="hint">
               {showHint ? (
-                <p className="rounded-md bg-amber-50 p-2 text-amber-900">ヒント: {hint}</p>
+                <p className="rounded-md bg-hint p-2 text-hint-fg">ヒント: {hint}</p>
               ) : (
                 <button type="button" className="underline text-muted-foreground" onClick={() => setShowHint(true)}>
                   ヒントを見る
@@ -573,7 +580,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           )}
         </section>
 
-        <section id="pane-work" role="region" aria-label="ワークスペース" className={`${paneClass("work")} lg:border-r space-y-4`}>
+        <section id="pane-work" role="region" aria-label="ワークスペース" className={`${paneClass("work")} bg-surface-work lg:border-r space-y-4`}>
           {task.type === "post" && (
             <form
               className="space-y-2"
@@ -661,7 +668,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
                 </Button>
               )}
               {calcError && (
-                <p id="calc-error" role="status" className="text-xs text-rose-700">
+                <p id="calc-error" role="status" className="text-xs text-error-fg">
                   {calcError}
                 </p>
               )}
@@ -704,7 +711,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
                 {posted.map((p, i) => (
                   <li key={i} className={`rounded border px-2 py-1 ${p.step === stepIndex ? "border-primary/50 bg-primary/5 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1" : ""}`}>
                     <div className="text-muted-foreground truncate">{p.memo}</div>
-                    <div className="grid grid-cols-2 gap-2 tabular-nums">
+                    <div className="grid grid-cols-2 gap-2 font-mono tabular-nums">
                       <div className="space-x-1">
                         {p.entry.debit.map((l, j) => {
                           const a = accountMap.get(l.account);
@@ -734,12 +741,12 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           </Tabs>
         </section>
 
-        <section id="pane-result" role="region" aria-label="結果" className={paneClass("result")} data-tour="statements">
+        <section id="pane-result" role="region" aria-label="結果" className={`${paneClass("result")} bg-surface-result`} data-tour="statements">
           {posted.length > 1 && (
             <div className="mb-3 rounded-md border p-2 text-xs space-y-1">
               <label className="flex items-center justify-between gap-2">
                 <span className="font-medium">帳簿をさかのぼる</span>
-                <span className="text-muted-foreground tabular-nums">
+                <span className="text-muted-foreground font-mono tabular-nums">
                   {viewUpto === null || viewUpto >= posted.length ? "最新" : viewUpto === 0 ? "記帳前" : `${viewUpto} 件目まで`}
                 </span>
                 <input
@@ -778,7 +785,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       )}
       <div ref={bottomBar} className="border-t bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm space-y-2 sticky bottom-0 max-h-[50dvh] overflow-y-auto">
         {result && (
-          <div ref={statusBox} tabIndex={-1} role="status" aria-live="polite" className={`rounded-md p-3 space-y-2 focus:outline-none motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 ${result.correct ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-900"}`}>
+          <div ref={statusBox} tabIndex={-1} role="status" aria-live="polite" className={`rounded-md p-3 space-y-2 focus:outline-none motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 ${result.correct ? "bg-ok text-ok-fg" : "bg-hint text-hint-fg"}`}>
             {/* 正解はアイコンと見出しを大きくして、色だけに頼らず「もう一歩」と見分けられるようにする */}
             <p className={`flex items-center gap-1.5 ${result.correct ? "text-base font-bold" : "font-semibold"}`}>
               {result.correct ? <CheckCircle2 className="size-5" aria-hidden /> : <CircleAlert className="size-4" aria-hidden />}
@@ -799,7 +806,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               </ul>
             )}
             {mis && (
-              <div className="border-t border-amber-200 pt-2 space-y-1">
+              <div className="border-t border-hint-fg/20 pt-2 space-y-1">
                 <p className="font-semibold">よくある思い込み: {mis.name}</p>
                 <p>{mis.description}</p>
                 <p>見方: {mis.correct}</p>
@@ -813,7 +820,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           </div>
         )}
         {saveError && (
-          <p role="alert" className="text-rose-700">
+          <p role="alert" className="text-error-fg">
             保存エラー: {saveError}
           </p>
         )}
@@ -895,7 +902,7 @@ function TaskBox({ task, onAmount }: { task: Task; onAmount?: (digits: string) =
                     type="button"
                     aria-label={`${seg.text}を仕訳帳に入れる`}
                     title="押すと仕訳帳の金額欄に入ります"
-                    className="rounded-sm border-b border-dashed border-primary/60 px-0.5 font-medium tabular-nums text-primary hover:bg-primary/10 focus-visible:outline-2 focus-visible:outline-ring"
+                    className="rounded-sm border-b border-dashed border-primary/60 px-0.5 font-medium font-mono tabular-nums text-primary hover:bg-primary/10 focus-visible:outline-2 focus-visible:outline-ring"
                     // 金額欄のフォーカスを奪わない(フォーカス中の欄のカーソル位置に入れるため)
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => onAmount(seg.digits)}
@@ -927,7 +934,7 @@ function PredictCompare({ predicted, entry, accounts }: { predicted: EffectAnswe
           const actual = toChange(el === "equity" ? impact.equityTotal : impact[el]);
           const differs = predicted[el] !== actual;
           return (
-            <tr key={el} className={differs ? "bg-rose-50 font-medium" : ""}>
+            <tr key={el} className={differs ? "text-diff-fg font-medium" : ""}>
               <td className="py-0.5"><ElementBadge element={el} size="xs" /></td>
               <td className="text-right">{CHANGE_LABELS[predicted[el]]}</td>
               <td className="text-right">{CHANGE_LABELS[actual]}</td>

@@ -88,7 +88,7 @@ export function TutorialTour({ ctx, onExit, onPane }: { ctx: TourContext; onExit
           style={{ left: spotlight.left - 6, top: spotlight.top - 6, width: spotlight.width + 12, height: spotlight.height + 12, boxShadow: "0 0 0 9999px rgba(15, 23, 42, 0.45)" }}
         />
       ) : (
-        <div className="absolute inset-0 bg-slate-900/30" />
+        <div className="absolute inset-0 bg-foreground/30" />
       )}
       <div ref={card} tabIndex={-1} role="group" aria-labelledby="tutorial-tour-title" aria-describedby="tutorial-tour-body" className="pointer-events-auto absolute w-80 max-w-[calc(100vw-2rem)] rounded-lg border bg-background p-4 shadow-lg text-sm space-y-2 focus:outline-none" style={cardStyle}>
         <div className="flex items-center justify-between text-xs text-muted-foreground">

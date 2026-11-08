@@ -18,7 +18,7 @@ export function ProportionFigure({ assets, liabilities, equity, accounts }: { as
       return (
         <div key={k} className={`${bar} flex items-center justify-between px-2 text-[11px] text-white overflow-hidden`} style={{ height: `${pct}%` }} title={`${name(i)} ${formatAmount(i.amount)}`}>
           <span className="truncate">{name(i)}</span>
-          <span className="tabular-nums shrink-0">{formatAmount(i.amount)}</span>
+          <span className="font-mono tabular-nums shrink-0">{formatAmount(i.amount)}</span>
           <span className="sr-only">{text}</span>
         </div>
       );
