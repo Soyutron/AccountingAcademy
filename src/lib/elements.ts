@@ -1,6 +1,7 @@
 import type { Element } from "./accounting";
 
 // 5 要素のビジュアル言語。アプリ全体で同じ色・記号・名前を使う(docs/ide-design.md 8 章)。
+// 色の実体はテーマの CSS 変数(--el-<要素>-fg / -bg / -border / -bar。docs/design-system.md 2.2)。
 // Tailwind がクラス名を拾えるように、クラスは文字列のまま並べる
 
 export interface ElementStyle {
@@ -15,9 +16,9 @@ export interface ElementStyle {
 }
 
 export const ELEMENT_STYLE: Record<Element, ElementStyle> = {
-  asset: { label: "資産", symbol: "◆", text: "text-sky-700", bg: "bg-sky-50", border: "border-sky-300", bar: "bg-sky-400", ring: "ring-sky-300" },
-  liability: { label: "負債", symbol: "▲", text: "text-rose-700", bg: "bg-rose-50", border: "border-rose-300", bar: "bg-rose-400", ring: "ring-rose-300" },
-  equity: { label: "純資産", symbol: "●", text: "text-violet-700", bg: "bg-violet-50", border: "border-violet-300", bar: "bg-violet-400", ring: "ring-violet-300" },
-  revenue: { label: "収益", symbol: "＋", text: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-300", bar: "bg-emerald-400", ring: "ring-emerald-300" },
-  expense: { label: "費用", symbol: "－", text: "text-amber-700", bg: "bg-amber-50", border: "border-amber-300", bar: "bg-amber-400", ring: "ring-amber-300" },
+  asset: { label: "資産", symbol: "◆", text: "text-asset-fg", bg: "bg-asset-bg", border: "border-asset-border", bar: "bg-asset-bar", ring: "ring-asset-border" },
+  liability: { label: "負債", symbol: "▲", text: "text-liability-fg", bg: "bg-liability-bg", border: "border-liability-border", bar: "bg-liability-bar", ring: "ring-liability-border" },
+  equity: { label: "純資産", symbol: "●", text: "text-equity-fg", bg: "bg-equity-bg", border: "border-equity-border", bar: "bg-equity-bar", ring: "ring-equity-border" },
+  revenue: { label: "収益", symbol: "＋", text: "text-revenue-fg", bg: "bg-revenue-bg", border: "border-revenue-border", bar: "bg-revenue-bar", ring: "ring-revenue-border" },
+  expense: { label: "費用", symbol: "－", text: "text-expense-fg", bg: "bg-expense-bg", border: "border-expense-border", bar: "bg-expense-bar", ring: "ring-expense-border" },
 };

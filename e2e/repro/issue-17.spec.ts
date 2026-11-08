@@ -41,6 +41,6 @@ test("クリックで候補を選ぶと行が要素の色になる", async ({ pa
   await list.getByRole("option", { name: /^買掛金/ }).click();
   await expect(input).toHaveValue("買掛金");
   await expect(list).toBeHidden();
-  await expect(work.locator('[data-journal-line="credit-0"]')).toHaveClass(/border-rose-300/);
+  await expect(work.locator('[data-journal-line="credit-0"]')).toHaveClass(/border-liability-border/);
   await expect(work.locator('[data-journal-line="credit-0"]')).toContainText("負債");
 });

@@ -19,7 +19,7 @@ export function TAccountFigure({ account, debit, credit }: { account: AccountInf
         {title}
         {isIncrease && <span className="ml-1 font-normal">(増える側)</span>}
       </div>
-      <ul className="text-xs tabular-nums">
+      <ul className="text-xs font-mono tabular-nums">
         {lines.map((l, i) => (
           <li key={i} className="flex justify-between gap-2 px-1">
             <span className="truncate">{l.label}</span>

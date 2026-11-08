@@ -25,10 +25,10 @@ export function ImpactCompare({ yours, expected, accounts }: { yours: JournalEnt
           const ex = value(b, el);
           const differs = ya !== ex;
           return (
-            <tr key={el} className={differs ? "bg-rose-50 font-medium" : ""}>
+            <tr key={el} className={differs ? "text-diff-fg font-medium" : ""}>
               <td className="py-0.5"><ElementBadge element={el} size="xs" /></td>
-              <td className="text-right tabular-nums">{fmt(ya)}</td>
-              <td className="text-right tabular-nums">{differs ? fmt(ex) : "同じ"}</td>
+              <td className="text-right font-mono tabular-nums">{fmt(ya)}</td>
+              <td className="text-right font-mono tabular-nums">{differs ? fmt(ex) : "同じ"}</td>
             </tr>
           );
         })}
