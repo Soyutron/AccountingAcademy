@@ -8,6 +8,8 @@ export interface AccountInfo {
   id: string;
   name: string;
   aliases: string[];
+  // 候補検索だけで引く読み(ひらがな)。科目名としては確定させない
+  reading?: string[];
   element: Element;
   contra: boolean;
   // 一文の説明と、なぜその要素に属するか。ホバー解説と要素分類のフィードバックに使う
@@ -112,6 +114,14 @@ export function findAccountByName(name: string, accounts: Iterable<AccountInfo>)
     if (account.name === needle || account.aliases.includes(needle)) return account;
   }
   return undefined;
+}
+
+const toHiragana = (text: string) => text.replace(/[ァ-ヶ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));
+
+/** 入力途中の文字が科目名・別名・読みのどこかに部分一致するか。カタカナはひらがなとして比べる */
+export function matchesAccountQuery(account: AccountInfo, query: string): boolean {
+  const q = toHiragana(query.trim());
+  return [account.name, ...account.aliases, ...(account.reading ?? [])].some((text) => toHiragana(text).includes(q));
 }
 
 /** 行の順序と分け方を無視して、科目ごとの金額が同じ仕訳か(同じ科目の行は合算して比べる) */

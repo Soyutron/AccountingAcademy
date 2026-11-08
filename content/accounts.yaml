@@ -2,6 +2,7 @@
 accounts:
   - id: cash
     name: 現金
+    reading: [げんきん]
     short: 会社が手元に持っているお金
     element: asset
     why: 会社が持っていて、いつでも支払いに使える財産だから
@@ -9,36 +10,45 @@ accounts:
   - id: bank_deposit
     name: 普通預金
     aliases: [預金]
+    reading: [ふつうよきん]
     short: 銀行に預けてあるお金
     element: asset
     why: 銀行に預けてある会社の財産で、いつでも引き出して使えるから
     concepts: [asset]
   - id: accounts_receivable
     name: 売掛金
+    aliases: [売り掛け金]
+    reading: [うりかけきん]
     short: 商品を売ったが、まだ受け取っていない代金
     element: asset
     why: 後で現金を受け取る権利であり、将来お金に変わる財産だから
     concepts: [asset]
   - id: accounts_payable
     name: 買掛金
+    aliases: [買い掛け金]
+    reading: [かいかけきん]
     short: 商品を仕入れたが、まだ支払っていない代金
     element: liability
     why: 後で現金を支払わなければならない義務だから
     concepts: [liability]
   - id: loans_payable
     name: 借入金
+    aliases: [借り入れ金, 借入れ金]
+    reading: [かりいれきん]
     short: 銀行などから借りていて、返さなければならないお金
     element: liability
     why: 将来返済しなければならない義務だから。受け取った現金は資産だが、返す義務は負債として別に記録する
     concepts: [liability]
   - id: building
     name: 建物
+    reading: [たてもの]
     short: 会社が持っている店舗や事務所などの建物
     element: asset
     why: 長い期間にわたって事業に使える会社の財産だから
     concepts: [asset, tangible_fixed_assets]
   - id: equipment
     name: 備品
+    reading: [びひん]
     short: 机、パソコン、棚など、長く使う物品
     element: asset
     why: 1 年を超えて事業に使える会社の財産だから
@@ -46,49 +56,59 @@ accounts:
   - id: vehicle
     name: 車両運搬具
     aliases: [車両]
+    reading: [しゃりょううんぱんぐ]
     short: 会社が持っているトラックや営業車
     element: asset
     why: 長い期間にわたって事業に使える会社の財産だから
     concepts: [asset, tangible_fixed_assets]
   - id: capital_stock
     name: 資本金
+    reading: [しほんきん]
     short: 会社の持ち主(株主)が出したお金
     element: equity
     why: 返す義務のない元手であり、資産から負債を引いた残りである純資産を構成するから
     concepts: [equity]
   - id: retained_earnings
     name: 繰越利益剰余金
+    reading: [くりこしりえきじょうよきん]
     short: これまでに会社が稼いで、会社の中に残してある利益
     element: equity
     why: 過去の利益の積み上がりで、株主のものとして会社に残っている純資産だから
     concepts: [equity, net_income]
   - id: sales
     name: 売上
+    aliases: [売り上げ, 売上げ]
+    reading: [うりあげ]
     short: 商品やサービスを売って得た金額
     element: revenue
     why: 事業によって会社の純資産を増やす原因だから。現金を受け取ったかどうかとは関係ない
     concepts: [revenue]
   - id: purchases
     name: 仕入
+    aliases: [仕入れ]
+    reading: [しいれ]
     short: 売るための商品を買った金額
     element: expense
     why: 売上を得るために使った犠牲であり、純資産を減らす原因だから
     concepts: [expense]
   - id: rent_expense
     name: 支払家賃
-    aliases: [家賃]
+    aliases: [家賃, 支払い家賃]
+    reading: [しはらいやちん]
     short: 事務所や店舗を借りるために支払う家賃
     element: expense
     why: 事業を行うために使った犠牲で、純資産を減らす原因だから
     concepts: [expense]
   - id: salaries_expense
     name: 給料
+    reading: [きゅうりょう]
     short: 従業員に支払う給料
     element: expense
     why: 事業を行うために使った犠牲で、純資産を減らす原因だから
     concepts: [expense]
   - id: supplies_expense
     name: 消耗品費
+    reading: [しょうもうひんひ]
     short: 文房具やコピー用紙など、すぐに使い切る物の代金
     element: expense
     why: 短期間で使い切ってしまい財産として残らないので、買った時点で費用とするから
@@ -96,18 +116,22 @@ accounts:
   - id: utilities_expense
     name: 水道光熱費
     aliases: [電気代]
+    reading: [すいどうこうねつひ, でんきだい]
     short: お店で使った電気・ガス・水道の代金
     element: expense
     why: 使ってしまえば財産として残らず、もうけを得るために使った犠牲だから
     concepts: [expense]
   - id: interest_expense
     name: 支払利息
+    aliases: [支払い利息]
+    reading: [しはらいりそく]
     short: 借りたお金に対して支払う利息
     element: expense
     why: お金を借りるために使った犠牲で、純資産を減らす原因だから
     concepts: [expense]
   - id: depreciation_expense
     name: 減価償却費
+    reading: [げんかしょうきゃくひ]
     short: 建物や備品などの購入代金のうち、今年の分として費用にした金額
     element: expense
     why: 固定資産の取得原価のうち、当期の使用によって消費された部分を費用として認識するため
@@ -115,6 +139,7 @@ accounts:
   - id: accumulated_depreciation
     name: 減価償却累計額
     aliases: [建物減価償却累計額, 備品減価償却累計額, 車両運搬具減価償却累計額]
+    reading: [げんかしょうきゃくるいけいがく]
     short: これまでに計上した減価償却費の合計。固定資産の価値がどれだけ減ったかを表す
     element: asset
     contra: true
@@ -122,12 +147,14 @@ accounts:
     concepts: [contra_account, depreciation, indirect_method]
   - id: gain_on_sale_of_fixed_assets
     name: 固定資産売却益
+    reading: [こていしさんばいきゃくえき]
     short: 固定資産を帳簿価額より高く売ったときの差額
     element: revenue
     why: 売却によって純資産が増えた分だから
     concepts: [revenue, book_value]
   - id: loss_on_sale_of_fixed_assets
     name: 固定資産売却損
+    reading: [こていしさんばいきゃくそん]
     short: 固定資産を帳簿価額より安く売ったときの差額
     element: expense
     why: 売却によって純資産が減った分だから
@@ -135,18 +162,21 @@ accounts:
   - id: merchandise_inventory
     name: 繰越商品
     aliases: [商品]
+    reading: [くりこししょうひん]
     short: 決算の日に売れ残っていた商品の仕入値
     element: asset
     why: まだ売れていない商品は、これから売ってお金に変わる会社の財産だから。売れた分だけが費用(売上原価)になる
     concepts: [asset, ending_inventory, cost_of_goods_sold]
   - id: shipping_expense
     name: 発送費
+    reading: [はっそうひ]
     short: 売った商品をお客さんに送るためにかかった運賃
     element: expense
     why: 売上を得るために使った犠牲で、純資産を減らす原因だから。仕入れるときの運賃(仕入諸掛)とは違い、仕入には含めない
     concepts: [expense, incidental_costs]
   - id: cash_over_and_short
     name: 現金過不足
+    reading: [げんきんかぶそく]
     short: 帳簿の現金と実際の現金が合わないとき、原因が分かるまで差額を置いておく科目
     element: asset
     why: 正体の分からない差額を一時的に預けておく「仮の置き場」で、原因が分かれば本来の科目へ移す。決算まで分からなければ雑損か雑益に振り替えて、財務諸表には残さない
@@ -154,12 +184,14 @@ accounts:
   - id: miscellaneous_loss
     name: 雑損
     aliases: [雑損失]
+    reading: [ざっそん, ざっそんしつ]
     short: 原因が分からないまま決算を迎えた、現金の不足分などの小さな損
     element: expense
     why: 会社の財産が理由の分からないまま減った分で、純資産を減らす原因だから
     concepts: [expense, miscellaneous_loss_gain]
   - id: miscellaneous_gain
     name: 雑益
+    reading: [ざつえき]
     short: 原因が分からないまま決算を迎えた、現金の超過分などの小さな得
     element: revenue
     why: 会社の財産が理由の分からないまま増えた分で、純資産を増やす原因だから
@@ -167,6 +199,7 @@ accounts:
   - id: communication_expense
     name: 通信費
     aliases: [切手代]
+    reading: [つうしんひ, きってだい]
     short: 切手、はがき、電話やインターネットの代金
     element: expense
     why: 使ってしまえば財産として残らず、事業のために使った犠牲だから
@@ -174,85 +207,107 @@ accounts:
   - id: travel_expense
     name: 旅費交通費
     aliases: [交通費]
+    reading: [りょひこうつうひ]
     short: 電車代やタクシー代、出張の宿泊費
     element: expense
     why: 移動や出張のために使った犠牲で、財産として残らないから
     concepts: [expense]
   - id: checking_account
     name: 当座預金
+    reading: [とうざよきん]
     short: 小切手で支払うための預金。利息は付かない
     element: asset
     why: 銀行に預けてある会社の財産で、小切手を振り出して支払いに使えるから
     concepts: [asset, checking_account]
   - id: bank_overdraft
     name: 当座借越
+    reading: [とうざかりこし]
     short: 当座預金の残高を超えて小切手を振り出し、銀行に立て替えてもらっている金額
     element: liability
     why: 銀行が一時的に立て替えたお金で、返さなければならない義務だから。預金という名前が付いていても負債
     concepts: [liability, bank_overdraft]
   - id: petty_cash
     name: 小口現金
+    reading: [こぐちげんきん]
     short: 日々の細かい支払いのために担当者へ前もって渡してある現金
     element: asset
     why: 担当者の手元に移っただけで、まだ使っていない会社のお金だから。使った分だけが費用になる
     concepts: [asset, petty_cash]
   - id: loans_receivable
     name: 貸付金
+    aliases: [貸し付け金, 貸付け金]
+    reading: [かしつけきん]
     short: 他の人や会社に貸していて、後で返してもらうお金
     element: asset
     why: 後で返してもらう権利で、将来お金に変わる財産だから
     concepts: [asset, loan]
   - id: interest_income
     name: 受取利息
+    aliases: [受け取り利息]
+    reading: [うけとりりそく]
     short: 貸したお金や預金に対して受け取る利息
     element: revenue
     why: お金を貸したことで得られたもうけで、純資産を増やす原因だから。返してもらう元本とは別
     concepts: [revenue, interest]
   - id: accounts_receivable_other
     name: 未収入金
+    reading: [みしゅうにゅうきん]
     short: 商品以外の物(備品など)を売って、まだ受け取っていない代金
     element: asset
     why: 後で現金を受け取る権利で、将来お金に変わる財産だから。商品の売上代金なら売掛金、それ以外なら未収入金
     concepts: [asset, non_trade_receivable_payable]
   - id: accounts_payable_other
     name: 未払金
+    aliases: [未払い金]
+    reading: [みばらいきん]
     short: 商品以外の物(備品など)を買って、まだ支払っていない代金
     element: liability
     why: 後で現金を支払う義務だから。商品の仕入代金なら買掛金、それ以外なら未払金
     concepts: [liability, non_trade_receivable_payable]
   - id: advance_payment
     name: 前払金
-    aliases: [前渡金]
+    aliases: [前渡金, 前払い金]
+    reading: [まえばらいきん, まえわたしきん]
     short: 商品を受け取る前に払った手付金
     element: asset
     why: 商品を受け取る権利を先に買ってある状態で、将来商品に変わる財産だから。まだ仕入ではない
     concepts: [asset, advance_payment_receipt]
   - id: advance_received
     name: 前受金
+    aliases: [前受け金]
+    reading: [まえうけきん]
     short: 商品を渡す前に受け取った手付金
     element: liability
     why: 商品を渡す義務(渡せなければ返す義務)を負っている状態だから。まだ売上ではない
     concepts: [liability, advance_payment_receipt]
   - id: advances_paid
     name: 立替金
+    aliases: [立て替え金, 立替え金]
+    reading: [たてかえきん]
     short: 従業員や取引先の代わりに一時的に払ってあげたお金
     element: asset
     why: 後で本人から返してもらう権利で、将来お金に変わる財産だから。会社の費用ではない
     concepts: [asset, advances_and_deposits]
   - id: deposits_received
     name: 預り金
+    aliases: [預かり金]
+    reading: [あずかりきん]
     short: 従業員の給料から差し引いた税金など、後で代わりに納めるために一時的に預かっているお金
     element: liability
     why: 本人の代わりに納める義務を負っている他人のお金だから。会社のもうけではない
     concepts: [liability, advances_and_deposits]
   - id: suspense_payment
     name: 仮払金
+    aliases: [仮払い金]
+    reading: [かりばらいきん]
     short: 出張の旅費など、いくら何に使うかが確定する前に渡しておいたお金
     element: asset
     why: 使い道と金額が決まるまでは、まだ会社のお金が手元を離れただけの状態だから。精算して初めて費用になる
     concepts: [asset, suspense_accounts]
   - id: suspense_receipt
     name: 仮受金
+    aliases: [仮受け金]
+    reading: [かりうけきん]
     short: 正体の分からない入金を、理由が分かるまで置いておく科目
     element: liability
     why: 何のお金か分からないうちは、返す必要があるかもしれないお金として扱うから。理由が分かれば本来の科目へ移す
