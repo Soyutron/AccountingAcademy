@@ -113,7 +113,8 @@ export function AccountCombobox({ accounts, value, onChange, onCompositionChange
       </PopoverAnchor>
       <PopoverContent
         align="start"
-        className="block w-[min(20rem,calc(100vw-2rem))] max-h-72 overflow-y-auto overscroll-contain p-1"
+        // 横向きのスマホでは上下どちらにも 18rem が無い。固定の高さのままだと画面外にはみ出し、先頭の候補に届かない(Issue #125)
+        className="block w-[min(20rem,calc(100vw-2rem))] max-h-[min(18rem,var(--radix-popover-content-available-height))] overflow-y-auto overscroll-contain p-1"
         onOpenAutoFocus={(e) => e.preventDefault()}
         onCloseAutoFocus={(e) => e.preventDefault()}
         // 候補行・余白・スクロールバーを押しても入力欄を blur させない(blur すると一覧が閉じる)。スクロールバーの操作自体は止まらない

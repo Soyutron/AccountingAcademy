@@ -18,6 +18,8 @@ const GENERIC_WRONG = "まだ合っていません。結果の表で何が動く
 const AMOUNT_WRONG = "科目は合っています。金額をもう一度確かめましょう。";
 // 計算問題では記帳しないので、結果の表の動きではなく計算そのものの見直しを促す
 const CALC_WRONG = "まだ合っていません。計算の式と、使う数字をもう一度確かめましょう。";
+// 予想は 1 回限りで、回答と同時に記帳される。やり直しではなく実際の動きとの見比べを促す
+const PREDICT_WRONG = "予想と実際の動きが違いました。下の表で、どの要素がどう動いたかを見比べましょう。外れても、このまま次へ進めます。";
 
 /** 2 回誤答すると「答えを見る」が出る課題か。predict は 1 回で進み、tweak は目標に合わせるだけなので誤答が重ならない */
 export function canRevealAnswer(type: Task["type"]): boolean {
@@ -63,7 +65,7 @@ export function gradePredict(task: TaskOf<"predict">, effect: EffectAnswer): Pre
     (Object.entries(p.match) as [Element, Change | undefined][]).every(([k, v]) => v === undefined || effect[k] === v),
   );
   const misconceptions = [...new Set(patterns.flatMap((p) => p.misconception ?? []))];
-  return { ...ng(patterns.map((p) => p.feedback).join("\n") || undefined, misconceptions[0]), misconceptions };
+  return { ...ng(patterns.map((p) => p.feedback).join("\n") || PREDICT_WRONG, misconceptions[0]), misconceptions };
 }
 
 export function gradeCalc(task: TaskOf<"calc">, value: number): GradeResult {

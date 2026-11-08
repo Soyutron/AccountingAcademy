@@ -39,7 +39,7 @@ describe("gradePredict: 複数の要素を外したとき (Issue #64)", () => {
     const one = gradePredict(task, { ...none, expense: "increase" });
     expect(one.feedback).toBe("払った時点では費用になりません。");
     const unmatched = gradePredict(task, { ...none, equity: "increase" });
-    expect(unmatched.feedback).toContain("まだ合っていません");
+    expect(unmatched.feedback).toContain("予想と実際の動きが違いました");
     expect(unmatched.misconception).toBeUndefined();
     expect(unmatched.misconceptions).toEqual([]);
   });
