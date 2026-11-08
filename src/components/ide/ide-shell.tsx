@@ -103,10 +103,13 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [effect, setEffect] = useState<Partial<EffectAnswer>>({});
   const [params, setParams] = useState<Record<string, number>>({});
   const [placed, setPlaced] = useState<Partial<Record<string, Element>>>({});
+  // classify を最後に採点したときの配置。採点後に移した科目を見分ける(Issue #66)
+  const [gradedPlaced, setGradedPlaced] = useState<Partial<Record<string, Element>>>({});
   const [calcValue, setCalcValue] = useState("");
   // calc の入力が金額として読めないときの理由。採点も記録もしない(Issue #43)
   const [calcError, setCalcError] = useState<string | null>(null);
-  const [result, setResult] = useState<GradeResult | ClassifyResult | PredictResult | null>(null);
+  // 直近の採点結果そのもの。画面に出すのは、これから導出する result
+  const [gradedResult, setResult] = useState<GradeResult | ClassifyResult | PredictResult | null>(null);
   const [attempts, setAttempts] = useState(0);
   const [showHint, setShowHint] = useState(false);
   const [pane, setPane] = useState<Pane>("guide");
@@ -137,7 +140,6 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [bursts, setBursts] = useState<Burst[]>([]);
   const [pulseNext, setPulseNext] = useState(false);
   const celebratedSteps = useRef(new Set<number>());
-  const bottomBar = useRef<HTMLDivElement>(null);
   // 採点で押したボタンが消えるときは、フォーカスが body に落ちないよう結果へ移す(復元や誤答では動かさない)
   const statusBox = useRef<HTMLDivElement>(null);
   const focusStatus = useRef(false);
@@ -239,9 +241,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     if (celebratedSteps.current.has(stepIndex)) return;
     celebratedSteps.current.add(stepIndex);
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const bar = bottomBar.current?.getBoundingClientRect();
-    const from = bar ? { x: bar.left + bar.width / 2, y: bar.top } : { x: window.innerWidth / 2, y: window.innerHeight * 0.7 };
-    setBursts((prev) => [...prev, { id: `${stepIndex}-${Date.now()}`, from, big: isLast }]);
+    setBursts((prev) => [...prev, { id: `${stepIndex}-${Date.now()}`, big: isLast }]);
     setPulseNext(true);
   };
 
@@ -396,10 +396,10 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const predictReady = ELEMENTS.every((el) => effect[el]);
 
   useEffect(() => {
-    if (!result || !focusStatus.current) return;
+    if (!gradedResult || !focusStatus.current) return;
     focusStatus.current = false;
     statusBox.current?.focus();
-  }, [result]);
+  }, [gradedResult]);
 
   const check = () => {
     if (answeredStep.current === stepIndex) return;
@@ -475,6 +475,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           answeredStep.current = stepIndex;
           answered.current.set(stepIndex, placed);
         }
+        setGradedPlaced(placed);
         setResult(r);
         setAttempts((k) => k + 1);
         record(r, placed);
@@ -504,6 +505,13 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     setPane("result");
   };
 
+  // 採点後に箱を移した科目は採点結果の表示から外し、全部移したら結果も消す(Issue #66)。件数と誤解も残りの科目で出し直す
+  const result = ((): typeof gradedResult => {
+    if (task.type !== "classify" || !gradedResult || gradedResult.correct) return gradedResult;
+    const r = gradeClassify({ ...task, accounts: task.accounts.filter((id) => placed[id] === gradedPlaced[id]) }, placed, accountMap);
+    return r.correct ? null : r;
+  })();
+
   const done =
     task.type === "observe" ||
     stepIndex < reached ||
@@ -525,7 +533,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   };
   // 初出の案内。チュートリアル単元とツアー中は出さず、再開などで結果が出ているステップでも出さない
   const firstTime = firstTimeTopic(helpCtx);
-  const firstTimeDone = result !== null || tweakDone;
+  const firstTimeDone = gradedResult !== null || tweakDone;
   const showFirstTime = firstTime !== null && !isTutorialUnit && !tourActive && !firstTimeDone && !tutorial.seen.includes(firstTime.id);
   // 課題を済ませたら、案内を閉じていなくても見た扱いにする
   useEffect(() => {
@@ -846,7 +854,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           onPane={setPane}
         />
       )}
-      <div ref={bottomBar} className="border-t bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm space-y-2 sticky bottom-0 max-h-[50dvh] overflow-y-auto">
+      <div className="border-t bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm space-y-2 sticky bottom-0 max-h-[50dvh] overflow-y-auto">
         {result && (
           <div ref={statusBox} tabIndex={-1} role="status" aria-live="polite" className={`rounded-md p-3 space-y-2 focus:outline-none motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 ${result.correct ? "bg-ok text-ok-fg" : "bg-hint text-hint-fg"}`}>
             {/* 正解はアイコンと見出しを大きくして、色だけに頼らず「もう一歩」と見分けられるようにする */}

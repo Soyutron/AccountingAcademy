@@ -11,6 +11,8 @@ const account = s.object({
   id: s.string(),
   name: s.string(),
   aliases: s.array(s.string()).default([]),
+  // 読み(ひらがな)。仕訳エディタの候補検索と用語集の検索で引く。別名(aliases)とは混ぜない
+  reading: s.array(s.string()).default([]),
   short: s.string(),
   element,
   contra: s.boolean().default(false),
