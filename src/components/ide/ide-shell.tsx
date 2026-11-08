@@ -529,7 +529,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               </Button>
             </div>
           )}
-          {resumeStep !== null && stepIndex < resumeStep && (
+          {/* ツアーはステップ 0 からの台本なので、ツアー中に再開させるとツアーと画面がずれる */}
+          {!tourActive && resumeStep !== null && stepIndex < resumeStep && (
             <div className="mb-3 rounded-md bg-muted/60 p-2 text-sm flex items-center justify-between gap-2">
               <span>前回はステップ {resumeStep + 1} まで進みました。</span>
               <Button size="sm" variant="outline" onClick={resume}>
