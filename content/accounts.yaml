@@ -153,6 +153,7 @@ accounts:
     concepts: [cash_over_and_short]
   - id: miscellaneous_loss
     name: 雑損
+    aliases: [雑損失]
     short: 原因が分からないまま決算を迎えた、現金の不足分などの小さな損
     element: expense
     why: 会社の財産が理由の分からないまま減った分で、純資産を減らす原因だから
