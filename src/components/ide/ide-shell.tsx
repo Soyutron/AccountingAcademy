@@ -367,6 +367,12 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     save(() => setUnitProgress(unit.id, last ? "completed" : "started", top));
   };
 
+  // 「次へ」「前へ」の後は Tab が新しいステップから続くよう、見出しへ移す。ツアー中は続きの操作が吹き出しにあるので動かさない
+  const stepTo = (index: number) => {
+    flushSync(() => goTo(index));
+    if (!tourActive) stepHeading.current?.focus();
+  };
+
   // 再開するステップを正解済みなら、その答えで達成状態まで戻す(離脱前の「できました」を保つ)
   const resume = () => {
     if (resumeStep === null) return;
@@ -983,7 +989,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               size="sm"
               onClick={() => {
                 if (draftHasBothSides && !result?.correct && !window.confirm("入力中の仕訳は消えます。前のステップに戻りますか?")) return;
-                goTo(stepIndex - 1);
+                stepTo(stepIndex - 1);
               }}
             >
               ← 前へ
@@ -994,7 +1000,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               aria-disabled={!done}
               className={done ? (pulseNext ? "animate-next-pulse" : "") : "opacity-50"}
               onAnimationEnd={() => setPulseNext(false)}
-              onClick={() => done && goTo(stepIndex + 1)}
+              onClick={() => done && stepTo(stepIndex + 1)}
               data-tour="next-button"
             >
               次へ →

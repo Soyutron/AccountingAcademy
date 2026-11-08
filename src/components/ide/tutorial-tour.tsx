@@ -56,10 +56,11 @@ export function TutorialTour({ ctx, onExit, onPane }: { ctx: TourContext; onExit
   const card = useRef<HTMLDivElement>(null);
 
   // 開いた時と段が変わった時にカードへフォーカスを移す。吹き出しは DOM の末尾にあり、
-  // 操作待ちの段では主ボタンが無効になってフォーカスが body に落ちるため(Issue #51)
+  // 操作待ちの段では主ボタンが無効になってフォーカスが body に落ちるため(Issue #51)。
+  // 「次へ →」でステップが変わった時も、続きの操作はカードにあるので移す(Issue #84)
   useEffect(() => {
     card.current?.focus();
-  }, [index]);
+  }, [index, ctx.stepIndex]);
 
   const finish = () => {
     updateTutorial({ status: "done" });
