@@ -18,11 +18,14 @@ if [ "${#files[@]}" -eq 0 ]; then
   note "再検証: 回帰テスト(ファイル名に \`issue-$ISSUE\` を含む spec / test)が main に見つからないため、自動の再検証は行っていません。"
   exit 1
 fi
+# 開発サーバーの velite --watch はマージ途中の状態で再構築に失敗して .velite/ を古いまま残すことがあるので、テストの前に作り直す
+log "pnpm content"
+pnpm content >"$LOG_DIR/verify.log" 2>&1 || { note "再検証: main のコンテンツ検査に失敗しました(\`$LOG_DIR/verify.log\`)"; exit 1; }
 # E2E は本番ビルドを起動するので、統合後の main を必ずビルドし直す(古い .next を配ると修正前の挙動を検証してしまう)
 # ポートは並走する issue-agent の関門(3100〜)と重ならないものを使う
 if printf '%s\n' "${files[@]}" | grep -q '^e2e/'; then
   log "pnpm build"
-  pnpm build >"$LOG_DIR/verify.log" 2>&1 || { note "再検証: main のビルドに失敗しました(\`$LOG_DIR/verify.log\`)"; exit 1; }
+  pnpm build >>"$LOG_DIR/verify.log" 2>&1 || { note "再検証: main のビルドに失敗しました(\`$LOG_DIR/verify.log\`)"; exit 1; }
 fi
 rc=0
 for f in "${files[@]}"; do

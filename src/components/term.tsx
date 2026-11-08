@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { GlossaryEntry } from "@/lib/content";
 import { ElementBadge } from "./element-badge";
@@ -16,6 +17,7 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
   const byHover = useRef(false);
   // 「もっと見る」は押すと消えるので、展開した説明にフォーカスを移して位置を失わないようにする
   const details = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
 
   const schedule = (next: boolean, delay: number) => {
     if (timer.current) clearTimeout(timer.current);
@@ -79,11 +81,15 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
               <Link href={`/glossary#${entry.id}`} className="underline">
                 用語集で見る
               </Link>
-              {entry.unit && (
-                <Link href={`/units/${entry.unit.id}`} className="underline">
-                  詳しく: {entry.unit.title}
-                </Link>
-              )}
+              {/* その単元自身を開いているときに自分へのリンクを出すと、押しても何も起きず壊れて見える */}
+              {entry.unit &&
+                (pathname === `/units/${entry.unit.id}` ? (
+                  <span className="text-muted-foreground">この単元で学びます</span>
+                ) : (
+                  <Link href={`/units/${entry.unit.id}`} className="underline">
+                    詳しく: {entry.unit.title}
+                  </Link>
+                ))}
             </div>
           </div>
         ) : (
