@@ -114,7 +114,7 @@ success: 右の貸借対照表に、現金と資本金が同時に現れまし�
 |---|---|---|
 | observe | `entries`(自動で記帳する仕訳。省略可) | なし |
 | post | `transaction`、`answer`(仕訳)、`alternatives`、`wrong_patterns`(swapped / unbalanced / debit / credit)、`hint`、`success` | 仕訳の一致(行順不同)。不一致なら誤答パターンで誤解を判定 |
-| predict | `transaction`、`entry`(確認後に記帳される仕訳)、`answer`(5 要素の increase / decrease / none)、`wrong_patterns`(部分一致) | 予想と答えの一致。外れても実際の動きを見せて進める |
+| predict | `transaction`、`entry`(確認後に記帳される仕訳)、`answer`(5 要素の increase / decrease / none)、`wrong_patterns`(部分一致) | 予想と答えの一致。外れても実際の動きを見せて進める。一致した誤答パターンはすべて説明する |
 | tweak | `formula`(straight_line)、`params`(id / label / value / min / max / step / unit)、`goal`(output / equals / label)。straight_line の当期分と期末の帳簿価額は `months` を params に含めたときだけ出る | 式の出力が目標値と一致 |
 | classify | `accounts`(科目 ID の配列)、`misconceptions`(科目 → 間違えた要素 → 誤解 ID) | 全科目が正しい箱 |
 | calc | `question`、`answer`、`wrong_patterns`(値) | 値の一致 |
