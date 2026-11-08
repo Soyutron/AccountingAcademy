@@ -139,6 +139,8 @@ function Group({ element, lines, diff, accounts, children }: { element: Element;
 
 function Row({ id, name, amount, delta }: { id?: string; name: React.ReactNode; amount: number; delta: number }) {
   const changed = delta !== 0;
+  // △ 表示の行(当期純損失・評価勘定)は絶対値を見せているので、増減もその絶対値の向きで示す
+  const shown = amount < 0 ? -delta : delta;
   return (
     <div data-account={id} className={`flex flex-wrap items-baseline justify-between gap-x-2 rounded px-1 ${changed ? "bg-amber-50 motion-safe:animate-highlight" : ""}`}>
       <span className="min-w-0">{name}</span>
@@ -153,9 +155,9 @@ function Row({ id, name, amount, delta }: { id?: string; name: React.ReactNode; 
           formatAmount(amount)
         )}
         {changed && (
-          <span className={`ml-1 text-xs ${delta > 0 ? "text-emerald-700" : "text-rose-700"}`}>
-            <span aria-hidden>{delta > 0 ? "▲" : "▼"}</span>
-            <span className="sr-only">{delta > 0 ? "増加 " : "減少 "}</span>
+          <span className={`ml-1 text-xs ${shown > 0 ? "text-emerald-700" : "text-rose-700"}`}>
+            <span aria-hidden>{shown > 0 ? "▲" : "▼"}</span>
+            <span className="sr-only">{shown > 0 ? "増加 " : "減少 "}</span>
             {formatAmount(Math.abs(delta))}
           </span>
         )}
