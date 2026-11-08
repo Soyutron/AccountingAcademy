@@ -4,7 +4,7 @@ import Link from "next/link";
 import { type RefObject, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { type HelpContext, type HelpTopic, HELP_CATEGORIES, HELP_TOPICS, canShowTarget, currentTopics, helpTopic } from "@/lib/help-topics";
+import { type HelpContext, type HelpTopic, HELP_CATEGORIES, HELP_TOPICS, canShowTarget, currentTopics, helpTopic, topicBody } from "@/lib/help-topics";
 import { TUTORIAL_UNIT_ID, updateTutorial, useTutorialState } from "@/lib/tutorial-store";
 
 // 「使い方」: いまの画面に出ている機能を先に、残りは分類ごとに畳んで出す。末尾にチュートリアルの設定(docs/help-design.md 5.3)
@@ -144,7 +144,7 @@ function TopicList({ topics, idPrefix, ctx, onShowTarget }: { topics: HelpTopic[
         <div key={t.id} id={`${idPrefix}-${t.id}`} tabIndex={-1} className="-mx-1 rounded-sm px-1 focus:bg-muted/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           <dt className="font-semibold">{t.title}</dt>
           <dd className="text-muted-foreground">
-            {t.body}
+            {topicBody(t, ctx)}
             {canShowTarget(t, ctx) && (
               // 閉じたダイアログがフォーカスを開いた元へ戻すので、光る対象を見失わない
               <DialogClose asChild>

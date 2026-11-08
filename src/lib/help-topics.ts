@@ -1,4 +1,4 @@
-import type { Task } from "@/lib/grading";
+import { type Task, canRevealAnswer } from "@/lib/grading";
 
 // ヘルプの話題の正本。「?」のポップオーバー・「使い方」はこの表から文言を引く(docs/help-design.md 4 章)
 
@@ -17,8 +17,8 @@ export interface HelpTopic {
   title: string;
   // 「?」用。1〜2 文
   short: string;
-  // 「使い方」用。手順とキーボードの別手段。4 文まで
-  body: string;
+  // 「使い方」用。手順とキーボードの別手段。4 文まで。課題の種類で言えることが変わる話題は関数にする
+  body: string | ((ctx: HelpContext) => string);
   // 「いまの画面でできること」に入れる条件。無ければ常に
   when?: (ctx: HelpContext) => boolean;
   // 「場所を示す」で光らせる要素(data-tour の値)と、スマートフォンで切り替えるペイン
@@ -53,7 +53,10 @@ export const HELP_TOPICS: HelpTopic[] = [
     target: "hint",
     pane: "guide",
     short: "迷ったら「ヒントを見る」で手がかりが出ます。2 回間違えると「答えを見る」も使えます。",
-    body: "迷ったら「ヒントを見る」で手がかりが出ます。2 回間違えると「答えを見る」も使えます。答えを見ても次へ進めますが、できれば見る前にもう一度だけ試してみましょう。",
+    body: (c) =>
+      canRevealAnswer(c.taskType)
+        ? "迷ったら「ヒントを見る」で手がかりが出ます。2 回間違えると「答えを見る」も使えます。答えを見ても次へ進めますが、できれば見る前にもう一度だけ試してみましょう。"
+        : "迷ったら「ヒントを見る」で手がかりが出ます。",
     when: (c) => c.hasHint,
   },
   {
@@ -210,6 +213,10 @@ export const FIRST_TIME_IDS = ["predict", "classify", "calc", "tweak", "sandbox"
 export function firstTimeTopic(ctx: HelpContext): HelpTopic | null {
   const id = ctx.taskType === "observe" ? (ctx.isLast ? "sandbox" : null) : ctx.taskType === "post" ? null : ctx.taskType;
   return id ? helpTopic(id) : null;
+}
+
+export function topicBody(t: HelpTopic, ctx: HelpContext): string {
+  return typeof t.body === "string" ? t.body : t.body(ctx);
 }
 
 /** 「場所を示す」を付けるか: 対象があり、いまの画面に出ている */
