@@ -113,6 +113,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [attempts, setAttempts] = useState(0);
   const [showHint, setShowHint] = useState(false);
   const [pane, setPane] = useState<Pane>("guide");
+  // 初回バナーの判定。進捗を読み終えるまでは false にして、記録のある学習者にバナーが一瞬出ないようにする
+  const [noRecord, setNoRecord] = useState(false);
   const [resumeStep, setResumeStep] = useState<number | null>(null);
   const [resumeSolved, setResumeSolved] = useState(false);
   // 再開するステップの最後の回答。predict は誤答でも進めるので、その予想を復元する(Issue #10)
@@ -201,6 +203,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   useEffect(() => {
     fetchProgress()
       .then((p) => {
+        setNoRecord(!p || (Object.keys(p.units).length === 0 && Object.keys(p.answers).length === 0));
         const saved = p?.units[unit.id];
         // ステップを減らした単元では保存値が範囲外になる。そのまま持つと最後に着いても完了にならないので無視する
         if (saved && saved.step < unit.steps.length) savedStep.current = saved.step;
@@ -614,7 +617,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       <div className="grid flex-1 min-h-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)]">
         <section id="pane-guide" role="region" aria-label="ガイド" className={`${paneClass("guide")} bg-surface-guide lg:border-r`} data-tour="guide">
           <h2 className="text-lg font-semibold mb-2">{step.title}</h2>
-          {!isTutorialUnit && tutorial.status === "pending" && tutorial.enabled && (
+          {!isTutorialUnit && noRecord && tutorial.status === "pending" && tutorial.enabled && (
             <div className="mb-3 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm flex flex-wrap items-center gap-2" role="note">
               <span className="flex-1">初めてですか? 2 分のチュートリアルで、実際に 1 件記帳しながら使い方を覚えられます。</span>
               <Button size="sm" asChild>
