@@ -37,7 +37,7 @@ test("classify で別々の誤解に当たる 2 科目を間違えると、両�
   await put("支払家賃", /費用/);
   await work.getByRole("button", { name: "確認する" }).click();
 
-  const status = page.getByRole("status");
+  const status = page.getByRole("status").filter({ hasText: "個の科目" });
   await expect(status).toContainText("2 個の科目が別の箱に入っています");
   await expect(status).toContainText("支払った時に費用");
   await expect(status).toContainText("お金が入れば収益");
