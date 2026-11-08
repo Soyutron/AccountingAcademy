@@ -103,15 +103,15 @@ transaction: 月末、納品した会社から代金 60,000 円が普通預金�
 answer:
   debit: [{ account: bank_deposit, amount: 60000 }]
   credit: [{ account: accounts_receivable, amount: 60000 }]
-alternatives:
-  - debit: [{ account: cash, amount: 60000 }]
-    credit: [{ account: accounts_receivable, amount: 60000 }]
 wrong_patterns:
   - match: { swapped: true }
     feedback: 増えた預金は左、減った売掛金は右です。左右を入れ替えてみましょう。
   - match: { credit: [{ account: sales }] }
     misconception: receivable_collection_is_sale
     feedback: 売上は納品の日に記録済みです。ここでは売掛金(権利)が預金に変わっただけなので、右は売掛金です。
+  - match: { debit: [{ account: cash }] }
+    misconception: deposit_is_cash
+    feedback: 代金は銀行の口座に振り込まれたので、手元の現金は増えていません。左は普通預金です。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 60,000 にしましょう。
 hint: 左に普通預金 60,000、右に売掛金 60,000 です。
