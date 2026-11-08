@@ -1,5 +1,5 @@
 import { accounts, domains, misconceptions, paths, topics, units, type Unit } from "#content";
-import type { AccountInfo } from "./accounting";
+import { type AccountInfo, accountSummary } from "./accounting";
 
 // ビルド済みコンテンツ(.velite)への読み出し口。ページとコンポーネントはここを通して参照する
 
@@ -100,7 +100,8 @@ export const glossary: GlossaryEntry[] = [
       aliases: a.aliases,
       reading: a.reading,
       short: a.short,
-      summary: a.why,
+      summary: accountSummary(a),
+      example: a.example,
       element: a.element,
       contra: a.contra,
       related: a.concepts.map((id) => ({ id, name: nameOf(id) })),
