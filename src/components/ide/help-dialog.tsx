@@ -1,84 +1,139 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { type HelpContext, type HelpTopic, HELP_CATEGORIES, HELP_TOPICS, currentTopics, helpTopic } from "@/lib/help-topics";
 import { TUTORIAL_UNIT_ID, updateTutorial, useTutorialState } from "@/lib/tutorial-store";
 
-// 「使い方」: 各機能の説明と、チュートリアルのやり直し・表示設定
+// 「使い方」: いまの画面に出ている機能を先に、残りは分類ごとに畳んで出す。末尾にチュートリアルの設定(docs/help-design.md 5.3)
 
-const FEATURES: { title: string; body: string }[] = [
-  { title: "ガイド(左)", body: "物語と「やること」。ステップごとに 2〜4 文。迷ったら「ヒントを見る」、2 回間違えたら「答えを見る」。" },
-  { title: "仕訳帳(中央)", body: "科目と金額を入れて「記帳する」。科目は途中まで打つと候補が出ます。金額欄で Enter でも記帳できます。" },
-  { title: "影響の表示", body: "入力中の仕訳で 5 要素と当期純利益がどう動くかを、記帳の前に見せます。" },
-  { title: "結果(右)", body: "貸借対照表と損益計算書。記帳のたびに動いた行が光り、▲▼ で差分が出ます。科目名に触れると意味と要素が出ます。" },
-  { title: "会社のかたち", body: "資産と、負債 + 純資産の帯。会社の構造を一目で。" },
-  { title: "帳簿をさかのぼる", body: "結果の上のスライダーで、記帳を 1 件ずつ巻き戻して会社の姿を見られます。" },
-  { title: "総勘定元帳(T 勘定)", body: "中央のタブで、科目ごとの増減を左右に分けて見られます。" },
-  { title: "予想して記帳する", body: "一部のステップでは、記帳の前に 5 要素の動きを予想します。外れても実際の動きと比べて進めます。" },
-  { title: "5 つの箱に分ける(仕分けボード)", body: "科目を選んでから、入れる箱を押します。全部入れたら「確認する」。間違えた科目は赤く示されます。" },
-  { title: "金額で答える", body: "結果の表や問題文から金額を読み取って入力し、「確認する」(Enter でも可)。" },
-  { title: "条件を変える", body: "スライダーで金額や年数を動かし、計算結果がどう変わるかを試します。" },
-  { title: "続きから", body: "途中でやめても、次に開いたときに前回のステップから再開できます(同じブラウザ)。" },
-];
+interface Props {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  // 「?」から開いたときに見せる話題。その分類を開いて話題へフォーカスを移す
+  focusTopic: string | null;
+  ctx: HelpContext;
+  stepLabel: string;
+  onRestartTour?: () => void;
+}
 
-export function HelpDialog({ onRestartTour }: { onRestartTour?: () => void }) {
+export function HelpDialog({ open, onOpenChange, focusTopic, ctx, stepLabel, onRestartTour }: Props) {
   const state = useTutorialState();
-  // ツアーをやり直すときは、閉じたダイアログがフォーカスを「使い方」へ戻すとツアーのカードから奪うので戻さない(Issue #51)
-  const restarting = useRef(false);
+  const current = currentTopics(ctx);
+  const focusCategory = focusTopic ? helpTopic(focusTopic).category : null;
+  const content = useRef<HTMLDivElement>(null);
+  // 「チュートリアルを最初から」で閉じるときは、フォーカスをトリガーに戻さずツアーの吹き出しに任せる(Issue #51)
+  const toTour = useRef(false);
+
+  // 開いたあとに話題へ移す。Dialog の初期フォーカスより後に動かす必要があるので、次のフレームで行う
+  useEffect(() => {
+    if (!open || !focusTopic) return;
+    const id = requestAnimationFrame(() => {
+      const el = content.current?.querySelector<HTMLElement>(`#help-${focusTopic}`);
+      el?.scrollIntoView({ block: "center" });
+      el?.focus();
+    });
+    return () => cancelAnimationFrame(id);
+  }, [open, focusTopic]);
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" data-tour="help-button">
           使い方
         </Button>
       </DialogTrigger>
       <DialogContent
+        ref={content}
         className="max-h-[85dvh] overflow-y-auto sm:max-w-lg"
         onCloseAutoFocus={(e) => {
-          if (!restarting.current) return;
-          restarting.current = false;
-          e.preventDefault();
+          if (toTour.current) e.preventDefault();
+          toTour.current = false;
         }}
       >
         <DialogHeader>
           <DialogTitle>会計 IDE の使い方</DialogTitle>
-          <DialogDescription>各機能の説明と、チュートリアルの設定です。</DialogDescription>
+          <DialogDescription>困ったときに、必要なところだけ開いて読めます。</DialogDescription>
         </DialogHeader>
-        <div className="flex flex-wrap items-center gap-2 text-sm">
-          {onRestartTour ? (
-            // 同じページでツアーを始めるので、ダイアログを閉じないとツアーがモーダルの背後に隠れる
-            <DialogClose asChild>
-              <Button
-                size="sm"
-                onClick={() => {
-                  restarting.current = true;
-                  onRestartTour();
-                }}
-              >
-                チュートリアルを最初から
+
+        {current.length > 0 && (
+          <section aria-labelledby="help-current" className="space-y-2">
+            <h3 id="help-current" className="flex flex-wrap items-baseline justify-between gap-x-2 text-sm font-semibold">
+              いまの画面でできること
+              <span className="text-xs font-normal text-muted-foreground">{stepLabel}</span>
+            </h3>
+            <TopicList topics={current} idPrefix="now" />
+          </section>
+        )}
+
+        <section aria-labelledby="help-all" className="space-y-1">
+          <h3 id="help-all" className="text-sm font-semibold">
+            すべての機能
+          </h3>
+          {HELP_CATEGORIES.map((cat) => {
+            const topics = HELP_TOPICS.filter((t) => t.category === cat.id);
+            return (
+              // key に focusCategory を含め、「?」から開き直したときに open 属性を初期値から効かせる
+              <details key={`${cat.id}-${focusCategory === cat.id}`} open={focusCategory === cat.id} className="group rounded-md border">
+                <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 px-3 text-sm marker:hidden [&::-webkit-details-marker]:hidden">
+                  <span className="font-medium">{cat.label}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {topics.length} 項目 <span aria-hidden className="inline-block transition-transform group-open:rotate-90">▸</span>
+                  </span>
+                </summary>
+                <div className="border-t px-3 py-2">
+                  <TopicList topics={topics} idPrefix="help" />
+                </div>
+              </details>
+            );
+          })}
+        </section>
+
+        <section aria-labelledby="help-tutorial" className="space-y-2 border-t pt-3">
+          <h3 id="help-tutorial" className="text-sm font-semibold">
+            チュートリアルと設定
+          </h3>
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            {onRestartTour ? (
+              // 同じページでツアーを始めるので、ダイアログを閉じないとツアーがモーダルの背後に隠れる
+              <DialogClose asChild>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    toTour.current = true;
+                    onRestartTour();
+                  }}
+                >
+                  チュートリアルを最初から
+                </Button>
+              </DialogClose>
+            ) : (
+              <Button size="sm" asChild>
+                <Link href={`/units/${TUTORIAL_UNIT_ID}?tour=1`}>チュートリアルを最初から</Link>
               </Button>
-            </DialogClose>
-          ) : (
-            <Button size="sm" asChild>
-              <Link href={`/units/${TUTORIAL_UNIT_ID}?tour=1`}>チュートリアルを最初から</Link>
-            </Button>
-          )}
-          <label className="flex items-center gap-2 text-xs text-muted-foreground">
-            <input type="checkbox" checked={state.enabled} onChange={(e) => updateTutorial({ enabled: e.target.checked })} />
-            初めて単元を開いたときにチュートリアルを案内する
-          </label>
-        </div>
-        <dl className="space-y-3 text-sm">
-          {FEATURES.map((f) => (
-            <div key={f.title}>
-              <dt className="font-semibold">{f.title}</dt>
-              <dd className="text-muted-foreground">{f.body}</dd>
-            </div>
-          ))}
-        </dl>
+            )}
+            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+              <input type="checkbox" checked={state.enabled} onChange={(e) => updateTutorial({ enabled: e.target.checked })} />
+              初めて単元を開いたときにチュートリアルを案内する
+            </label>
+          </div>
+        </section>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function TopicList({ topics, idPrefix }: { topics: HelpTopic[]; idPrefix: string }) {
+  return (
+    <dl className="space-y-2 text-sm">
+      {topics.map((t) => (
+        <div key={t.id} id={`${idPrefix}-${t.id}`} tabIndex={-1} className="-mx-1 rounded-sm px-1 focus:bg-muted/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          <dt className="font-semibold">{t.title}</dt>
+          <dd className="text-muted-foreground">{t.body}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
