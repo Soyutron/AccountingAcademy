@@ -41,7 +41,7 @@ test("達成済みのステップに前へで戻っても次へは有効で、�
   await expect(page.getByText("ステップ 3 / 10")).toBeVisible();
 });
 
-test("開き直して案内を押さずに次へを押しても、保存される step は戻らず続きからの案内が残る", async ({ page }) => {
+test("開き直して案内を押さずに次へを押しても、保存される step は戻らず、最初のステップに戻れば続きからが使える", async ({ page }) => {
   const saved = recordSavedSteps(page);
   await reachStep3(page);
   await expect.poll(() => saved.at(-1)).toBe(2);
@@ -54,6 +54,10 @@ test("開き直して案内を押さずに次へを押しても、保存され�
   await expect(page.getByText("ステップ 2 / 10")).toBeVisible();
   await expect.poll(() => saved.length).toBe(before + 1);
   expect(saved.at(-1)).toBe(2);
+  // 進み始めたら案内は消え(学習中の表示領域を圧迫しない)、最初のステップに戻ると再び出る
+  await expect(page.getByRole("button", { name: "続きから" })).toHaveCount(0);
+  await page.getByRole("button", { name: "← 前へ" }).click();
+  await expect(page.getByText("ステップ 1 / 10")).toBeVisible();
   await page.getByRole("button", { name: "続きから" }).click();
   await expect(page.getByText("ステップ 3 / 10")).toBeVisible();
 });
