@@ -216,7 +216,11 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     [unit.opening, posted, stepIndex, accountMap],
   );
   const balancesNow = useMemo(() => computeBalances(unit.opening, posted.map((p) => p.entry), accountMap), [unit.opening, posted, accountMap]);
-  const diff = useMemo(() => diffBalances(balancesBefore, balancesNow), [balancesBefore, balancesNow]);
+  // 「← 前へ」で戻ると posted に後のステップの仕訳も残っているので、差分は表示中のステップまでで取る
+  const diff = useMemo(
+    () => diffBalances(balancesBefore, computeBalances(unit.opening, posted.filter((p) => p.step <= stepIndex).map((p) => p.entry), accountMap)),
+    [balancesBefore, unit.opening, posted, stepIndex, accountMap],
+  );
   // さかのぼり表示中は、その時点の残高と、その 1 件で動いた差分を見せる
   const view = useMemo(() => {
     if (viewUpto === null || viewUpto >= posted.length) return { balances: balancesNow, diff };
