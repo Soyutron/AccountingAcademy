@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { flushSync } from "react-dom";
 import { normalizeSearchText } from "@/lib/accounting";
 import type { GlossaryEntry } from "@/lib/content";
@@ -10,16 +11,32 @@ import { Input } from "@/components/ui/input";
 
 // 用語集の検索。名前・別名・読み・short の部分一致。規模が小さいので配列のフィルタで足りる
 
-export function GlossarySearch({
-  entries,
-  domainTitles,
-  domainOf,
-}: {
+type GlossarySearchProps = {
   entries: GlossaryEntry[];
   domainTitles: Record<string, string>;
   domainOf: Record<string, string>;
-}) {
-  const [query, setQuery] = useState("");
+};
+
+// useSearchParams は静的生成では Suspense の中でしか読めないので、URL を読む部分だけを分ける
+export function GlossarySearchFromUrl(props: GlossarySearchProps) {
+  const searchParams = useSearchParams();
+  return <GlossarySearch {...props} urlQuery={searchParams.get("q") ?? ""} />;
+}
+
+export function GlossarySearch({ entries, domainTitles, domainOf, urlQuery = "" }: GlossarySearchProps & { urlQuery?: string }) {
+  // 入力値は URL から毎回導かず state に持つ。URL の同期は遅れて届くので、制御入力に使うと IME の変換が崩れる
+  const [query, setQuery] = useState(urlQuery);
+  // ヘッダーの「用語集」など入力以外で URL が変わったとき。遅れて届く urlQuery ではなく現在の URL を見て、打鍵中の入力を巻き戻さない
+  // 遷移の URL はコミットまで window.location に反映されないので、レンダー中の調整では読めず、エフェクトにする
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 外部(URL)との同期で、上記の理由でレンダー中にできない
+    setQuery(new URLSearchParams(window.location.search).get("q") ?? "");
+  }, [urlQuery]);
+  // 単元から戻ったときに検索語を復元するため URL に持たせる(Issue #111)。打鍵ごとに履歴を増やさないよう replace にする
+  const updateQuery = (next: string, hash = "") => {
+    setQuery(next);
+    window.history.replaceState(null, "", `${next ? `?q=${encodeURIComponent(next)}` : window.location.pathname}${hash}`);
+  };
   const q = normalizeSearchText(query);
   const hits = q ? entries.filter((e) => [e.name, ...e.aliases, ...e.reading, e.short].some((t) => normalizeSearchText(t).includes(q))) : entries;
   // 説明文にだけ語を含む項目が分野の順で先に並ぶと、探している項目が埋もれる(Issue #86)
@@ -36,7 +53,7 @@ export function GlossarySearch({
 
   return (
     <div className="space-y-6">
-      <Input placeholder="用語を検索" value={query} onChange={(e) => setQuery(e.target.value)} className="max-w-sm" aria-label="用語を検索" />
+      <Input placeholder="用語を検索" value={query} onChange={(e) => updateQuery(e.target.value)} className="max-w-sm" aria-label="用語を検索" />
       {groups.map((g) => (
         <section key={g.title} className="space-y-3">
           <h2 className="text-lg font-semibold">{g.title}</h2>
@@ -62,7 +79,8 @@ export function GlossarySearch({
                             href={`#${r.id}`}
                             className="underline"
                             // 絞り込み中は関連先が描画されていないので、検索を解いて DOM に戻してからブラウザのアンカー移動に任せる
-                            onClick={() => flushSync(() => setQuery(""))}
+                            // アンカーも URL に含める。replaceState の同期を Next.js が後から反映するとき、含めていない URL で上書きされるため
+                            onClick={() => query && flushSync(() => updateQuery("", `#${r.id}`))}
                           >
                             {r.name}
                           </a>
