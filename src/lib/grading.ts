@@ -72,6 +72,8 @@ export function gradeTweak(task: TaskOf<"tweak">, outputs: Record<string, number
 export interface ClassifyResult extends GradeResult {
   // 間違えた科目ごとの説明
   wrong: { account: string; feedback: string; misconception?: string }[];
+  // 間違えた科目それぞれの誤解(重複なし)。misconception はこの先頭で、attempts には 1 件だけ保存する
+  misconceptions: string[];
 }
 
 export function gradeClassify(task: TaskOf<"classify">, placed: Partial<Record<string, Element>>, accounts: ReadonlyMap<string, AccountInfo>): ClassifyResult {
@@ -86,6 +88,7 @@ export function gradeClassify(task: TaskOf<"classify">, placed: Partial<Record<s
       feedback: `${account.name}は${ELEMENT_LABELS[account.element]}です。${account.why}`,
     });
   }
-  if (wrong.length === 0) return { ...ok(task), wrong };
-  return { ...ng(`${wrong.length} 個の科目が別の箱に入っています。`, wrong.find((w) => w.misconception)?.misconception), wrong };
+  if (wrong.length === 0) return { ...ok(task), wrong, misconceptions: [] };
+  const misconceptions = [...new Set(wrong.flatMap((w) => w.misconception ?? []))];
+  return { ...ng(`${wrong.length} 個の科目が別の箱に入っています。`, misconceptions[0]), wrong, misconceptions };
 }
