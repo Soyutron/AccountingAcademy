@@ -616,6 +616,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   }, [firstTime, firstTimeDone]);
 
   // min-w-0: スマホ幅(1 列の grid)で、仕訳帳の摘要(truncate の nowrap)の min-content 幅が列を押し広げないようにする(Issue #28)
+  const onTaskAmount = task.type === "post" && !result?.correct ? insertAmount : undefined;
   const paneClass = (p: Pane) => `${pane === p ? "block" : "hidden"} lg:block min-h-0 min-w-0 lg:overflow-y-auto p-4`;
 
   return (
@@ -712,7 +713,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
             </div>
           )}
           <div className="prose prose-sm max-w-none">{narratives[stepIndex]}</div>
-          <TaskBox task={task} onAmount={task.type === "post" && !result?.correct ? insertAmount : undefined} />
+          <TaskBox task={task} onAmount={onTaskAmount} />
           {hint && (
             <div className="mt-3 text-sm" data-tour="hint">
               {showHint ? (
@@ -740,6 +741,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
             workPane.current?.focus();
             markSeen(firstTime.id);
           }} />}
+          <TaskReminder task={task} onAmount={onTaskAmount} />
           {task.type === "post" && (
             <form
               className="space-y-2"
@@ -1084,52 +1086,68 @@ function ContributeLinks({ unit, stepNumber }: { unit: IdeUnit; stepNumber: numb
   );
 }
 
+function taskContent(task: Task): { title: string; body: string | null } | null {
+  switch (task.type) {
+    case "post":
+      return { title: "この取引を仕訳して記帳しましょう", body: task.transaction };
+    case "predict":
+      return { title: "記帳の前に、どう動くか予想しましょう", body: task.transaction };
+    case "tweak":
+      return { title: "条件を動かして目標に合わせましょう", body: `${task.goal.label}を ${task.goal.equals.toLocaleString("ja-JP")} 円にする` };
+    case "classify":
+      return { title: "科目を 5 つの箱に分けましょう", body: null };
+    case "calc":
+      return { title: "結果の表を読んで答えましょう", body: task.question };
+    case "observe":
+      return null;
+  }
+}
+
+function TaskText({ text, onAmount }: { text: string; onAmount?: (digits: string) => void }) {
+  if (!onAmount) return text;
+  return splitAmounts(text).map((seg, i) =>
+    typeof seg === "string" ? (
+      seg
+    ) : (
+      <button
+        key={i}
+        type="button"
+        aria-label={`${seg.text}を仕訳帳に入れる`}
+        title="押すと仕訳帳の金額欄に入ります"
+        className="rounded-sm border-b border-dashed border-primary/60 px-0.5 font-medium font-mono tabular-nums text-primary hover:bg-primary/10 focus-visible:outline-2 focus-visible:outline-ring"
+        // 金額欄のフォーカスを奪わない(フォーカス中の欄のカーソル位置に入れるため)
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => onAmount(seg.digits)}
+      >
+        {seg.text}
+      </button>
+    ),
+  );
+}
+
 function TaskBox({ task, onAmount }: { task: Task; onAmount?: (digits: string) => void }) {
-  const content = (() => {
-    switch (task.type) {
-      case "post":
-        return { title: "この取引を仕訳して記帳しましょう", body: task.transaction };
-      case "predict":
-        return { title: "記帳の前に、どう動くか予想しましょう", body: task.transaction };
-      case "tweak":
-        return { title: "条件を動かして目標に合わせましょう", body: `${task.goal.label}を ${task.goal.equals.toLocaleString("ja-JP")} 円にする` };
-      case "classify":
-        return { title: "科目を 5 つの箱に分けましょう", body: null };
-      case "calc":
-        return { title: "結果の表を読んで答えましょう", body: task.question };
-      case "observe":
-        return null;
-    }
-  })();
+  const content = taskContent(task);
   if (!content) return null;
   return (
     <div className="mt-4 rounded-md border-l-4 border-primary bg-muted/40 p-3 text-sm">
       <div className="font-semibold">やること: {content.title}</div>
       {content.body && (
         <p className="mt-1">
-          {onAmount
-            ? splitAmounts(content.body).map((seg, i) =>
-                typeof seg === "string" ? (
-                  seg
-                ) : (
-                  <button
-                    key={i}
-                    type="button"
-                    aria-label={`${seg.text}を仕訳帳に入れる`}
-                    title="押すと仕訳帳の金額欄に入ります"
-                    className="rounded-sm border-b border-dashed border-primary/60 px-0.5 font-medium font-mono tabular-nums text-primary hover:bg-primary/10 focus-visible:outline-2 focus-visible:outline-ring"
-                    // 金額欄のフォーカスを奪わない(フォーカス中の欄のカーソル位置に入れるため)
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => onAmount(seg.digits)}
-                  >
-                    {seg.text}
-                  </button>
-                ),
-              )
-            : content.body}
+          <TaskText text={content.body} onAmount={onAmount} />
         </p>
       )}
     </div>
+  );
+}
+
+// タブ表示の幅ではガイドが隠れるので、入力しながら問題文を読めるようにする(Issue #149)
+function TaskReminder({ task, onAmount }: { task: Task; onAmount?: (digits: string) => void }) {
+  const body = taskContent(task)?.body;
+  if (!body) return null;
+  return (
+    <p className="rounded-md border-l-4 border-primary bg-muted/40 p-2 text-sm lg:hidden">
+      <TaskText text={body} onAmount={onAmount} />
+    </p>
   );
 }
 
