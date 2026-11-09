@@ -174,6 +174,12 @@ misconceptions:
     correct: 当座借越は、残高を超えて振り出した小切手を銀行が立て替えた金額。返す義務なので負債
     concepts: [bank_overdraft, liability]
     remediation: cash-and-deposits/checking-account
+  - id: deposit_kinds_confused
+    name: 預金はどれも同じ科目
+    description: 当座預金と普通預金を区別せず、どちらも「預金」として同じ科目で記録してしまう
+    correct: 普通預金と当座預金は別の口座で、別の勘定科目。普通預金から当座預金へ移したら、増える当座預金が左、減る普通預金が右
+    concepts: [checking_account, account_title]
+    remediation: cash-and-deposits/checking-account
   - id: petty_cash_is_expense
     name: 渡した時点で費用
     description: 担当者に小口現金を渡したときに、その金額を費用として記録してしまう
@@ -251,6 +257,18 @@ misconceptions:
     description: 従業員に実際に振り込んだ手取り額を給料(費用)として記録してしまう
     correct: 給料は税金などを差し引く前の総額。差し引いた分は預り金として、後で本人の代わりに納める
     concepts: [advances_and_deposits, expense]
+    remediation: receivables-and-payables/temporary-and-deposits
+  - id: withholding_ignored
+    name: 天引きを記録しない
+    description: 給料から差し引いた税金を記録せず、総額をそのまま振り込んだことにしてしまう
+    correct: 振り込むのは差し引いた後の手取り。差し引いた分は店のお金ではなく、本人の代わりに納めるまで預かっている義務なので預り金(負債)にする
+    concepts: [advances_and_deposits, liability]
+    remediation: receivables-and-payables/temporary-and-deposits
+  - id: deposit_received_is_asset
+    name: 預かったお金は店の資産
+    description: 預かったお金を店の手元に増えたものと考えて、預り金を借方(左)に書いてしまう
+    correct: 預り金は後で納める義務なので負債。増えるときは貸方(右)に書く
+    concepts: [advances_and_deposits, liability]
     remediation: receivables-and-payables/temporary-and-deposits
   - id: withholding_tax_is_expense
     name: 納めた税金は会社の費用
