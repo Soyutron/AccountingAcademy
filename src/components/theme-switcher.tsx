@@ -4,7 +4,7 @@ import { useSyncExternalStore } from "react";
 import { Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { DEFAULT_THEME, MODE_LABELS, MODE_STORAGE_KEY, MODES, type Mode, THEME_STORAGE_KEY, THEMES, isMode, isThemeId } from "@/themes";
+import { DEFAULT_THEME, MODE_LABELS, MODE_STORAGE_KEY, MODES, type Mode, THEME_STORAGE_KEY, THEMES, isMode, isThemeId, restoreSavedTheme } from "@/themes";
 
 // テーマとライト・ダークの切り替え。選択は localStorage に置き、<html> の data-theme / data-mode に反映する(docs/design-system.md 3.2)。
 // 初期描画の反映は layout の ThemeBoot が済ませているので、ここは表示と変更だけを受け持つ。
@@ -27,8 +27,18 @@ function writeStorage(key: string, value: string) {
   }
 }
 
+// 別タブの変更を <html> に反映する。key が null になるのは別タブの localStorage.clear()
+function onStorage(e: StorageEvent) {
+  if (e.key !== THEME_STORAGE_KEY && e.key !== MODE_STORAGE_KEY && e.key !== null) return;
+  // 保存値が消えたり不正だったりすると restoreSavedTheme はテーマに触らないので、再読み込みと同じ既定に戻しておく
+  document.documentElement.dataset.theme = DEFAULT_THEME;
+  restoreSavedTheme();
+  emit();
+}
+
 const listeners = new Set<() => void>();
 function subscribe(listener: () => void) {
+  if (listeners.size === 0) window.addEventListener("storage", onStorage);
   listeners.add(listener);
   // 「自動」のときは OS の設定変更に追従する
   const mq = matchMedia("(prefers-color-scheme: dark)");
@@ -38,6 +48,7 @@ function subscribe(listener: () => void) {
   mq.addEventListener("change", onChange);
   return () => {
     listeners.delete(listener);
+    if (listeners.size === 0) window.removeEventListener("storage", onStorage);
     mq.removeEventListener("change", onChange);
   };
 }

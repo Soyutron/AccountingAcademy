@@ -104,6 +104,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [stepIndex, setStepIndex] = useState(0);
   const [posted, setPosted] = useState<Posted[]>(() => replayEntries(unit.steps, 0));
   const [draft, setDraft] = useState<EditableEntry>(emptyEntry);
+  // post を最後に採点したときの仕訳。比較表を採点した答えに固定する(Issue #129)
+  const [gradedEntry, setGradedEntry] = useState<JournalEntry | null>(null);
   // 問題文の金額を挿入したあと、描画後にその金額欄へフォーカスとカーソルを戻す
   const amountCaret = useRef<{ field: string; pos: number } | null>(null);
   const [effect, setEffect] = useState<Partial<EffectAnswer>>({});
@@ -359,6 +361,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     const target = unit.steps[index];
     setStepIndex(index);
     setDraft(emptyEntry());
+    setGradedEntry(null);
     setEffect({});
     setPlaced({});
     setCalcValue("");
@@ -481,6 +484,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           answeredStep.current = stepIndex;
           answered.current.set(stepIndex, entryDraft);
         }
+        setGradedEntry(entryDraft);
         setResult(r);
         setAttempts((n) => n + 1);
         record(r, entryDraft);
@@ -979,9 +983,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
                 {result.correct ? "できました" : "もう一歩"}
               </p>
               <p className="whitespace-pre-wrap">{result.feedback}</p>
-              {task.type === "post" && !result.correct && draftHasBothSides && (
+              {task.type === "post" && !result.correct && gradedEntry && (
                 <div className="rounded bg-background/70 p-2">
-                  <ImpactCompare yours={entryDraft} expected={task.answer} accounts={accountMap} />
+                  <ImpactCompare yours={gradedEntry} expected={task.answer} accounts={accountMap} />
                 </div>
               )}
               {task.type === "predict" && <PredictCompare predicted={effect as EffectAnswer} entry={task.entry} accounts={accountMap} />}
