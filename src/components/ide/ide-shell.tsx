@@ -360,6 +360,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     setAttempts(0);
     setShowHint(false);
     setTweakDone(false);
+    // 祝福の札は「次へ進める」案内なので、進んだ先のステップに残さない
+    setBursts([]);
+    setPulseNext(false);
     answeredStep.current = null;
     gradedAnswer.current = null;
     setViewUpto(null);
