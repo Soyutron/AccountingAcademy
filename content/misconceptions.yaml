@@ -198,6 +198,12 @@ misconceptions:
     correct: 費用は使い道ごとの科目で記録する。切手代は通信費、文房具代は消耗品費、電車代は旅費交通費のように分ける
     concepts: [petty_cash, expense]
     remediation: cash-and-deposits/petty-cash
+  - id: petty_payment_omitted
+    name: 報告された支払いの一部だけを記録する
+    description: 担当者から報告された複数の支払いのうち一部を書き忘れ、小口現金の減少もその分だけで記録してしまう
+    correct: 報告された支払いはすべて費用になり、小口現金はその合計だけ減る。報告の内訳と仕訳の行を 1 つずつ突き合わせる
+    concepts: [petty_cash, expense]
+    remediation: cash-and-deposits/petty-cash
   - id: interest_is_loan_return
     name: 利息も貸したお金の戻り
     description: 受け取った利息を、貸付金が戻ってきた分として貸付金を減らしてしまう
