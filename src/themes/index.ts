@@ -34,8 +34,28 @@ export function isMode(value: unknown): value is Mode {
   return typeof value === "string" && (MODES as readonly string[]).includes(value);
 }
 
+// インラインスクリプトに文字列化するので、引数とブラウザのグローバル以外を参照しない
+function applySavedTheme(themeKey: string, modeKey: string, ids: string[]) {
+  try {
+    const d = document.documentElement;
+    const t = localStorage.getItem(themeKey);
+    const m = localStorage.getItem(modeKey);
+    if (t !== null && ids.includes(t)) d.dataset.theme = t;
+    const dark = m === "dark" || (m !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+    d.dataset.mode = dark ? "dark" : "light";
+  } catch {
+    // localStorage が使えない環境では既定の表示のまま
+  }
+}
+
+const SAVED_THEME_ARGS: Parameters<typeof applySavedTheme> = [THEME_STORAGE_KEY, MODE_STORAGE_KEY, THEMES.map((t) => t.id)];
+
 /** 描画前に localStorage の設定を <html> に反映する。ちらつきを防ぐため <head> のインラインスクリプトとして埋め込む */
 export function themeBootScript(): string {
-  const ids = JSON.stringify(THEMES.map((t) => t.id));
-  return `(function(){try{var d=document.documentElement,t=localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)}),m=localStorage.getItem(${JSON.stringify(MODE_STORAGE_KEY)});if(${ids}.indexOf(t)>=0)d.dataset.theme=t;var dark=m==="dark"||(m!=="light"&&matchMedia("(prefers-color-scheme: dark)").matches);d.dataset.mode=dark?"dark":"light"}catch(e){}})()`;
+  return `(${applySavedTheme.toString()})(...${JSON.stringify(SAVED_THEME_ARGS)})`;
+}
+
+/** インラインスクリプトが実行されない経路(root layout のクライアント描画)のために、同じ反映をクライアントから行う */
+export function restoreSavedTheme() {
+  applySavedTheme(...SAVED_THEME_ARGS);
 }

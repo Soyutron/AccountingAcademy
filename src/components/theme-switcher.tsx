@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { DEFAULT_THEME, MODE_LABELS, MODE_STORAGE_KEY, MODES, type Mode, THEME_STORAGE_KEY, THEMES, isMode, isThemeId } from "@/themes";
 
 // テーマとライト・ダークの切り替え。選択は localStorage に置き、<html> の data-theme / data-mode に反映する(docs/design-system.md 3.2)。
-// 初期描画の反映は layout の themeBootScript が済ませているので、ここは表示と変更だけを受け持つ。
+// 初期描画の反映は layout の ThemeBoot が済ませているので、ここは表示と変更だけを受け持つ。
 // 現在の選択は <html> と localStorage を正として useSyncExternalStore で読む(サーバー描画では既定値)
 
 function readStorage<T>(key: string, guard: (v: unknown) => v is T, fallback: T): T {
