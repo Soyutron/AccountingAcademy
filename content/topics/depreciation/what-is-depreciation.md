@@ -119,7 +119,7 @@ wrong_patterns:
   - match: { credit: [{ account: cash }] }
     misconception: depreciation_as_cash_outflow
     feedback: 現金はマシンを買ったときにもう減っています。減価償却ではお金は動きません。
-  - match: { debit: [{ amount: 600000 }] }
+  - match: { debit: [{ account: depreciation_expense, amount: 600000 }] }
     misconception: no_cost_allocation
     feedback: 全額ではなく、6 年に分けた 1 年分の 100,000 だけを費用にします。
   - match: { debit: [{ account: equipment }] }
@@ -191,7 +191,7 @@ wrong_patterns:
   - match: { credit: [{ account: cash }] }
     misconception: depreciation_as_cash_outflow
     feedback: 現金はマシンを買ったときにもう減っています。減価償却ではお金は動きません。
-  - match: { debit: [{ amount: 500000 }] }
+  - match: { debit: [{ account: depreciation_expense, amount: 500000 }] }
     feedback: 帳簿価額ではなく、1 年分の 100,000 を費用にします。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 100,000 にしましょう。
