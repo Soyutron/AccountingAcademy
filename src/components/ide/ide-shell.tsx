@@ -615,8 +615,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     if (firstTime && firstTimeDone) markSeen(firstTime.id);
   }, [firstTime, firstTimeDone]);
 
-  // min-w-0: スマホ幅(1 列の grid)で、仕訳帳の摘要(truncate の nowrap)の min-content 幅が列を押し広げないようにする(Issue #28)
   const onTaskAmount = task.type === "post" && !result?.correct ? insertAmount : undefined;
+
+  // min-w-0: スマホ幅(1 列の grid)で、仕訳帳の摘要(truncate の nowrap)の min-content 幅が列を押し広げないようにする(Issue #28)
   const paneClass = (p: Pane) => `${pane === p ? "block" : "hidden"} lg:block min-h-0 min-w-0 lg:overflow-y-auto p-4`;
 
   return (
@@ -1086,23 +1087,6 @@ function ContributeLinks({ unit, stepNumber }: { unit: IdeUnit; stepNumber: numb
   );
 }
 
-function taskContent(task: Task): { title: string; body: string | null } | null {
-  switch (task.type) {
-    case "post":
-      return { title: "この取引を仕訳して記帳しましょう", body: task.transaction };
-    case "predict":
-      return { title: "記帳の前に、どう動くか予想しましょう", body: task.transaction };
-    case "tweak":
-      return { title: "条件を動かして目標に合わせましょう", body: `${task.goal.label}を ${task.goal.equals.toLocaleString("ja-JP")} 円にする` };
-    case "classify":
-      return { title: "科目を 5 つの箱に分けましょう", body: null };
-    case "calc":
-      return { title: "結果の表を読んで答えましょう", body: task.question };
-    case "observe":
-      return null;
-  }
-}
-
 function TaskText({ text, onAmount }: { text: string; onAmount?: (digits: string) => void }) {
   if (!onAmount) return text;
   return splitAmounts(text).map((seg, i) =>
@@ -1126,7 +1110,22 @@ function TaskText({ text, onAmount }: { text: string; onAmount?: (digits: string
 }
 
 function TaskBox({ task, onAmount }: { task: Task; onAmount?: (digits: string) => void }) {
-  const content = taskContent(task);
+  const content = (() => {
+    switch (task.type) {
+      case "post":
+        return { title: "この取引を仕訳して記帳しましょう", body: task.transaction };
+      case "predict":
+        return { title: "記帳の前に、どう動くか予想しましょう", body: task.transaction };
+      case "tweak":
+        return { title: "条件を動かして目標に合わせましょう", body: `${task.goal.label}を ${task.goal.equals.toLocaleString("ja-JP")} 円にする` };
+      case "classify":
+        return { title: "科目を 5 つの箱に分けましょう", body: null };
+      case "calc":
+        return { title: "結果の表を読んで答えましょう", body: task.question };
+      case "observe":
+        return null;
+    }
+  })();
   if (!content) return null;
   return (
     <div className="mt-4 rounded-md border-l-4 border-primary bg-muted/40 p-3 text-sm">
@@ -1140,13 +1139,13 @@ function TaskBox({ task, onAmount }: { task: Task; onAmount?: (digits: string) =
   );
 }
 
-// タブ表示の幅ではガイドが隠れるので、入力しながら問題文を読めるようにする(Issue #149)
+// タブ表示の幅ではガイドが隠れるので、入力しながら取引文を読めるようにする(Issue #149)。
+// calc と tweak はワークスペースに同じ文が既にあるので対象にしない
 function TaskReminder({ task, onAmount }: { task: Task; onAmount?: (digits: string) => void }) {
-  const body = taskContent(task)?.body;
-  if (!body) return null;
+  if (task.type !== "post" && task.type !== "predict") return null;
   return (
     <p className="rounded-md border-l-4 border-primary bg-muted/40 p-2 text-sm lg:hidden">
-      <TaskText text={body} onAmount={onAmount} />
+      <TaskText text={task.transaction} onAmount={onAmount} />
     </p>
   );
 }
