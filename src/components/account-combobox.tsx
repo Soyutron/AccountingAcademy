@@ -63,13 +63,16 @@ export function AccountCombobox({ accounts, value, onChange, onCompositionChange
         break;
       case "ArrowUp":
         e.preventDefault();
-        if (shown) setActive(activeIndex === null ? 0 : Math.max(activeIndex - 1, 0));
+        if (shown) setActive(activeIndex === null ? options.length - 1 : Math.max(activeIndex - 1, 0));
         break;
       case "Enter":
         // 候補を確定するだけで、フォーム(記帳する)は送信しない
         if (shown) {
           e.preventDefault();
           if (activeOption) select(activeOption);
+        } else {
+          // 完全一致で一覧だけ隠れた open を残すと、記帳で空に戻った欄に一覧が開き直し、先頭が指された状態になる
+          setOpen(false);
         }
         break;
       case "Escape":

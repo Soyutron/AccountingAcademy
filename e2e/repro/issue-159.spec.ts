@@ -5,8 +5,6 @@ import { expect, test, type Page } from "@playwright/test";
 
 async function openFirstJournal(page: Page) {
   await page.goto("/units/bookkeeping-basics/five-elements");
-  await page.getByRole("button", { name: "次へ →" }).waitFor();
-  await page.waitForTimeout(1200);
   await page.getByRole("button", { name: "次へ →" }).click();
   await expect(page.getByText("ステップ 2 / 10")).toBeVisible();
   return page.getByRole("region", { name: "ワークスペース" }).getByLabel("借方の科目 1");
@@ -70,4 +68,57 @@ test("文字を入れて絞り込んだ後の Enter は先頭の候補を確定�
   await account.pressSequentially("金");
   await account.press("Enter");
   await expect(account).toHaveValue("現金");
+});
+
+test("「自由に試す」で科目名を打ち切って Enter で記帳した後、空に戻った欄で Enter を押しても科目は入らない", async ({ page }) => {
+  await page.goto("/units/depreciation/straight-line");
+  const work = page.getByRole("region", { name: "ワークスペース" });
+  const next = page.getByRole("button", { name: "次へ →" });
+  const fill = async (debit: [string, string], credit: [string, string]) => {
+    await work.getByLabel("借方の科目 1").fill(debit[0]);
+    await work.getByLabel("借方の金額 1").fill(debit[1]);
+    await work.getByLabel("貸方の科目 1").fill(credit[0]);
+    await work.getByLabel("貸方の金額 1").fill(credit[1]);
+  };
+  const slide = async (i: number, steps: number) => {
+    const s = page.getByRole("slider").nth(i);
+    await s.focus();
+    await page.keyboard.press("Home");
+    for (let k = 0; k < steps; k++) await page.keyboard.press("ArrowRight");
+  };
+  await next.click();
+  await fill(["車両運搬具", "1200000"], ["現金", "1200000"]);
+  await work.getByRole("button", { name: "記帳する" }).click();
+  await expect(page.getByText("できました", { exact: true })).toBeVisible();
+  await next.click();
+  await slide(2, 5); // 耐用年数 6 年
+  await next.click();
+  await slide(1, 6); // 残存価額 300,000
+  await next.click();
+  await work.getByPlaceholder("金額(円)").fill("100000");
+  await work.getByRole("button", { name: "確認する" }).click();
+  await next.click();
+  for (const [el, v] of [["資産", "decrease"], ["負債", "none"], ["純資産", "decrease"], ["収益", "none"], ["費用", "increase"]])
+    await work.getByLabel(`${el}の予想`, { exact: true }).selectOption(v);
+  await work.getByRole("button", { name: "予想して記帳する" }).click();
+  await next.click();
+  await fill(["減価償却費", "50000"], ["減価償却累計額", "50000"]);
+  await work.getByRole("button", { name: "記帳する" }).click();
+  await next.click();
+  await work.getByPlaceholder("金額(円)").fill("900000");
+  await work.getByRole("button", { name: "確認する" }).click();
+  await next.click();
+  await expect(page.getByText("ステップ 9 / 9")).toBeVisible();
+
+  await work.getByLabel("借方の科目 1").fill("現金");
+  await work.getByLabel("借方の金額 1").fill("1000");
+  await work.getByLabel("貸方の金額 1").fill("1000");
+  const credit = work.getByLabel("貸方の科目 1");
+  await credit.pressSequentially("資本金");
+  await credit.press("Enter");
+  await expect(work.getByText("自由に記帳")).toHaveCount(1);
+  await expect(credit).toHaveValue("");
+  await expect(credit).not.toHaveAttribute("aria-activedescendant", /.+/);
+  await credit.press("Enter");
+  await expect(credit).toHaveValue("");
 });
