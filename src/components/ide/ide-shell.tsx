@@ -551,6 +551,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     }
     if (task.type === "classify") setPlaced(Object.fromEntries(task.accounts.map((id) => [id, accountMap.get(id)!.element])));
     setResult(null);
+    // 結果の表示を消すので、同じ誤答を入れ直して押したら採点し直して説明を出す(Issue #128)
+    gradedAnswer.current = null;
   };
 
   // 課題の post ステップは採点が不一致を誤解として返すが、自由記帳には採点が無いのでここで止める(Issue #42)
