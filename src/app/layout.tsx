@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
 import { fontVariables } from "@/themes/fonts";
-import { DEFAULT_THEME, themeBootScript } from "@/themes";
+import { DEFAULT_THEME } from "@/themes";
+import { ThemeBoot } from "@/components/theme-boot";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 
 export const metadata: Metadata = {
@@ -16,7 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     // その差分は意図したものなので suppressHydrationWarning
     <html lang="ja" className={fontVariables} data-theme={DEFAULT_THEME} data-mode="light" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeBootScript() }} />
+        <ThemeBoot />
       </head>
       <body className="min-h-dvh bg-background text-foreground antialiased font-sans">
         <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-background focus:p-2">
