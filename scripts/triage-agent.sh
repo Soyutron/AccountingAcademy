@@ -8,7 +8,7 @@
 # 優先度ラベル p1〜p3 は判定に合わせて付け替える。
 #
 # 環境変数:
-#   TRIAGE_MODEL          モデル(既定 fable)
+#   TRIAGE_MODEL          モデル(既定 opus)
 #   TRIAGE_PHASE_TIMEOUT  claude -p 1 回の上限秒(既定 1800)
 #   TRIAGE_MAX_TURNS      ターン上限(既定 120)
 #   TRIAGE_LOG_DIR        ログ置き場(既定 logs/triage)
@@ -19,7 +19,7 @@ cd "$(dirname "$0")/.."
 ROOT=$PWD
 LOG_DIR="${TRIAGE_LOG_DIR:-logs/triage}"
 case "$LOG_DIR" in /*) ;; *) LOG_DIR="$ROOT/$LOG_DIR" ;; esac
-MODEL="${TRIAGE_MODEL:-fable}"
+MODEL="${TRIAGE_MODEL:-opus}"
 PHASE_TIMEOUT="${TRIAGE_PHASE_TIMEOUT:-1800}"
 MAX_TURNS="${TRIAGE_MAX_TURNS:-120}"
 HOOK_SETTINGS="{\"hooks\":{\"PreToolUse\":[{\"matcher\":\"Bash|Write|Edit|MultiEdit|NotebookEdit\",\"hooks\":[{\"type\":\"command\",\"command\":\"$ROOT/scripts/issue-agent/guard.sh\"}]}]}}"
