@@ -146,7 +146,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   // 取引の流れのアニメーション。記帳が成功した仕訳を次の描画で測って飛ばす
   const [pendingFlight, setPendingFlight] = useState<JournalEntry | null>(null);
   const [flights, setFlights] = useState<Flight[]>([]);
-  // 正解の祝福。セッション中に初めてそのステップに正解したときだけ出す(復元や再正解では出さない)
+  // 祝福。セッション中に初めてそのステップに正解した、または最後のステップに着いたときだけ出す(復元や再正解では出さない)
   const [bursts, setBursts] = useState<Burst[]>([]);
   const [pulseNext, setPulseNext] = useState(false);
   const celebratedSteps = useRef(new Set<number>());
@@ -277,12 +277,14 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     if (!retried || !saved) setSaveError("保存できませんでした。ページを再読み込みしてから、もう一度お試しください。");
     else if (!failedAttempt.current) setSaveError(null);
   };
-  const celebrate = () => {
-    if (celebratedSteps.current.has(stepIndex)) return;
-    celebratedSteps.current.add(stepIndex);
+  const celebrate = (index = stepIndex) => {
+    if (celebratedSteps.current.has(index)) return;
+    celebratedSteps.current.add(index);
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    setBursts((prev) => [...prev, { id: `${stepIndex}-${Date.now()}`, big: isLast }]);
-    setPulseNext(true);
+    const big = index === unit.steps.length - 1;
+    setBursts((prev) => [...prev, { id: `${index}-${Date.now()}`, big }]);
+    // 最後のステップに「次へ →」は無く、パルスの終わりで戻す相手がいない
+    setPulseNext(!big);
   };
 
   const record = (r: GradeResult, answer: unknown) =>
@@ -384,6 +386,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   // 「次へ」「前へ」の後は Tab が新しいステップから続くよう、見出しへ移す。ツアー中は続きの操作が吹き出しにあるので動かさない
   const stepTo = (index: number) => {
     flushSync(() => goTo(index));
+    // observe には正解の瞬間が無いので、最後のステップが observe の単元は着いた時点を完了の祝福にする(続きからの復元では出さない)
+    if (index === unit.steps.length - 1 && unit.steps[index].task.type === "observe") celebrate(index);
     if (!tourActive) stepHeading.current?.focus();
   };
 
