@@ -4,7 +4,8 @@
 #   scripts/claude-usage-limit.sh limited <ログ...>                   # 上限の文言があれば 0
 #   scripts/claude-usage-limit.sh wait <期限(epoch 秒)> [stop ファイル]  # 使えるようになるまで待つ
 #
-# wait は CLAUDE_USAGE_PROBE_INTERVAL 秒(既定 600)ごとに haiku へ 1 ターンの疎通を送り、上限の文言が消えたら 0 で返る。
+# wait は CLAUDE_USAGE_PROBE_INTERVAL 秒(既定 600)ごとに CLAUDE_USAGE_PROBE_MODELS(空白区切り、既定 haiku)へ
+# 1 ターンの疎通を送り、どのモデルからも上限の文言が消えたら 0 で返る。
 # 期限を過ぎたら 1、stop ファイルができたら 2。リセット時刻の文言は表示用の書式で機械的に読めないため、疎通で確かめる。
 set -u
 cd "$(dirname "$0")/.."
@@ -14,9 +15,14 @@ LIMIT_RE="You've (hit|reached) your|out of (extra )?usage|usage limit reached"
 
 limited() { grep -qiE "$LIMIT_RE" "$@"; }
 
+# 上限はモデルごとに別枠のことがある(Fable だけ尽きる等)ので、ループが使うモデルすべてで確かめる
 probe() {
-  timeout -k 10 120 claude -p "Reply with exactly: OK" --model haiku --max-turns 1 --output-format json \
-    --tools "" --strict-mcp-config --mcp-config '{"mcpServers":{}}' >"$1" 2>&1
+  local m
+  : >"$1"
+  for m in ${CLAUDE_USAGE_PROBE_MODELS:-haiku}; do
+    timeout -k 10 120 claude -p "Reply with exactly: OK" --model "$m" --max-turns 1 --output-format json \
+      --tools "" --strict-mcp-config --mcp-config '{"mcpServers":{}}' >>"$1" 2>&1
+  done
 }
 
 case "${1:-}" in
