@@ -258,6 +258,18 @@ misconceptions:
     correct: 給料は税金などを差し引く前の総額。差し引いた分は預り金として、後で本人の代わりに納める
     concepts: [advances_and_deposits, expense]
     remediation: receivables-and-payables/temporary-and-deposits
+  - id: withholding_ignored
+    name: 天引きを記録しない
+    description: 給料から差し引いた税金を記録せず、総額をそのまま振り込んだことにしてしまう
+    correct: 振り込むのは差し引いた後の手取り。差し引いた分は店のお金ではなく、本人の代わりに納めるまで預かっている義務なので預り金(負債)にする
+    concepts: [advances_and_deposits, liability]
+    remediation: receivables-and-payables/temporary-and-deposits
+  - id: deposit_received_is_asset
+    name: 預かったお金は店の資産
+    description: 預かったお金を店の手元に増えたものと考えて、預り金を借方(左)に書いてしまう
+    correct: 預り金は後で納める義務なので負債。増えるときは貸方(右)に書く
+    concepts: [advances_and_deposits, liability]
+    remediation: receivables-and-payables/temporary-and-deposits
   - id: withholding_tax_is_expense
     name: 納めた税金は会社の費用
     description: 従業員から預かった税金を税務署に納めたときに、会社の費用として記録してしまう

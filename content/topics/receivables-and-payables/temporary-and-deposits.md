@@ -66,6 +66,18 @@ wrong_patterns:
     feedback: 手取りは普通預金から振り込みました。
   - match: { unbalanced: true }
     feedback: 左の給料 100,000 と、右の普通預金 97,000 + 預り金 3,000 がそろっていません。
+  - match: { debit: [{ account: salaries_expense, amount: 100000 }], credit: [{ account: bank_deposit, amount: 100000 }] }
+    misconception: withholding_ignored
+    feedback: 振り込んだのは差し引いた後の 97,000 円です。差し引いた 3,000 円は店のお金ではなく、スタッフの代わりに納めるまで預かっている義務(負債)なので、預り金として右に書きます。
+  - match: { debit: [{ account: deposits_received }] }
+    misconception: deposit_received_is_asset
+    feedback: 預かった 3,000 円は店のものではなく、後で納める義務(負債)です。負債が増えるときは右に書きます。
+  - match: { credit: [{ account: advances_paid }] }
+    feedback: 立替金は、店が代わりに払って後で返してもらう権利(資産)です。今回は逆に、スタッフのお金を店が預かっているので預り金です。
+  - match: { credit: [{ account: accounts_payable_other }] }
+    feedback: 未払金は、商品以外のものを買った代金を後で払う義務です。今回の 3,000 円は買い物の代金ではなく、スタッフから預かった税金なので預り金です。
+  - match: { credit: [{ account: suspense_receipt }] }
+    feedback: 仮受金は、正体の分からない入金を置く科目です。今回の 3,000 円は所得税だと分かっていて、スタッフの代わりに預かっているので預り金です。
 hint: 左に給料 100,000。右に普通預金 97,000 と預り金 3,000 の 2 行です。「行を追加」で行を増やせます。
 success: 給料 100,000 が費用に、預り金 3,000 が負債に並びました。預り金はスタッフのお金です。
 ```
@@ -165,6 +177,8 @@ wrong_patterns:
   - match: { credit: [{ account: cash }] }
     misconception: settlement_credits_cash
     feedback: 現金は、出張の前に渡したときにもう減らしてあります。精算で消すのは、そのとき置いた仮払金です。
+  - match: { credit: [{ account: suspense_receipt }] }
+    feedback: 仮受金は、正体の分からない入金を置く負債です。出張の前に店主へ渡したお金は仮払金に置いたので、精算で右に書いて消すのも仮払金です。
 hint: 左に旅費交通費 18,000 と現金 2,000 の 2 行。右に仮払金 20,000 です。「行を追加」で行を増やせます。
 success: 仮払金が消え、旅費交通費 18,000 が費用に、現金 2,000 が戻りました。
 ```
