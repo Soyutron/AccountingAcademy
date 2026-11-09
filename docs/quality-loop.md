@@ -136,7 +136,7 @@ orphan ブランチ `evidence` に push して `blob/evidence/...?raw=true` で�
 
 ### 4.3 ② 自動トリアージ(新設。TaxForge では人手)
 
-`scripts/triage-agent.sh <n>`: 読み取り専用の `claude -p --model fable --tools "Read,Grep,Glob,Bash"` が、
+`scripts/triage-agent.sh <n>`: 読み取り専用の `claude -p --model opus --tools "Read,Grep,Glob,Bash"` が、(2026-11-09 に fable から変更。1 件 $2.3 前後で Fable の枠を最も使っていたため。`TRIAGE_MODEL` で変えられる)
 
 1. Issue を読み、再現スクリプトを `main` の最新で実行する(スクリプトが無ければ手順から書く)。
 2. 再現した → 原因の当たりと触るファイルを「Agent Brief」コメントに書き、`ready-for-agent` を付ける。
