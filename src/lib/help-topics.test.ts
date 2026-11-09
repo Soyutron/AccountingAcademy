@@ -40,6 +40,14 @@ describe("help topics", () => {
     }
   });
 
+  it("ペインは位置でなく名前で指す。タブ表示の画面に左右や中央は無い(Issue #148)", () => {
+    for (const t of HELP_TOPICS) {
+      for (const text of [t.short, topicBody(t, { ...base, taskType: "post" })]) {
+        expect(text).not.toMatch(/左のガイド|右の表|右の「結果」|中央のタブ/);
+      }
+    }
+  });
+
   it("無い話題は例外", () => {
     expect(() => helpTopic("nope")).toThrow();
   });
