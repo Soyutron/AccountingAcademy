@@ -28,7 +28,7 @@ export function ImpactCompare({ yours, expected, accounts }: { yours: JournalEnt
             <tr key={el} className={differs ? "text-diff-fg font-medium" : ""}>
               <td className="py-0.5"><ElementBadge element={el} size="xs" /></td>
               <td className="text-right font-mono tabular-nums">{fmt(ya)}</td>
-              <td className="text-right font-mono tabular-nums">{differs ? fmt(ex) : "同じ"}</td>
+              <td className="text-right font-mono tabular-nums">{fmt(ex)}</td>
             </tr>
           );
         })}
