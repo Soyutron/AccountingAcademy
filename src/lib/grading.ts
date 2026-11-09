@@ -16,6 +16,7 @@ export interface GradeResult {
 const GENERIC_WRONG = "まだ合っていません。結果の表で何が動くはずかを考えて、もう一度試してみましょう。";
 // 正解の金額は書かない。計算で求める課題では答えそのものになる
 const AMOUNT_WRONG = "科目は合っています。金額をもう一度確かめましょう。";
+const EXTRA_LINES = "正しい行はそろっています。この取引に含まれない余計な行を消しましょう。";
 // 計算問題では記帳しないので、結果の表の動きではなく計算そのものの見直しを促す
 const CALC_WRONG = "まだ合っていません。計算の式と、使う数字をもう一度確かめましょう。";
 // 予想は 1 回限りで、回答と同時に記帳される。やり直しではなく実際の動きとの見比べを促す
@@ -39,18 +40,29 @@ function sameAccounts(a: JournalEntry, b: JournalEntry): boolean {
 }
 
 export function gradePost(task: TaskOf<"post">, entry: JournalEntry): GradeResult {
-  if ([task.answer, ...task.alternatives].some((e) => sameEntry(e, entry))) return ok(task);
+  const answers = [task.answer, ...task.alternatives];
+  if (answers.some((e) => sameEntry(e, entry))) return ok(task);
   const sum = (lines: { amount: number }[]) => lines.reduce((t, l) => t + l.amount, 0);
+  const sides = ["debit", "credit"] as const;
   const pattern = task.wrong_patterns.find((p) => {
     const m = p.match;
-    if (m.swapped && !sameEntry(entry, { debit: task.answer.credit, credit: task.answer.debit })) return false;
+    // 金額も違う貸借逆を、後ろの金額や科目のパターンに渡さない
+    if (m.swapped && !sameAccounts(entry, { debit: task.answer.credit, credit: task.answer.debit })) return false;
     if (m.unbalanced && sum(entry.debit) === sum(entry.credit)) return false;
-    const linesMatch = (wanted: { account?: string; amount?: number }[] | undefined, lines: JournalEntry["debit"]) =>
-      (wanted ?? []).every((w) => lines.some((l) => (w.account === undefined || l.account === w.account) && (w.amount === undefined || l.amount === w.amount)));
-    return linesMatch(m.debit, entry.debit) && linesMatch(m.credit, entry.credit);
+    return sides.every((side) => {
+      const wanted = m[side];
+      if (!wanted) return true;
+      const named = wanted.every((w) => entry[side].some((l) => (w.account === undefined || l.account === w.account) && (w.amount === undefined || l.amount === w.amount)));
+      // 正解にもパターンにも無い行があるなら、このパターンは学習者の誤りを説明していない
+      const explained = entry[side].every((l) => wanted.some((w) => w.account === l.account) || answers.some((e) => e[side].some((c) => c.account === l.account)));
+      return named && explained;
+    });
   });
-  if (!pattern && [task.answer, ...task.alternatives].some((e) => sameAccounts(e, entry))) return ng(AMOUNT_WRONG);
-  return ng(pattern?.feedback, pattern?.misconception);
+  if (pattern) return ng(pattern.feedback, pattern.misconception);
+  const hasAllLines = (e: JournalEntry) => sides.every((side) => e[side].every((c) => entry[side].some((l) => l.account === c.account && l.amount === c.amount)));
+  if (answers.some(hasAllLines)) return ng(EXTRA_LINES);
+  if (answers.some((e) => sameAccounts(e, entry))) return ng(AMOUNT_WRONG);
+  return ng();
 }
 
 export interface PredictResult extends GradeResult {

@@ -163,7 +163,7 @@ wrong_patterns:
   - match: { swapped: true }
     misconception: debit_means_increase
     feedback: 減価償却費は費用なので左で増えます。左右を入れ替えてみましょう。
-  - match: { debit: [{ amount: 100000 }] }
+  - match: { debit: [{ account: depreciation_expense, amount: 100000 }] }
     misconception: forgot_monthly_proration
     feedback: 1 年分は 100,000 ですが、使ったのは 6 か月です。月割りしてみましょう。
   - match: { credit: [{ account: equipment }] }
