@@ -25,7 +25,8 @@ export function AccountCombobox({ accounts, value, onChange, onCompositionChange
   const optionId = (accountId: string) => `${id}-${accountId}`;
   const inputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
-  const [active, setActive] = useState(0);
+  // null は候補を指していない状態。開いただけで先頭を指すと、Enter で選んでいない科目が入る(Issue #159)
+  const [active, setActive] = useState<number | null>(null);
 
   const query = value.trim();
   const groups = useMemo(() => {
@@ -35,8 +36,8 @@ export function AccountCombobox({ accounts, value, onChange, onCompositionChange
   const options = useMemo(() => groups.flatMap((g) => g.items), [groups]);
   // 候補が 1 件だけで、それが正式名と完全に一致したら選び終えたとみなして閉じる。別名では閉じず、正式名を見せる
   const shown = open && options.length > 0 && !(options.length === 1 && options[0].name === query);
-  const activeIndex = Math.min(active, options.length - 1);
-  const activeOption = shown ? options[activeIndex] : undefined;
+  const activeIndex = active === null ? null : Math.min(active, options.length - 1);
+  const activeOption = shown && activeIndex !== null ? options[activeIndex] : undefined;
 
   useEffect(() => {
     if (activeOption) document.getElementById(`${id}-${activeOption.id}`)?.scrollIntoView({ block: "nearest" });
@@ -54,7 +55,7 @@ export function AccountCombobox({ accounts, value, onChange, onCompositionChange
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
-        if (shown) setActive(Math.min(activeIndex + 1, options.length - 1));
+        if (shown) setActive(activeIndex === null ? 0 : Math.min(activeIndex + 1, options.length - 1));
         else {
           setActive(0);
           setOpen(true);
@@ -62,13 +63,13 @@ export function AccountCombobox({ accounts, value, onChange, onCompositionChange
         break;
       case "ArrowUp":
         e.preventDefault();
-        if (shown) setActive(Math.max(activeIndex - 1, 0));
+        if (shown) setActive(activeIndex === null ? 0 : Math.max(activeIndex - 1, 0));
         break;
       case "Enter":
         // 候補を確定するだけで、フォーム(記帳する)は送信しない
-        if (activeOption) {
+        if (shown) {
           e.preventDefault();
-          select(activeOption);
+          if (activeOption) select(activeOption);
         }
         break;
       case "Escape":
@@ -100,13 +101,16 @@ export function AccountCombobox({ accounts, value, onChange, onCompositionChange
           className={className}
           onChange={(e) => {
             onChange(e.target.value);
-            setActive(0);
+            setActive(e.target.value.trim() ? 0 : null);
             setOpen(true);
           }}
           onCompositionStart={() => onCompositionChange?.(true)}
           onCompositionEnd={() => onCompositionChange?.(false)}
           // onFocus で開くと「行を追加」からのフォーカス移動でも開き、リストが「行を追加」を覆って次の押下が候補に当たる(Issue #104)
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            if (!open) setActive(null);
+            setOpen(true);
+          }}
           onBlur={() => setOpen(false)}
           onKeyDown={onKeyDown}
         />
