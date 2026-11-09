@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { topics } from "#content";
 import { LEVEL_LABELS, unitsOfTopic } from "@/lib/content";
@@ -5,6 +6,12 @@ import { UnitList } from "@/components/unit-list";
 
 export function generateStaticParams() {
   return topics.map((t) => ({ topic: t.id }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ topic: string }> }): Promise<Metadata> {
+  const { topic: topicId } = await params;
+  const topic = topics.find((t) => t.id === topicId);
+  return topic ? { title: topic.title } : {};
 }
 
 export default async function TopicPage({ params }: { params: Promise<{ topic: string }> }) {

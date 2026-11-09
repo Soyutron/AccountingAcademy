@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { units } from "#content";
 import { glossaryAccountList, misconceptionMap, nextUnit, unitMap } from "@/lib/content";
@@ -9,6 +10,12 @@ export function generateStaticParams() {
     const [topic, unit] = u.id.split("/");
     return { topic, unit };
   });
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ topic: string; unit: string }> }): Promise<Metadata> {
+  const { topic, unit: unitSlug } = await params;
+  const unit = unitMap.get(`${topic}/${unitSlug}`);
+  return unit ? { title: unit.title } : {};
 }
 
 export default async function UnitPage({ params }: { params: Promise<{ topic: string; unit: string }> }) {

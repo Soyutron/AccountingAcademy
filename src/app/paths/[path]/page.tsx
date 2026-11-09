@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { paths } from "#content";
 import { LEVEL_LABELS, unitMap } from "@/lib/content";
@@ -5,6 +6,12 @@ import { UnitList } from "@/components/unit-list";
 
 export function generateStaticParams() {
   return paths.map((p) => ({ path: p.id }));
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ path: string }> }): Promise<Metadata> {
+  const { path: pathId } = await params;
+  const path = paths.find((p) => p.id === pathId);
+  return path ? { title: path.title } : {};
 }
 
 export default async function PathPage({ params }: { params: Promise<{ path: string }> }) {
