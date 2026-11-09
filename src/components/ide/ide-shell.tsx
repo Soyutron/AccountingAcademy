@@ -435,6 +435,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     const lines = draft[side].map((l, i) => (i === index ? { ...l, amount: l.amount.slice(0, start) + digits + l.amount.slice(end) } : l));
     amountCaret.current = { field: `${side}-${index}`, pos: start + digits.length };
     setDraft({ ...draft, [side]: lines });
+    // スマホ幅では金額欄が隠れたままだと、入ったことが画面に出ない(Issue #147)
+    setPane("work");
   };
   useEffect(() => {
     const caret = amountCaret.current;
