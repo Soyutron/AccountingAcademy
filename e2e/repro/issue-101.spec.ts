@@ -10,6 +10,14 @@ async function goToPost(page: Page) {
 
 const helpDialog = (page: Page) => page.getByRole("dialog", { name: "会計 IDE の使い方" });
 
+// Radix の Dialog は表示の数レンダー後に Esc のリスナーを登録するので、負荷が高いと表示直後の Esc が失われる
+async function closeWithEscape(page: Page) {
+  await expect(async () => {
+    await page.keyboard.press("Escape");
+    await expect(helpDialog(page)).toBeHidden({ timeout: 1000 });
+  }).toPass();
+}
+
 test("「?」の「もっと詳しく」から開いた使い方を Esc で閉じると、押した「?」にフォーカスが戻る", async ({ page }) => {
   await goToPost(page);
   const icon = page.getByRole("button", { name: "「仕訳帳に書く」の説明" });
@@ -17,8 +25,7 @@ test("「?」の「もっと詳しく」から開いた使い方を Esc で閉�
   await page.keyboard.press("Enter");
   await page.getByRole("button", { name: "もっと詳しく →" }).press("Enter");
   await expect(helpDialog(page)).toBeVisible();
-  await page.keyboard.press("Escape");
-  await expect(helpDialog(page)).toBeHidden();
+  await closeWithEscape(page);
   await expect(icon).toBeFocused();
 });
 
@@ -35,8 +42,7 @@ test("note の「くわしく」から開いた使い方を Esc で閉じると�
   await more.focus();
   await page.keyboard.press("Enter");
   await expect(helpDialog(page)).toBeVisible();
-  await page.keyboard.press("Escape");
-  await expect(helpDialog(page)).toBeHidden();
+  await closeWithEscape(page);
   await expect(more).toBeFocused();
 });
 
@@ -46,14 +52,13 @@ test("「?」から開いて閉じたあとでも、ヘッダーの「使い方�
   await icon.click();
   await page.getByRole("button", { name: "もっと詳しく →" }).click();
   await expect(helpDialog(page)).toBeVisible();
-  await page.keyboard.press("Escape");
+  await closeWithEscape(page);
   await expect(icon).toBeFocused();
 
   const header = page.getByRole("button", { name: "使い方", exact: true });
   await header.click();
   await expect(helpDialog(page)).toBeVisible();
-  await page.keyboard.press("Escape");
-  await expect(helpDialog(page)).toBeHidden();
+  await closeWithEscape(page);
   await expect(header).toBeFocused();
 });
 
