@@ -1,6 +1,9 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { glossary, sortedDomains, conceptList } from "@/lib/content";
 import { GlossarySearch, GlossarySearchFromUrl } from "./glossary-search";
+
+export const metadata: Metadata = { title: "用語集" };
 
 export default function GlossaryPage() {
   const domainTitles = Object.fromEntries(sortedDomains.map((d) => [d.id, d.title]));
