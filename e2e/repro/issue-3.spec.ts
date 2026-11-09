@@ -26,7 +26,7 @@ test("正解直後に reload しても「続きから」で達成状態と仕訳
   await resume();
   await expect(page.getByText("ステップ 2 / 10")).toBeVisible();
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
-  await expect(work.getByText("元手として現金 1,000,000 円をお店に出資した")).toHaveCount(1);
+  await expect(work.getByText("元手として現金 1,000,000 円をお店に出資した").filter({ visible: true })).toHaveCount(1);
   await expect(next).not.toHaveAttribute("aria-disabled", "true");
 
   // predict ステップでも、予想をやり直さずに済む
@@ -41,7 +41,7 @@ test("正解直後に reload しても「続きから」で達成状態と仕訳
   await resume();
   await expect(page.getByText("ステップ 3 / 10")).toBeVisible();
   await expect(page.getByRole("button", { name: "予想して記帳する" })).toHaveCount(0);
-  await expect(work.getByText("元手として現金 1,000,000 円をお店に出資した")).toHaveCount(1);
-  await expect(work.getByText("コーヒーマシン(備品)600,000 円を現金で買った")).toHaveCount(1);
+  await expect(work.getByText("元手として現金 1,000,000 円をお店に出資した").filter({ visible: true })).toHaveCount(1);
+  await expect(work.getByText("コーヒーマシン(備品)600,000 円を現金で買った").filter({ visible: true })).toHaveCount(1);
   await expect(next).not.toHaveAttribute("aria-disabled", "true");
 });

@@ -17,7 +17,7 @@ test("「記帳する」「予想して記帳する」を連打しても仕訳�
   await work.getByLabel("貸方の金額 1").fill("1000000");
   await work.getByRole("button", { name: "記帳する" }).evaluate((b: HTMLButtonElement) => { b.click(); b.click(); b.click(); });
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
-  await expect(work.getByText("元手として現金 1,000,000 円をお店に出資した")).toHaveCount(1);
+  await expect(work.getByText("元手として現金 1,000,000 円をお店に出資した").filter({ visible: true })).toHaveCount(1);
   await expect(page.getByRole("region", { name: "結果" }).getByText("3,000,000")).toHaveCount(0);
   await expect.poll(() => inserts.length).toBe(1);
 
@@ -28,7 +28,7 @@ test("「記帳する」「予想して記帳する」を連打しても仕訳�
   await expect(page.getByRole("button", { name: "予想して記帳する" })).toHaveCount(0);
   await expect.poll(() => inserts.length).toBe(2);
   // 仕訳帳には post の 1 件と predict の 1 件だけが並ぶ
-  await expect(work.getByText("元手として現金 1,000,000 円をお店に出資した")).toHaveCount(1);
+  await expect(work.getByText("元手として現金 1,000,000 円をお店に出資した").filter({ visible: true })).toHaveCount(1);
   // 遅れて届く重複がないことを確かめる
   await page.waitForTimeout(500);
   expect(inserts).toEqual(["bookkeeping-basics/five-elements#1", "bookkeeping-basics/five-elements#2"]);

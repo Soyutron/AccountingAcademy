@@ -24,6 +24,6 @@ test("前へで戻っても仕訳は二重にならない", async ({ page }) => 
   const work = page.getByRole("region", { name: "ワークスペース" });
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   await expect(work.getByRole("button", { name: "記帳する" })).toHaveCount(0);
-  await expect(work.getByText("元手として現金 1,000,000 円をお店に出資した")).toHaveCount(1);
+  await expect(work.getByText("元手として現金 1,000,000 円をお店に出資した").filter({ visible: true })).toHaveCount(1);
   await expect(page.getByRole("region", { name: "結果" }).getByText("2,000,000")).toHaveCount(0);
 });
