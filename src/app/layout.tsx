@@ -7,7 +7,7 @@ import { ThemeBoot } from "@/components/theme-boot";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 
 export const metadata: Metadata = {
-  title: "AccountingAcademy",
+  title: { template: "%s | AccountingAcademy", default: "AccountingAcademy" },
   description: "会計を原理から、手を動かして学ぶ",
 };
 
