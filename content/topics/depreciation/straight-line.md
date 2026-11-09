@@ -77,7 +77,7 @@ params:
   - { id: useful_life, label: 耐用年数, value: 4, min: 1, max: 12, step: 1, unit: 年 }
 goal: { output: annual_depreciation, equals: 200000, label: 1 年分の減価償却費 }
 hint: 1,200,000 ÷ 6 = 200,000。
-success: 耐用年数 6 年なら、1 年分は 200,000 円。年数を長くするほど 1 年分は小さくなります。
+success: (取得原価 − 残存価額)÷ 耐用年数 で、1 年分が 200,000 円になりました。年数を長くするほど 1 年分は小さくなります。
 ```
 
 ## 最後に残る価値
@@ -93,7 +93,7 @@ params:
   - { id: useful_life, label: 耐用年数, value: 6, min: 1, max: 12, step: 1, unit: 年 }
 goal: { output: annual_depreciation, equals: 150000, label: 1 年分の減価償却費 }
 hint: (1,200,000 − 残存価額)÷ 6 = 150,000 になる残存価額です。
-success: 残存価額 300,000 なら、配分するのは 900,000 円。6 年で割って 150,000 円です。
+success: 配分するのは、取得原価から残存価額を引いた分です。それを耐用年数で割って、1 年分が 150,000 円になりました。
 ```
 
 ## 使った月の分だけ
