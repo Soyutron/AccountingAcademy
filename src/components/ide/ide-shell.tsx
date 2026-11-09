@@ -13,7 +13,7 @@ import { type EditableEntry, emptyEntry, fromJournalEntry, isIncompleteLine, par
 import { type ClassifyResult, type EffectAnswer, type GradeResult, type PredictResult, type Task, canRevealAnswer, gradeCalc, gradeClassify, gradePost, gradePredict, gradeTweak } from "@/lib/grading";
 import { evaluateFormula } from "@/lib/formulas";
 import { type OpeningLine, computeBalances, diffBalances } from "@/lib/ledger";
-import { fetchProgress, recordAttempt, setUnitProgress } from "@/lib/progress";
+import { CookieBlockedError, fetchProgress, recordAttempt, setUnitProgress } from "@/lib/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { JournalEditor } from "@/components/journal-editor";
@@ -263,21 +263,27 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const trySave = async (fn: () => Promise<void>, isAttempt: boolean) => {
     try {
       await fn();
-      return true;
+      return null;
     } catch (e) {
       console.error(e);
-      if (isAttempt) failedAttempt.current = fn;
-      return false;
+      // Cookie が書けない間は再送しても失敗するだけなので持ち越さない
+      if (isAttempt && !(e instanceof CookieBlockedError)) failedAttempt.current = fn;
+      return e;
     }
   };
   const save = async (fn: () => Promise<void>, isAttempt = false) => {
     const retry = failedAttempt.current;
     failedAttempt.current = null;
     // 再開時は最後の回答が勝つので、再送を先に終えてから新しい保存を送る
-    const retried = !retry || (await trySave(retry, true));
-    const saved = await trySave(fn, isAttempt);
-    if (!retried || !saved) setSaveError("保存できませんでした。ページを再読み込みしてから、もう一度お試しください。");
-    else if (!failedAttempt.current) setSaveError(null);
+    const retryFailure = retry ? await trySave(retry, true) : null;
+    const failure = (await trySave(fn, isAttempt)) ?? retryFailure;
+    if (failure) {
+      setSaveError(
+        failure instanceof CookieBlockedError
+          ? "このブラウザは Cookie を保存できないため、進捗を残せません。Cookie を許可すると保存されるようになります。"
+          : "保存できませんでした。ページを再読み込みしてから、もう一度お試しください。",
+      );
+    } else if (!failedAttempt.current) setSaveError(null);
   };
   const celebrate = (index = stepIndex) => {
     if (celebratedSteps.current.has(index)) return;
