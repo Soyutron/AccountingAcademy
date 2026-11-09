@@ -20,15 +20,19 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
   // 「もっと見る」は押すと消えるので、展開した説明にフォーカスを移して位置を失わないようにする
   const details = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
 
   // ホバーの開閉はマウスだけ。タップ後にブラウザが出す互換の mouseleave で閉じないよう、pointer イベントの種類で区別する
   const schedule = (e: React.PointerEvent, next: boolean, delay: number) => {
     if (e.pointerType !== "mouse") return;
+    // クリックやキーボードで固定した用語は、Esc か外側のクリックで閉じるまでホバーでは動かさない
+    if (open && !byHover.current) return;
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => {
       byHover.current = next;
       setOpen(next);
+      if (!next) setExpanded(false);
     }, delay);
   };
 
@@ -53,6 +57,7 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
     >
       <PopoverTrigger asChild>
         <button
+          ref={trigger}
           type="button"
           className="term underline decoration-dotted decoration-primary/60 underline-offset-4 hover:decoration-solid focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
           onClick={(e) => {
@@ -83,6 +88,10 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
           // フォーカスが中に入らなかった(ホバーで見ただけの)ときは、入力欄で打っている途中の打鍵を奪わないよう動かさない
           if (!focusEntered.current) e.preventDefault();
           focusEntered.current = false;
+        }}
+        onInteractOutside={(e) => {
+          // Radix は用語の押下も「外側の操作」と覚え、ホバー後にクリックで固定した用語を Esc で閉じたときに用語へフォーカスを戻さない
+          if (trigger.current?.contains(e.target as Node)) e.preventDefault();
         }}
         aria-label={entry.name}
         onPointerEnter={(e) => e.pointerType === "mouse" && timer.current && clearTimeout(timer.current)}
