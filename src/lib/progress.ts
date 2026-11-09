@@ -32,17 +32,29 @@ const supabase = createClient();
 // サインイン中だけ Promise を共有し、同時に複数の書き込みが走っても匿名ユーザーを 1 人しか作らない
 let signInPromise: Promise<string> | null = null;
 
+async function signIn(): Promise<string> {
+  // ロックを待つ間に別タブがサインインしていれば、Cookie 経由でそのセッションを使う
+  const { data: current } = await supabase.auth.getSession();
+  if (current.session) return current.session.user.id;
+  const { data: signed, error } = await supabase.auth.signInAnonymously();
+  if (error || !signed.user) throw new Error(`匿名サインインに失敗しました: ${error?.message}`);
+  return signed.user.id;
+}
+
+// signInPromise はタブ内でしか共有されず、signInAnonymously もタブ間で排他されない(Issue #134)
+async function signInAcrossTabs(): Promise<string> {
+  // navigator.locks が無い非セキュアコンテキスト(HTTP の LAN 接続など)でも保存は止めない
+  if (!navigator.locks) return signIn();
+  return navigator.locks.request("anonymous-sign-in", signIn);
+}
+
 // 書き込みのたびに現在のセッションを読む。user_id を持ち続けると、Cookie が消えた・別タブで別のゲストに
 // 入れ替わったときに古い user_id で書いて RLS に弾かれ続ける(Issue #14)
 async function ensureUserId(): Promise<string> {
   const { data } = await supabase.auth.getSession();
   if (data.session) return data.session.user.id;
   if (!signInPromise) {
-    signInPromise = (async () => {
-      const { data: signed, error } = await supabase.auth.signInAnonymously();
-      if (error || !signed.user) throw new Error(`匿名サインインに失敗しました: ${error?.message}`);
-      return signed.user.id;
-    })().finally(() => {
+    signInPromise = signInAcrossTabs().finally(() => {
       signInPromise = null;
     });
   }
