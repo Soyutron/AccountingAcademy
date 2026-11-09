@@ -1,3 +1,4 @@
+import { isAuthRetryableFetchError, type Session } from "@supabase/supabase-js";
 import { createClient } from "./supabase/client";
 
 // 学習者の回答と進捗の保存(docs/architecture.md 3.2 / 5 章)。
@@ -32,66 +33,110 @@ const supabase = createClient();
 // サインイン中だけ Promise を共有し、同時に複数の書き込みが走っても匿名ユーザーを 1 人しか作らない
 let signInPromise: Promise<string> | null = null;
 
+// getSession() は Cookie の中身を検証しない。refresh_token が空で期限切れなら例外を投げ、user が無くても session を返す。
+// どちらも使えないので無いものとして扱い、次のサインインで Cookie を上書きする(Issue #136)
+async function loadSession(): Promise<Session | null> {
+  try {
+    const { data } = await supabase.auth.getSession();
+    return data.session?.user ? data.session : null;
+  } catch {
+    return null;
+  }
+}
+
 async function signIn(): Promise<string> {
   // ロックを待つ間に別タブがサインインしていれば、Cookie 経由でそのセッションを使う
-  const { data: current } = await supabase.auth.getSession();
-  if (current.session) return current.session.user.id;
+  const current = await loadSession();
+  if (current) return current.user.id;
   const { data: signed, error } = await supabase.auth.signInAnonymously();
   if (error || !signed.user) throw new Error(`匿名サインインに失敗しました: ${error?.message}`);
   return signed.user.id;
 }
 
 // signInPromise はタブ内でしか共有されず、signInAnonymously もタブ間で排他されない(Issue #134)
-async function signInAcrossTabs(): Promise<string> {
+async function acrossTabs<T>(task: () => Promise<T>): Promise<T> {
   // navigator.locks が無い非セキュアコンテキスト(HTTP の LAN 接続など)でも保存は止めない
-  if (!navigator.locks) return signIn();
-  return navigator.locks.request("anonymous-sign-in", signIn);
+  if (!navigator.locks) return task();
+  return navigator.locks.request("anonymous-sign-in", task);
+}
+
+// PostgREST が 401 を返した後に呼ぶ。refresh できれば同じユーザーのまま、できなければローカルのセッションを捨てる
+async function recoverSession(): Promise<void> {
+  await acrossTabs(async () => {
+    // ロックを待つ間に別タブや並行した読み書きが直していれば、捨てて上書きしない
+    const { error: invalid } = await supabase.auth.getUser();
+    if (!invalid) return;
+    const { error } = await supabase.auth.refreshSession();
+    // 通信やサーバーの失敗ではセッションの無効が確定しないので、ゲストの記録を手放さない
+    if (!error || isAuthRetryableFetchError(error) || (error.status ?? 0) >= 500) return;
+    await supabase.auth.signOut({ scope: "local" });
+  });
 }
 
 // 書き込みのたびに現在のセッションを読む。user_id を持ち続けると、Cookie が消えた・別タブで別のゲストに
 // 入れ替わったときに古い user_id で書いて RLS に弾かれ続ける(Issue #14)
 async function ensureUserId(): Promise<string> {
-  const { data } = await supabase.auth.getSession();
-  if (data.session) return data.session.user.id;
+  const session = await loadSession();
+  if (session) return session.user.id;
   if (!signInPromise) {
-    signInPromise = signInAcrossTabs().finally(() => {
+    signInPromise = acrossTabs(signIn).finally(() => {
       signInPromise = null;
     });
   }
   return signInPromise;
 }
 
+// 401 はトークンが無効という合図。再読み込みしても同じ Cookie が読まれるだけなので、ここでセッションを立て直して 1 回やり直す
+async function writeAsUser<T extends { status: number }>(write: (userId: string) => PromiseLike<T>): Promise<T> {
+  const result = await write(await ensureUserId());
+  if (result.status !== 401) return result;
+  await recoverSession();
+  return write(await ensureUserId());
+}
+
 export async function recordAttempt(record: AttemptRecord): Promise<void> {
-  const userId = await ensureUserId();
-  const { error } = await supabase.from("attempts").insert({
-    user_id: userId,
-    unit_id: record.unitId,
-    exercise_id: record.exerciseId,
-    correct: record.correct,
-    misconception_id: record.misconceptionId ?? null,
-    answer: record.answer,
-    content_version: process.env.NEXT_PUBLIC_CONTENT_VERSION ?? "unknown",
-  });
+  const { error } = await writeAsUser((userId) =>
+    supabase.from("attempts").insert({
+      user_id: userId,
+      unit_id: record.unitId,
+      exercise_id: record.exerciseId,
+      correct: record.correct,
+      misconception_id: record.misconceptionId ?? null,
+      answer: record.answer,
+      content_version: process.env.NEXT_PUBLIC_CONTENT_VERSION ?? "unknown",
+    }),
+  );
   if (error) throw new Error(`回答の保存に失敗しました: ${error.message}`);
 }
 
 export async function setUnitProgress(unitId: string, status: UnitStatus, step: number): Promise<void> {
-  const userId = await ensureUserId();
-  const { error } = await supabase
-    .from("unit_progress")
-    .upsert({ user_id: userId, unit_id: unitId, status, step, updated_at: new Date().toISOString() });
+  const { error } = await writeAsUser((userId) =>
+    supabase
+      .from("unit_progress")
+      .upsert({ user_id: userId, unit_id: unitId, status, step, updated_at: new Date().toISOString() }),
+  );
   if (error) throw new Error(`進捗の保存に失敗しました: ${error.message}`);
+}
+
+function queryProgress() {
+  return Promise.all([
+    supabase.from("unit_progress").select("unit_id,status,step"),
+    supabase.from("attempts").select("unit_id,exercise_id,correct,misconception_id,answer").order("created_at"),
+  ]);
 }
 
 /** セッションが無ければ null(まだ何も回答していない閲覧者) */
 export async function fetchProgress(): Promise<Progress | null> {
-  const { data } = await supabase.auth.getSession();
-  if (!data.session) return null;
-  const userId = data.session.user.id;
-  const [unitsRes, attemptsRes] = await Promise.all([
-    supabase.from("unit_progress").select("unit_id,status,step"),
-    supabase.from("attempts").select("unit_id,exercise_id,correct,misconception_id,answer").order("created_at"),
-  ]);
+  let session = await loadSession();
+  if (!session) return null;
+  let [unitsRes, attemptsRes] = await queryProgress();
+  if (unitsRes.status === 401 || attemptsRes.status === 401) {
+    await recoverSession();
+    // 閲覧だけでユーザーを作らないので、捨てたセッションの代わりは次の書き込みまで作らない
+    session = await loadSession();
+    if (!session) return null;
+    [unitsRes, attemptsRes] = await queryProgress();
+  }
   if (unitsRes.error) throw new Error(unitsRes.error.message);
   if (attemptsRes.error) throw new Error(attemptsRes.error.message);
   const units: Progress["units"] = {};
@@ -110,5 +155,5 @@ export async function fetchProgress(): Promise<Progress | null> {
     if (row.correct && !solved[unitId]?.includes(index)) (solved[unitId] ??= []).push(index);
     if (!row.correct) (wrong[unitId] ??= {})[index] = (wrong[unitId][index] ?? 0) + 1;
   }
-  return { userId, isAnonymous: data.session.user.is_anonymous ?? false, units, misconceptions, solved, answers, wrong };
+  return { userId: session.user.id, isAnonymous: session.user.is_anonymous ?? false, units, misconceptions, solved, answers, wrong };
 }
