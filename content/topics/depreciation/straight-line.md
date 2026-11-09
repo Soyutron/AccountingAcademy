@@ -61,9 +61,9 @@ success: 結果の表に車両運搬具 1,200,000 が現れ、現金が同じだ
 
 ```figure
 type: timeline
-alt: 軽バンの 1,200,000 円を 6 年に分けると、毎年 200,000 円ずつ費用になる
+alt: 耐用年数 4 年なら、軽バンの 1,200,000 円は毎年 300,000 円ずつ費用になる。「1年目」は決算の年度ではなく、使い始めてからの 1 年のこと
 total: 1200000
-periods: 6
+periods: 4
 unit: 年
 label: 軽バンの取得原価
 ```
@@ -163,7 +163,7 @@ wrong_patterns:
   - match: { swapped: true }
     misconception: debit_means_increase
     feedback: 減価償却費は費用なので左で増えます。左右を入れ替えてみましょう。
-  - match: { debit: [{ amount: 100000 }] }
+  - match: { debit: [{ account: depreciation_expense, amount: 100000 }] }
     misconception: forgot_monthly_proration
     feedback: 1 年分は 100,000 ですが、使ったのは 6 か月です。月割りしてみましょう。
   - match: { credit: [{ account: equipment }] }

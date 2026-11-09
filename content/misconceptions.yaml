@@ -222,6 +222,12 @@ misconceptions:
     correct: 元本の返済は「返してもらう権利(貸付金)」が預金に形を変えただけで、もうけではない。収益になるのは利息だけ
     concepts: [loan, revenue]
     remediation: receivables-and-payables/loans
+  - id: repayment_includes_interest
+    name: 元本の返済に利息を足す
+    description: 貸付金の元本が返ってきたときに、別の入金である利息も一緒に受け取ったものとして記録してしまう
+    correct: 利息は受け取ったときに記録する別の入金で、元本の返済では貸付金と預金だけが動く
+    concepts: [interest, loan]
+    remediation: receivables-and-payables/loans
   - id: repayment_is_expense
     name: 返済は費用
     description: 借入金を返したときに、出ていったお金を費用として記録してしまう

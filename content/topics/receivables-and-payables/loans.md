@@ -140,6 +140,9 @@ answer:
 wrong_patterns:
   - match: { swapped: true }
     feedback: 増えるのは普通預金なので左、消えるのは貸付金なので右です。
+  - match: { credit: [{ account: loans_receivable, amount: 100000 }, { account: interest_income }] }
+    misconception: repayment_includes_interest
+    feedback: 貸付金を 100,000 減らせているのは合っています。利息の 2,000 円は、前に受け取って記録済みの別の入金です。今回の入金は元本の 100,000 円だけなので、受取利息の行は要りません。
   - match: { credit: [{ account: interest_income }] }
     misconception: principal_is_revenue
     feedback: 返ってきたのは元本です。もうけではないので、受取利息ではなく貸付金を減らします。
