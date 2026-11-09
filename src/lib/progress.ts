@@ -44,6 +44,24 @@ async function loadSession(): Promise<Session | null> {
   }
 }
 
+/** Cookie に書けずセッションを保持できない。再読み込みでは直らないので、他の保存失敗と区別する */
+export class CookieBlockedError extends Error {
+  name = "CookieBlockedError";
+}
+
+function canStoreCookie(): boolean {
+  const probe = "cookie-probe=1";
+  // サンドボックス化された iframe などでは document.cookie の参照自体が例外になる
+  try {
+    document.cookie = `${probe}; path=/; SameSite=Lax`;
+    const stored = document.cookie.split("; ").includes(probe);
+    document.cookie = `${probe}; path=/; SameSite=Lax; max-age=0`;
+    return stored;
+  } catch {
+    return false;
+  }
+}
+
 async function signIn(): Promise<string> {
   // ロックを待つ間に別タブがサインインしていれば、Cookie 経由でそのセッションを使う
   const current = await loadSession();
@@ -78,6 +96,9 @@ async function recoverSession(): Promise<void> {
 async function ensureUserId(): Promise<string> {
   const session = await loadSession();
   if (session) return session.user.id;
+  // セッションの置き場は Cookie だけなので、書けないままサインインすると保存に使えない匿名ユーザーが書き込みごとに増える。
+  // Cookie をブロックしたブラウザは Web Locks も拒否するので、ロックを取る前に確かめる
+  if (!canStoreCookie()) throw new CookieBlockedError("Cookie を保存できないため匿名サインインを行いません");
   if (!signInPromise) {
     signInPromise = acrossTabs(signIn).finally(() => {
       signInPromise = null;
