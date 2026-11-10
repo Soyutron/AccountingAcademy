@@ -153,13 +153,13 @@ misconceptions:
   - id: incidental_cost_separate
     name: 仕入の運賃を別の費用にする
     description: 商品を仕入れるときにかかった運賃を、仕入とは別の費用として記録してしまう
-    correct: 商品を手に入れるまでにかかった運賃(仕入諸掛)は、商品の値段の一部として仕入に含める
+    correct: お店が負担する、商品を手に入れるまでにかかった運賃(仕入諸掛)は、商品の値段の一部として仕入に含める
     concepts: [incidental_costs, purchase]
     remediation: merchandise/returns-and-costs
   - id: shipping_in_purchases
     name: 発送費を仕入に含める
     description: 売った商品を送る運賃を、仕入に含めてしまう
-    correct: 売るときにかかる運賃は発送費という費用。仕入に含めるのは、仕入れるときにかかった運賃だけ
+    correct: お店が負担する売るときの運賃は発送費という費用。仕入に含めるのは、仕入れるときにかかった運賃だけ
     concepts: [incidental_costs, expense]
     remediation: merchandise/returns-and-costs
   - id: shipping_mixed_into_sale
