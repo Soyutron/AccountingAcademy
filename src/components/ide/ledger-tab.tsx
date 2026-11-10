@@ -28,7 +28,7 @@ export function LedgerTab({ opening, posted, accounts }: { opening: OpeningLine[
   const ids = [...lines.keys()].filter((id) => accounts.has(id));
   if (ids.length === 0) return <p className="text-xs text-muted-foreground">まだ記帳がありません。記帳すると科目ごとの T 勘定がここに並びます。</p>;
   return (
-    // grid-cols-1(minmax(0, 1fr))がないと、暗黙の auto 列が T 勘定の truncate の全文幅まで広がる
+    // grid-cols-1(minmax(0, 1fr))がないと、暗黙の auto 列が T 勘定の中身の幅まで広がる
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       {ids.map((id) => {
         const t = lines.get(id)!;
