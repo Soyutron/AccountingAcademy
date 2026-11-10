@@ -50,7 +50,8 @@ export class CookieBlockedError extends Error {
 }
 
 function canStoreCookie(): boolean {
-  const probe = "cookie-probe=1";
+  // 名前を固定すると、同時に確かめている別タブの削除で消され、Cookie が使えるのに「保存できない」と誤判定する
+  const probe = `cookie-probe-${Math.random().toString(36).slice(2)}=1`;
   // サンドボックス化された iframe などでは document.cookie の参照自体が例外になる
   try {
     document.cookie = `${probe}; path=/; SameSite=Lax`;
