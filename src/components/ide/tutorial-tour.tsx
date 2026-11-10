@@ -51,6 +51,9 @@ const STEPS: TourStep[] = [
 ];
 
 const NEXT_BUTTON_STAGE = STEPS.findIndex((s) => s.target === "next-button");
+const RESULT_STAGE = STEPS.findIndex((s) => s.target === "statements");
+// tutorial/first-entry で仕訳課題があるステップ
+const JOURNAL_UNIT_STEP = 1;
 
 export function TutorialTour({ ctx, onExit, onPane }: { ctx: TourContext; onExit: () => void; onPane: (pane: TourPane) => void }) {
   const [index, setIndex] = useState(0);
@@ -62,6 +65,9 @@ export function TutorialTour({ ctx, onExit, onPane }: { ctx: TourContext; onExit
 
   // 本体の「← 前へ」で最初のステップへ戻ると、記入以降の段の対象や文言が画面と合わなくなるので、「次へ →」を待つ段へ戻す(Issue #96)
   if (index > NEXT_BUTTON_STAGE && ctx.stepIndex === 0) setIndex(NEXT_BUTTON_STAGE);
+  // 記入の段のまま本体が仕訳ステップより先へ進むと、下書きが消えて仕訳欄の無い画面に記入を求め続けるので、結果の段へ送る(Issue #215)。
+  // postedCount で判定しないのは、記帳後に「← 前へ」で戻った場合は記入の段をたどり直せるようにするため
+  else if (index > NEXT_BUTTON_STAGE && index < RESULT_STAGE && ctx.stepIndex > JOURNAL_UNIT_STEP) setIndex(RESULT_STAGE);
   else if (step.autoAdvance && satisfied) setIndex(index + 1);
 
   useEffect(() => {
