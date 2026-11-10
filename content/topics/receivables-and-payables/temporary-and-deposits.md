@@ -97,6 +97,9 @@ wrong_patterns:
   - match: { expense: increase }
     misconception: withholding_tax_is_expense
     feedback: 納めたのはスタッフから預かっていたお金です。店の費用にはなりません。
+  - match: { liability: increase }
+    misconception: deposit_payment_increases_liability
+    feedback: 納めると「代わりに納める義務」は果たされて消えます。預り金(負債)は増えるのではなく減ります。
   - match: { liability: none }
     feedback: 納めたことで「代わりに納める義務」が無くなります。預り金(負債)が減ります。
   - match: { equity: decrease }
@@ -123,6 +126,12 @@ wrong_patterns:
     feedback: 店の商品を送ったわけではありません。本人から返してもらうお金なので、立替金という資産です。
   - match: { debit: [{ account: deposits_received }] }
     feedback: 預り金は、預かったお金を後で納める義務です。今回は逆に、店が先に払ってあげました。
+  - match: { debit: [{ account: advance_payment }] }
+    misconception: prepaid_asset_accounts_confused
+    feedback: 前払金は、商品を受け取る前に払う手付金です。今回は商品の仕入ではなく、スタッフの代わりに払って本人から返してもらうお金なので立替金です。
+  - match: { debit: [{ account: suspense_payment }] }
+    misconception: prepaid_asset_accounts_confused
+    feedback: 仮払金は、使い道や金額がまだ決まっていないお金を置く科目です。今回は送料 2,000 円と決まっていて、スタッフの代わりに払ったお金なので立替金です。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 2,000 にしましょう。
 hint: 左に立替金 2,000、右に現金 2,000 です。
@@ -145,6 +154,12 @@ wrong_patterns:
   - match: { debit: [{ account: travel_expense }] }
     misconception: suspense_is_expense
     feedback: まだいくら使うか分かりません。金額が確定するまでは、旅費交通費ではなく仮払金に置きます。
+  - match: { debit: [{ account: advance_payment }] }
+    misconception: prepaid_asset_accounts_confused
+    feedback: 「前もって払う」点は似ていますが、前払金は商品を受け取る前に払う手付金です。今回は何にいくら使うかが帰ってくるまで分からないお金なので仮払金です。
+  - match: { debit: [{ account: advances_paid }] }
+    misconception: prepaid_asset_accounts_confused
+    feedback: 立替金は、他人の代わりに払って本人から返してもらうお金です。今回は店の出張に使うお金で、使い道と金額がまだ決まっていないので仮払金です。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 20,000 にしましょう。
 hint: 左に仮払金 20,000、右に現金 20,000 です。
@@ -224,6 +239,12 @@ wrong_patterns:
     feedback: ショーケースを売ったときに、未収入金として記録済みです。今回はその権利が回収されただけなので、売上ではありません。
   - match: { debit: [{ account: bank_deposit }] }
     feedback: 普通預金は入金のときに増やしてあります。今回は仮受金と未収入金を相殺するだけです。
+  - match: { credit: [{ account: accounts_receivable }] }
+    misconception: nontrade_as_trade
+    feedback: 売掛金は商品を売った代金の権利です。ショーケースは店の商品ではないので、売掛金ではなく未収入金を減らします。
+  - match: { credit: [{ account: advance_received }] }
+    misconception: suspense_receipt_moved_to_liability
+    feedback: 前受金は、商品を渡す前に受け取った手付金です。今回の入金は手付金ではなく未収入金の回収なので、別の負債へ移すのではなく、右に未収入金を書いて権利を減らします。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 50,000 にしましょう。
 hint: 左に仮受金 50,000、右に未収入金 50,000 です。
