@@ -14,6 +14,8 @@ test("前受金を「後で払う義務」に含めない(ステップ 7)", () =
   expect(step.narrative).not.toMatch(/後で払う義務が増えました。借入金、未払金、買掛金、前受金/);
   expect(step.task.success).not.toContain("「後で払う義務」が 4 種類");
   expect(JSON.stringify(step.task.wrong_patterns)).not.toContain("後で払う義務である負債");
+  expect(step.narrative).toContain("商品を渡す義務");
+  expect(step.task.success).toContain("商品を渡す義務");
 });
 
 test("前受金の誤答文は返金ではなく渡す義務を主に置く(ステップ 7)", () => {
