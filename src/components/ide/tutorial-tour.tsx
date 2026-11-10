@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { JournalLine } from "@/lib/accounting";
-import { updateTutorial } from "@/lib/tutorial-store";
+import { FIRST_UNIT_AFTER_TUTORIAL, updateTutorial } from "@/lib/tutorial-store";
 import { SpotlightRing, useTargetRect } from "./spotlight";
 
 // 操作しながら使い方を覚えるツアー。対象を明るく残して周りを暗くし、ユーザーの操作が済むまで待つ(docs/ide-design.md)
@@ -122,7 +122,7 @@ export function TutorialTour({ ctx, onExit, onPane }: { ctx: TourContext; onExit
                 閉じる
               </Button>
               <Button size="sm" asChild onClick={finish}>
-                <Link href="/units/bookkeeping-basics/five-elements">3 級パスの最初の単元へ</Link>
+                <Link href={`/units/${FIRST_UNIT_AFTER_TUTORIAL}`}>3 級パスの最初の単元へ</Link>
               </Button>
             </>
           ) : (
