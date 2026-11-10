@@ -276,6 +276,18 @@ misconceptions:
     correct: 売掛金と買掛金は商品の売買専用。それ以外の物の代金は未収入金・未払金で記録し、本業の取引と区別する
     concepts: [non_trade_receivable_payable, accounts_receivable, accounts_payable]
     remediation: receivables-and-payables/other-receivables-and-payables
+  - id: trade_as_nontrade
+    name: 商品の後払いも未収入金・未払金
+    description: 商品を後払いで売り買いしたときに、売掛金や買掛金ではなく未収入金や未払金を使ってしまう
+    correct: 商品の売買の代金は売掛金・買掛金で記録する。未収入金・未払金は商品以外の物の代金にだけ使う
+    concepts: [non_trade_receivable_payable, accounts_receivable, accounts_payable]
+    remediation: receivables-and-payables/other-receivables-and-payables
+  - id: nontrade_receivable_payable_confused
+    name: 未収入金と未払金の取り違え
+    description: 名前が似ているため、後で受け取る権利の未収入金と、後で払う義務の未払金を取り違えてしまう
+    correct: 未収入金は後で受け取る権利なので資産、未払金は後で払う義務なので負債。代金を受け取る側か払う側かで決まる
+    concepts: [non_trade_receivable_payable, asset, liability]
+    remediation: receivables-and-payables/other-receivables-and-payables
   - id: asset_sale_is_sales
     name: 備品を売ったら売上
     description: 使っていた備品を売ったときに、代金を売上として記録してしまう
@@ -287,6 +299,12 @@ misconceptions:
     description: 商品を受け取る前に払った手付金を、その時点で仕入(費用)にしてしまう
     correct: 商品を受け取るまでは前払金(資産)。商品が届いたときに仕入へ振り替える
     concepts: [advance_payment_receipt, purchase]
+    remediation: receivables-and-payables/other-receivables-and-payables
+  - id: advance_payment_as_receivable
+    name: 払った手付金は未収入金
+    description: 商品を受け取る前に払った手付金を、後で代金を受け取る権利と考えて未収入金にしてしまう
+    correct: 未収入金は商品以外の物を売った代金を受け取る権利。手付金は先に払って商品を受け取る権利なので前払金で記録する
+    concepts: [advance_payment_receipt, non_trade_receivable_payable]
     remediation: receivables-and-payables/other-receivables-and-payables
   - id: advance_not_cleared_on_receipt
     name: 手付金を消さずに買掛金を全額にする
