@@ -150,6 +150,18 @@ misconceptions:
     correct: 売れ残った商品の分は、まだ費用ではない。仕入の合計から期末の商品を引いた金額が売上原価で、売れ残りは繰越商品(資産)として次の期に持ち越す
     concepts: [cost_of_goods_sold, ending_inventory]
     remediation: merchandise/cost-of-goods-sold
+  - id: inventory_transfer_as_transaction
+    name: 繰越商品の振替を売買と思う
+    description: 繰越商品と仕入の間で金額を移す振替を、お金の支払いや受け取り、商品の販売だと思い、現金や売上を使ってしまう
+    correct: 振替は帳簿の中で金額を別の科目へ移すだけで、外との取引はない。現金も売上も動かない
+    concepts: [ending_inventory, three_account_method]
+    remediation: merchandise/cost-of-goods-sold
+  - id: credit_purchase_paid_in_cash
+    name: 掛けで買っても現金が減る
+    description: 商品を掛けで仕入れたときに、代金をまだ払っていないのに現金の減少として記録してしまう
+    correct: 掛けは代金を後で払う約束。仕入れた時点では現金は動かず、後で払う義務を買掛金(負債)として記録する
+    concepts: [accounts_payable, purchase]
+    remediation: merchandise/credit-transactions
   - id: shortage_is_loss
     name: 足りない分はすぐ費用
     description: 金庫の現金が帳簿より少ないと分かった時点で、差額をそのまま雑損などの費用にしてしまう
