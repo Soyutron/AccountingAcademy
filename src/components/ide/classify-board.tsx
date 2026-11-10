@@ -94,10 +94,14 @@ export function ClassifyBoard({ accounts, placed, onChange, wrong, disabled }: P
     const name = accounts.find((a) => a.id === id)?.name;
     setAnnouncement(to ? `${name}を${ELEMENT_STYLE[to].label}に入れました` : `${name}を候補に戻しました`);
   };
-  const place = (el: Element) => {
+  const place = (el: Element, byKeyboard: boolean) => {
     if (!selected) return;
-    move(selected, el);
-    setSelected(null);
+    flushSync(() => {
+      move(selected, el);
+      setSelected(null);
+    });
+    // focus() はプールまでスクロールするので、タップでは移さない(ページが跳ねる。Issue #223)
+    if (byKeyboard) poolChips.current?.querySelector<HTMLElement>("[data-chip]")?.focus();
   };
   const unplace = (id: string) => {
     // 箱の中の chip は消え、プールには別の DOM ノードとして描かれるので、描画後に移す(Issue #85)
@@ -151,7 +155,7 @@ export function ClassifyBoard({ accounts, placed, onChange, wrong, disabled }: P
               <button
                 type="button"
                 aria-disabled={disabled || !selected}
-                onClick={() => !disabled && selected && place(el)}
+                onClick={(e) => !disabled && selected && place(el, e.detail === 0)}
                 className={`w-full text-left text-xs font-semibold mb-1 rounded hover:bg-background/70 px-1 min-h-10 ${ELEMENT_STYLE[el].text} ${selected ? "" : "opacity-70"}`}
               >
                 <span aria-hidden>{ELEMENT_STYLE[el].symbol} </span>
