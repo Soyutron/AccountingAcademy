@@ -52,7 +52,8 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
   }, []);
 
   useEffect(() => {
-    if (expanded) details.current?.focus();
+    // カードがスクロールするときに、フォーカス移動で用語名が上へ隠れないようにする
+    if (expanded) details.current?.focus({ preventScroll: true });
   }, [expanded]);
 
   return (
@@ -82,7 +83,8 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
       </PopoverTrigger>
       <PopoverContent
         ref={content}
-        className="w-80 text-sm space-y-2"
+        // 横向きのスマホでは上下どちらにも展開後の高さが無い。上限が無いと先頭が画面の外に切れて読めない(Issue #225)
+        className="w-80 max-h-(--radix-popover-content-available-height) overflow-y-auto overscroll-contain text-sm space-y-2"
         onOpenAutoFocus={(e) => {
           if (byHover.current) e.preventDefault();
         }}
