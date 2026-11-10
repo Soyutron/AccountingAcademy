@@ -100,6 +100,9 @@ wrong_patterns:
   - match: { credit: [{ account: capital_stock }] }
     misconception: capital_loan_confused
     feedback: 資本金はあなたが出した元手です。銀行から借りたお金は返す義務なので、借入金を使います。
+  - match: { debit: [{ account: bank_deposit }] }
+    misconception: deposit_is_cash
+    feedback: 借りた相手は銀行ですが、お金は現金で受け取っています。口座に入ったわけではないので、左は現金にしてみましょう。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 300,000 にしましょう。
 hint: 左に現金 300,000、右に借入金 300,000 です。
@@ -151,6 +154,12 @@ wrong_patterns:
     feedback: 借入金は銀行に返す義務です。家賃は使ってしまったお金なので、支払家賃という費用になります。
   - match: { debit: [{ account: equipment }] }
     feedback: 家賃は払ったら消えてしまい、マシンのように財産としては残りません。支払家賃を使います。
+  - match: { debit: [{ account: capital_stock }] }
+    misconception: payment_reduces_capital
+    feedback: 家賃を払っても、あなたが出した元手の金額(資本金)は書き換えません。使ったお金は支払家賃という費用として左に書きます。費用の分だけもうけが減り、それで純資産が減ります。
+  - match: { credit: [{ account: loans_payable }] }
+    misconception: expense_as_liability
+    feedback: 家賃は現金で払い終えたので、銀行に返す義務は増えていません。減ったのは現金です。右は現金にしてみましょう。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 50,000 にしましょう。
 hint: 左に支払家賃 50,000、右に現金 50,000 です。
