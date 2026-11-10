@@ -414,12 +414,16 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   // 再開するステップを正解済みなら、その答えで達成状態まで戻す(離脱前の「できました」を保つ)
   const resume = () => {
     if (resumeStep === null) return;
-    setPosted(replayEntries(unit.steps, resumeSolved ? resumeStep + 1 : resumeStep));
-    // 案内はステップ 1 にいる間は残るので、先に解いた答えがあればそちらを優先する
+    const replayed = replayEntries(unit.steps, resumeSolved ? resumeStep + 1 : resumeStep);
+    // 案内はステップ 1 にいる間は残るので、先に解いた答えがあればそちらを優先する。読み込み時点の保存に無い仕訳も帳簿に残す(Issue #185)
+    setPosted((prev) => [...replayed, ...prev.filter((p) => !replayed.some((r) => r.step === p.step))].sort((a, b) => a.step - b.step));
     answered.current = new Map([...resumeAnswered.current, ...answered.current]);
+    const solvedInSession = answered.current.has(resumeStep);
     goTo(resumeStep);
     setReached(resumeStep);
     setResumeStep(null);
+    // goTo がセッション中の答えで達成状態まで戻している。読み込み時点の誤答回数や答えで上書きしない
+    if (solvedInSession) return;
     if (!resumeSolved) {
       setAttempts(resumeWrong);
       return;
