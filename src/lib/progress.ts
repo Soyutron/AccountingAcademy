@@ -139,11 +139,27 @@ export async function setUnitProgress(unitId: string, status: UnitStatus, step: 
   if (error) throw new Error(`進捗の保存に失敗しました: ${error.message}`);
 }
 
+// PostgREST の max_rows(既定 1000)を超えた行はエラーなしで切られる
+const ATTEMPTS_PAGE_SIZE = 1000;
+
+// 最後の回答を後勝ちで復元するので、古い順のまま全件読む(Issue #202)。created_at が同時刻でもページがずれないよう id でも並べる
+async function queryAttempts() {
+  const rows: Record<string, unknown>[] = [];
+  for (;;) {
+    const page = await supabase
+      .from("attempts")
+      .select("unit_id,exercise_id,correct,misconception_id,answer")
+      .order("created_at")
+      .order("id")
+      .range(rows.length, rows.length + ATTEMPTS_PAGE_SIZE - 1);
+    if (page.error) return page;
+    rows.push(...page.data);
+    if (page.data.length < ATTEMPTS_PAGE_SIZE) return { ...page, data: rows };
+  }
+}
+
 function queryProgress() {
-  return Promise.all([
-    supabase.from("unit_progress").select("unit_id,status,step"),
-    supabase.from("attempts").select("unit_id,exercise_id,correct,misconception_id,answer").order("created_at"),
-  ]);
+  return Promise.all([supabase.from("unit_progress").select("unit_id,status,step"), queryAttempts()]);
 }
 
 /** セッションが無ければ null(まだ何も回答していない閲覧者) */
