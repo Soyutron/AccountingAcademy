@@ -130,6 +130,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [resumeAnswer, setResumeAnswer] = useState<unknown>(undefined);
   // 再開するステップの保存済みの誤答回数。未正解なら引き継いで「答えを見る」を離脱前と揃える(Issue #21)
   const [resumeWrong, setResumeWrong] = useState(0);
+  // 再開地点より前の、達成済みのステップとその保存済みの答え。「続きから」で answered に渡す(Issue #175)
+  const resumeAnswered = useRef(new Map<number, unknown>());
   const [saveError, setSaveError] = useState<string | null>(null);
   const [tweakDone, setTweakDone] = useState(false);
   // 回答を確定したステップ。同一ティックの連打では state が更新前なので、ref で同期的に弾く
@@ -236,6 +238,11 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         if (saved && saved.step < unit.steps.length) savedStep.current = saved.step;
         if (saved && saved.step > 0 && saved.step < unit.steps.length) {
           const answer = p.answers[unit.id]?.[saved.step];
+          resumeAnswered.current = new Map(
+            Object.entries(p.answers[unit.id] ?? {})
+              .map(([i, a]) => [Number(i), a] as const)
+              .filter(([i]) => i < saved.step && (p.solved[unit.id]?.includes(i) || unit.steps[i].task.type === "predict")),
+          );
           setResumeStep(saved.step);
           setResumeAnswer(answer);
           setResumeWrong(p.wrong[unit.id]?.[saved.step] ?? 0);
@@ -319,13 +326,14 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     }
   };
 
-  // 正解済み(predict は回答済み)のステップを、その答えで達成状態まで戻す。answer が無ければ模範解答を使う。
+  // 正解済み(predict は回答済み)のステップを、その答えで達成状態まで戻す。answer が無いか、正解のあとに重ねた誤答なら模範解答を使う。
   // 使った答えを answered に登録し、続きからで戻したステップも「← 前へ」→「次へ →」で達成状態に戻せるようにする(Issue #48)
   const restoreStep = (index: number, answer?: unknown) => {
     const t = unit.steps[index].task;
     answeredStep.current = index;
     if (t.type === "post") {
-      const entry = (answer as JournalEntry | undefined) ?? t.answer;
+      const saved = answer as JournalEntry | undefined;
+      const entry = saved && gradePost(t, saved).correct ? saved : t.answer;
       answered.current.set(index, entry);
       setDraft(fromJournalEntry(entry, accountMap));
       setResult(gradePost(t, entry));
@@ -337,13 +345,14 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       setResult(gradePredict(t, predicted));
     }
     if (t.type === "calc") {
-      const n = (answer as number | undefined) ?? t.answer;
+      const n = gradeCalc(t, answer as number).correct ? (answer as number) : t.answer;
       answered.current.set(index, n);
       setCalcValue(String(n));
       setResult(gradeCalc(t, n));
     }
     if (t.type === "classify") {
-      const placement = (answer as Record<string, Element> | undefined) ?? Object.fromEntries(t.accounts.map((id) => [id, accountMap.get(id)!.element]));
+      const saved = answer as Record<string, Element> | undefined;
+      const placement = saved && gradeClassify(t, saved, accountMap).correct ? saved : Object.fromEntries(t.accounts.map((id) => [id, accountMap.get(id)!.element]));
       answered.current.set(index, placement);
       setPlaced(placement);
       setResult(gradeClassify(t, placement, accountMap));
@@ -406,6 +415,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const resume = () => {
     if (resumeStep === null) return;
     setPosted(replayEntries(unit.steps, resumeSolved ? resumeStep + 1 : resumeStep));
+    // 案内はステップ 1 にいる間は残るので、先に解いた答えがあればそちらを優先する
+    answered.current = new Map([...resumeAnswered.current, ...answered.current]);
     goTo(resumeStep);
     setReached(resumeStep);
     setResumeStep(null);
@@ -790,7 +801,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
                 {ELEMENTS.map((el) => (
                   <label key={el} className="text-sm space-y-1">
                     <ElementBadge element={el} />
-                    <select aria-label={`${ELEMENT_LABELS[el]}の予想`} className="block w-full rounded-md border bg-background px-2 py-1" value={effect[el] ?? ""} onChange={(e) => setEffect({ ...effect, [el]: e.target.value as Change })}>
+                    <select aria-label={`${ELEMENT_LABELS[el]}の予想`} className="block h-8 w-full rounded-md border bg-background px-2 py-1 text-base md:text-sm" value={effect[el] ?? ""} onChange={(e) => setEffect({ ...effect, [el]: e.target.value as Change })}>
                       <option value="">選ぶ</option>
                       {(Object.keys(CHANGE_LABELS) as Change[]).map((c) => (
                         <option key={c} value={c}>

@@ -73,6 +73,9 @@ wrong_patterns:
   - match: { credit: [{ account: sales }] }
     misconception: asset_sale_is_sales
     feedback: 売上は商品を売ったときだけです。備品を売ったときは、備品そのものを減らします。
+  - match: { debit: [{ account: accounts_payable_other }] }
+    misconception: nontrade_receivable_payable_confused
+    feedback: 未払金は「後で払う義務」(負債)です。ショーケースを売って代金をこれから受け取るので、増えるのは「後で受け取る権利」である未収入金です。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 50,000 にしましょう。
 hint: 左に未収入金 50,000、右に備品 50,000 です。
@@ -119,6 +122,9 @@ wrong_patterns:
     feedback: 豆はまだ届いていません。届くまでは仕入ではなく、前払金という資産です。
   - match: { debit: [{ account: advance_received }] }
     feedback: 前受金は手付金を受け取った側の科目です。払った側は前払金です。
+  - match: { debit: [{ account: accounts_receivable_other }] }
+    misconception: advance_payment_as_receivable
+    feedback: 未収入金は、商品以外の物を売った代金を後で受け取る権利です。今回は何も売っていません。お金を先に払って「豆を受け取る権利」を持ったので、前払金です。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 10,000 にしましょう。
 hint: 左に前払金 10,000、右に現金 10,000 です。
@@ -147,6 +153,9 @@ wrong_patterns:
     feedback: 仕入は豆の全額 40,000 です。手付金の 10,000 も、今日仕入に変わります。
   - match: { credit: [{ account: advance_received }] }
     feedback: 前受金は手付金を受け取った側の科目です。払ってあったのは前払金です。
+  - match: { credit: [{ account: accounts_payable_other }] }
+    misconception: trade_as_nontrade
+    feedback: 未払金は商品以外の物の代金に使う科目です。豆は売り物の商品なので、残りの代金は買掛金です。
   - match: { unbalanced: true }
     feedback: 左の仕入 40,000 と、右の前払金 10,000 + 買掛金 30,000 がそろっていません。
   - match: { debit: [{ account: purchases, amount: 40000 }], credit: [{ account: accounts_payable, amount: 40000 }] }
@@ -194,6 +203,9 @@ wrong_patterns:
     feedback: 椅子の未払金 80,000 を忘れていませんか。
   - match: 285000
     feedback: 豆の残額の買掛金 30,000 も負債です。
+  - match: 365000
+    misconception: nontrade_receivable_payable_confused
+    feedback: 365,000 は未収入金 50,000 まで足した額です。未収入金は「後で受け取る権利」なので資産で、負債には入りません。
   - match: 1303500
     feedback: 1,303,500 は結果の貸借対照表の「負債・純資産合計」で、負債に純資産(資本金など)まで足した額です。後で払う義務である負債だけを足しましょう。
 hint: 借入金 200,000 + 未払金 80,000 + 買掛金 30,000 + 前受金 5,000。
