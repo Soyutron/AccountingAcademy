@@ -111,14 +111,15 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
                   </Button>
                 )}
               </div>
-              <div className="mt-1 h-4 flex items-center gap-1 text-[10px] min-w-0">
+              {/* 説明は選んだ後に読み返す唯一の場所なので切らずに折り返し、幅が足りなければ「金額を入れて」を次の行へ落とす(Issue #201) */}
+              <div className="mt-1 min-h-4 flex flex-wrap items-center gap-x-1 text-[10px] min-w-0">
                 {account ? (
-                  <>
+                  <div className="flex items-start gap-1 min-w-0">
                     <span className="shrink-0">
                       <ElementBadge element={account.element} contra={account.contra} size="xs" />
                     </span>
-                    <span className="text-muted-foreground truncate">{account.short}</span>
-                  </>
+                    <span className="mt-px leading-4 text-muted-foreground">{account.short}</span>
+                  </div>
                 ) : line.accountName.trim() && !composing && !accounts.some((a) => matchesAccountQuery(a, line.accountName)) ? (
                   <span className="text-error-fg">候補から選ぶか、漢字の一部を入れてください</span>
                 ) : accountMissing ? (
