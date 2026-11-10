@@ -162,6 +162,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const stepHeading = useRef<HTMLHeadingElement>(null);
   const hintText = useRef<HTMLParagraphElement>(null);
   const workPane = useRef<HTMLElement>(null);
+  const paneTabs = useRef<HTMLDivElement>(null);
   const rewindSlider = useRef<HTMLInputElement>(null);
   const tutorial = useTutorialState();
   const [helpOpen, setHelpOpen] = useState(false);
@@ -469,6 +470,13 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     statusBox.current?.focus();
   }, [gradedResult]);
 
+  // スマホ幅ではペインがページごとスクロールするので、押したボタンの位置のままだと結果の先頭とタブ列が画面の上に隠れる(Issue #169)。
+  // lg 以上はタブ列が display: none で、scrollIntoView は何もしない
+  const showResultPane = () => {
+    flushSync(() => setPane("result"));
+    paneTabs.current?.scrollIntoView({ block: "nearest" });
+  };
+
   const check = () => {
     if (answeredStep.current === stepIndex) return;
     // 答えを変えずに押し直したときは採点も記録もしない(答えを変えれば数える)
@@ -498,7 +506,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           setPendingFlight(entryDraft);
           celebrate();
         }
-        setPane(r.correct ? "result" : "work");
+        if (r.correct) showResultPane();
+        else setPane("work");
         break;
       }
       case "predict": {
@@ -513,7 +522,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         setViewUpto(null);
         setPendingFlight(task.entry);
         if (r.correct) celebrate();
-        setPane("result");
+        showResultPane();
         break;
       }
       case "calc": {
@@ -578,7 +587,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     setViewUpto(null);
     markSeen("sandbox");
     setDraft(emptyEntry());
-    setPane("result");
+    showResultPane();
   };
 
   // 採点後に箱を移した科目は採点結果の表示から外し、全部移したら結果も消す(Issue #66)。件数と誤解も残りの科目で出し直す
@@ -654,7 +663,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         />
       </div>
 
-      <div className="lg:hidden grid grid-cols-3 border-b text-sm" role="tablist" aria-label="ペインの切り替え">
+      <div ref={paneTabs} className="lg:hidden grid grid-cols-3 border-b text-sm" role="tablist" aria-label="ペインの切り替え">
         {PANES.map((p, i) => (
           <button
             key={p}
