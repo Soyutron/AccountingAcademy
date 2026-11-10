@@ -132,7 +132,7 @@ wrong_patterns:
   - match: 300
     feedback: 年利は 2% です。300,000 × 0.02 = 6,000 が 1 年分、その半分です。
   - match: 1500
-    feedback: 半年は 6/12 = 1/2 です。6,000 × 1/2 で 3,000 円になります。
+    feedback: 半年は 6/12 = 1/2 です。1 年分の 6,000 に 1/2 を掛け直しましょう。
   - match: 36000
     misconception: interest_months_not_divided
     feedback: 36,000 円は 6 か月をそのまま掛けた金額です。年利は 1 年分の率なので、6 ではなく 6/12 を掛けます。
