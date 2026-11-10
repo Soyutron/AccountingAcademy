@@ -3,6 +3,7 @@
 import { CircleHelp } from "lucide-react";
 import { createContext, useContext, useRef, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useCloseWhenHidden } from "@/components/use-close-when-hidden";
 import { helpTopic } from "@/lib/help-topics";
 
 // 機能の見出し横の「?」。押すとその機能だけの短い説明を出す(docs/help-design.md 5.1)
@@ -22,6 +23,7 @@ export function HelpIcon({ topic: id }: { topic: string }) {
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
   const topic = helpTopic(id);
+  useCloseWhenHidden(trigger, open, () => setOpen(false));
   if (controls?.hidden) return null;
   return (
     <Popover open={open} onOpenChange={setOpen}>
