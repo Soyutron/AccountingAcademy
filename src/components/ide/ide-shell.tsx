@@ -31,7 +31,7 @@ import { HelpControlsContext, HelpIcon } from "./help-icon";
 import { FirstTimeNote } from "./first-time-note";
 import { Spotlight } from "./spotlight";
 import { type HelpContext, type HelpTopic, firstTimeTopic } from "@/lib/help-topics";
-import { TUTORIAL_UNIT_ID, markSeen, updateTutorial, useTutorialState } from "@/lib/tutorial-store";
+import { FIRST_UNIT_AFTER_TUTORIAL, TUTORIAL_UNIT_ID, markSeen, updateTutorial, useTutorialState } from "@/lib/tutorial-store";
 import { REPO_URL } from "@/lib/repo";
 
 // 会計 IDE の本体。ステップの進行、帳簿(記帳済みの仕訳)、課題の確認と記録をまとめて持つ(docs/ide-design.md)
@@ -617,7 +617,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
 
   const onTaskAmount = task.type === "post" && !result?.correct ? insertAmount : undefined;
 
-  // min-w-0: スマホ幅(1 列の grid)で、仕訳帳の摘要(truncate の nowrap)の min-content 幅が列を押し広げないようにする(Issue #28)
+  // min-w-0: スマホ幅(1 列の grid)で、ペインの中身の min-content 幅が列を押し広げないようにする(Issue #28)
   const paneClass = (p: Pane) => `${pane === p ? "block" : "hidden"} lg:block min-h-0 min-w-0 lg:overflow-y-auto p-4`;
 
   return (
@@ -891,7 +891,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               <ol className="space-y-1 text-xs">
                 {posted.map((p, i) => (
                   <li key={i} className={`rounded border px-2 py-1 ${p.step === stepIndex ? "border-primary/50 bg-primary/5 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1" : ""}`}>
-                    <div className="text-muted-foreground truncate">{p.memo}</div>
+                    <div className="text-muted-foreground">{p.memo}</div>
                     <div className="grid grid-cols-2 gap-2 font-mono tabular-nums">
                       <div className="space-x-1">
                         {p.entry.debit.map((l, j) => {
@@ -1055,6 +1055,13 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           ) : unit.next ? (
             <Button asChild>
               <Link href={`/units/${unit.next.id}`}>次の単元: {unit.next.title} →</Link>
+            </Button>
+          ) : isTutorialUnit ? (
+            <Button asChild>
+              {/* ツアーの途中で進むと pending のまま残り、次の単元で「初めてですか?」と勧めてしまう */}
+              <Link href={`/units/${FIRST_UNIT_AFTER_TUTORIAL}`} onClick={() => tutorial.status === "pending" && updateTutorial({ status: "done" })}>
+                3 級パスの最初の単元へ →
+              </Link>
             </Button>
           ) : (
             <Button asChild variant="outline">
