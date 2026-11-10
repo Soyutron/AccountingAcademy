@@ -1,5 +1,5 @@
 import type { Unit } from "#content";
-import { type AccountInfo, type Change, type Element, type JournalEntry, ELEMENT_LABELS, sameEntry } from "./accounting";
+import { type AccountInfo, type Change, type Element, type JournalEntry, ELEMENTS, ELEMENT_LABELS, computeImpact, sameEntry } from "./accounting";
 
 // ステップの課題の採点(純粋関数)。正誤だけでなく「どの誤解か」を返す(docs/architecture.md 6 章)
 
@@ -16,6 +16,8 @@ export interface GradeResult {
 const GENERIC_WRONG = "まだ合っていません。結果の表で何が動くはずかを考えて、もう一度試してみましょう。";
 // 正解の金額は書かない。計算で求める課題では答えそのものになる
 const AMOUNT_WRONG = "科目は合っています。金額をもう一度確かめましょう。";
+// 比較表が全行「同じ」になる誤答。表を見直させても手がかりが無いので、科目へ目を向けさせる
+const SAME_IMPACT = "5 つの要素の動きは合っています。使っている科目を見直しましょう。";
 const EXTRA_LINES = "正しい行はそろっています。この取引に含まれない余計な行を消しましょう。";
 // 計算問題では記帳しないので、結果の表の動きではなく計算そのものの見直しを促す
 const CALC_WRONG = "まだ合っていません。計算の式と、使う数字をもう一度確かめましょう。";
@@ -39,7 +41,7 @@ function sameAccounts(a: JournalEntry, b: JournalEntry): boolean {
   return key(a.debit) === key(b.debit) && key(a.credit) === key(b.credit);
 }
 
-export function gradePost(task: TaskOf<"post">, entry: JournalEntry): GradeResult {
+export function gradePost(task: TaskOf<"post">, entry: JournalEntry, accounts?: ReadonlyMap<string, AccountInfo>): GradeResult {
   const answers = [task.answer, ...task.alternatives];
   if (answers.some((e) => sameEntry(e, entry))) return ok(task);
   const sum = (lines: { amount: number }[]) => lines.reduce((t, l) => t + l.amount, 0);
@@ -62,6 +64,12 @@ export function gradePost(task: TaskOf<"post">, entry: JournalEntry): GradeResul
   const hasAllLines = (e: JournalEntry) => sides.every((side) => e[side].every((c) => entry[side].some((l) => l.account === c.account && l.amount === c.amount)));
   if (answers.some(hasAllLines)) return ng(EXTRA_LINES);
   if (answers.some((e) => sameAccounts(e, entry))) return ng(AMOUNT_WRONG);
+  if (accounts) {
+    // 比較表と同じく task.answer とだけ比べる
+    const yours = computeImpact(entry, accounts);
+    const expected = computeImpact(task.answer, accounts);
+    if (ELEMENTS.every((el) => yours[el] === expected[el])) return ng(SAME_IMPACT);
+  }
   return ng();
 }
 
