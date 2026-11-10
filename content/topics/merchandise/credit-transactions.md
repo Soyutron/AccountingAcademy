@@ -68,6 +68,8 @@ wrong_patterns:
     feedback: 売掛金は商品を売って後で受け取る権利(資産)です。問屋に後で払う義務は買掛金(負債)なので、右は買掛金です。
   - match: { credit: [{ account: accounts_payable_other }] }
     feedback: 未払金は商品以外の物を買ったときの義務です。商品の代金を後で払う義務は買掛金を使います。
+  - match: { credit: [{ account: sales }] }
+    feedback: 売上は商品を売ったときの収益です。ここでは豆を買っただけで、まだ何も売っていません。右には「後で払う義務」の買掛金を書きます。
 hint: 左に仕入 40,000、右に買掛金 40,000 です。
 success: 負債の箱に買掛金が現れました。現金は 1 円も動いていないのに、仕入はきちんと記録されています。
 ```
@@ -94,6 +96,11 @@ wrong_patterns:
     feedback: 増えたのは受け取る権利で、払う義務ではありません。負債は動きません。
   - match: { equity: none }
     feedback: 売上が増えると当期純利益が増え、そのぶん純資産も増えます。
+  - match: { asset: decrease }
+    misconception: purchase_is_asset
+    feedback: 豆は受け取った日に、仕入という費用で記録済みです。資産として持っていたわけではないので、渡しても資産は減りません。増えるのは「後で代金を受け取る権利」です。
+  - match: { expense: increase }
+    feedback: 豆の代金は、受け取った日に仕入として記録済みです。売るときに費用をもう一度記録しないので、費用は動きません。
 hint: 売上(収益)が増え、受け取る権利(資産)が増えます。収益が増えれば純資産も増えます。
 success: 左に現れた「売掛金」が、後で代金を受け取る権利です。現金と同じ資産の箱に入ります。
 ```
@@ -122,6 +129,9 @@ wrong_patterns:
   - match: { credit: [{ account: accounts_payable }] }
     misconception: receivable_payable_confused
     feedback: 買掛金は商品を仕入れて後で払う義務(負債)です。ここで消えるのは売って受け取る権利のほうなので、右は売掛金です。
+  - match: { debit: [{ account: checking_account }] }
+    misconception: deposit_kinds_confused
+    feedback: 振り込まれた先は普通預金の口座です。当座預金は別の種類の口座で科目も別なので、左は普通預金です。
 hint: 左に普通預金 60,000、右に売掛金 60,000 です。
 success: 売掛金が消えて、普通預金が現れました。資産の中身が変わっただけで、売上も利益も動いていません。
 ```
@@ -148,6 +158,18 @@ wrong_patterns:
   - match: { debit: [{ account: accounts_receivable }] }
     misconception: receivable_payable_confused
     feedback: 売掛金は商品を売って後で受け取る権利(資産)です。ここで消えるのは問屋に払う義務のほうなので、左は買掛金です。
+  - match: { credit: [{ account: bank_deposit }] }
+    misconception: deposit_is_cash
+    feedback: 問屋には手元の現金で払ったので、銀行の口座は動いていません。右は現金です。
+  - match: { credit: [{ account: accounts_receivable }] }
+    feedback: 売掛金は別の会社から後で受け取る権利で、問屋への支払いには使えません。問屋にはお金で払ったので、右は現金です。
+  - match: { credit: [{ account: purchases }] }
+    feedback: 仕入は豆を受け取った日の記録のままで、払っても取り消されません。ここで減るのは払ったお金なので、右は現金です。
+  - match: { debit: [{ account: accounts_payable_other }] }
+    misconception: trade_as_nontrade
+    feedback: 未払金は商品以外の物を買ったときの義務です。商品の代金を払って消えるのは買掛金なので、左は買掛金です。
+  - match: { debit: [{ account: loans_payable }] }
+    feedback: 借入金は銀行から借りたお金です。ここで消えるのは問屋に代金を払う義務なので、左は買掛金です。
 hint: 左に買掛金 40,000、右に現金 40,000 です。
 success: 買掛金が消えました。負債が減り、現金も減る。仕入や費用はここでは動きません。
 ```
@@ -162,8 +184,10 @@ accounts: [accounts_receivable, accounts_payable, sales, purchases, bank_deposit
 misconceptions:
   accounts_receivable:
     revenue: receivable_is_cash
+    liability: receivable_payable_confused
   accounts_payable:
     expense: expense_as_liability
+    asset: receivable_payable_confused
   purchases:
     asset: purchase_is_asset
 hint: 売掛金と普通預金は資産、買掛金は負債、売上は収益、仕入は費用です。
@@ -186,6 +210,10 @@ wrong_patterns:
     feedback: 掛けで仕入れた 40,000 も仕入(費用)です。費用から引き忘れていませんか。
   - match: 230000
     feedback: それは売上の合計です。費用(仕入 90,000 と家賃 50,000)を引きましょう。
+  - match: 140000
+    feedback: 費用は仕入だけではありません。支払家賃も引いていますか。
+  - match: 20000
+    feedback: それは掛けで売った分と掛けで仕入れた分の差だけです。問いは、ここまでの売上と費用のすべてから求める当期純利益です。
 hint: 売上 230,000 − 仕入 90,000 − 支払家賃 50,000。
 success: 当期純利益は 90,000 円。掛けの売上も仕入も、取引の日にちゃんと数えられていますね。
 ```

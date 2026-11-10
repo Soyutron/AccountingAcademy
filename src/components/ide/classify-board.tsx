@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useRef, useState } from "react";
+import { type MouseEvent, type ReactNode, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { DndContext, type DragEndEvent, DragOverlay, MouseSensor, pointerWithin, TouchSensor, useDraggable, useDroppable, useSensor, useSensors } from "@dnd-kit/core";
 import { motion, useReducedMotion } from "motion/react";
@@ -63,11 +63,15 @@ function Pool({ children }: { children: ReactNode }) {
   );
 }
 
-function Bin({ element, children }: { element: Element; children: ReactNode }) {
+function Bin({ element, onPress, children }: { element: Element; onPress?: () => void; children: ReactNode }) {
   const { setNodeRef, isOver } = useDroppable({ id: element });
   const style = ELEMENT_STYLE[element];
+  // 余白を押す経路はポインタ専用で、キーボードと読み上げは見出しの button を使う。button の中のクリックはそれぞれの button が処理する
+  const onClick = onPress && ((e: MouseEvent) => {
+    if (!(e.target as HTMLElement).closest("button")) onPress();
+  });
   return (
-    <div ref={setNodeRef} data-drop={element} data-over={isOver || undefined} className={`rounded-md border p-2 min-h-20 ${style.border} ${style.bg} ${isOver ? `ring-2 ring-offset-1 brightness-95 ${style.ring}` : ""}`}>
+    <div ref={setNodeRef} data-drop={element} data-over={isOver || undefined} onClick={onClick} className={`rounded-md border p-2 min-h-20 ${onPress ? "cursor-pointer" : ""} ${style.border} ${style.bg} ${isOver ? `ring-2 ring-offset-1 brightness-95 ${style.ring}` : ""}`}>
       {children}
     </div>
   );
@@ -151,7 +155,7 @@ export function ClassifyBoard({ accounts, placed, onChange, wrong, disabled }: P
         </Pool>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
           {ELEMENTS.map((el) => (
-            <Bin key={el} element={el}>
+            <Bin key={el} element={el} onPress={selected && !disabled ? () => place(el, false) : undefined}>
               <button
                 type="button"
                 aria-disabled={disabled || !selected}
