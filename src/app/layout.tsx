@@ -3,6 +3,7 @@ import Link from "next/link";
 import "./globals.css";
 import { fontVariables } from "@/themes/fonts";
 import { DEFAULT_THEME } from "@/themes";
+import { HashHistorySync } from "@/components/hash-history-sync";
 import { ThemeBoot } from "@/components/theme-boot";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeBoot />
       </head>
       <body className="min-h-dvh bg-background text-foreground antialiased font-sans">
+        <HashHistorySync />
         <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-background focus:p-2">
           本文へ移動
         </a>
