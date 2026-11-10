@@ -324,6 +324,12 @@ misconceptions:
     correct: 納めたのは従業員のお金。預り金(負債)が減るだけで、会社の費用にはならない
     concepts: [advances_and_deposits, liability]
     remediation: receivables-and-payables/temporary-and-deposits
+  - id: deposit_payment_increases_liability
+    name: 預り金を納めると負債が増える
+    description: 預かっていたお金を納めたときに、納付を新しい義務と考えて、預り金(負債)が増えると読んでしまう
+    correct: 納付は預かっていたお金を本人の代わりに渡すこと。納める義務が果たされて消えるので、預り金(負債)は減る
+    concepts: [advances_and_deposits, liability]
+    remediation: receivables-and-payables/temporary-and-deposits
   - id: advance_for_others_is_expense
     name: 立て替えたお金は費用
     description: 従業員や取引先の代わりに払ったお金を、会社の費用として記録してしまう
@@ -353,6 +359,18 @@ misconceptions:
     description: 仮払いのときに減らした現金を精算でもう一度減らし、仮払金を消さずに残してしまう
     correct: 現金は仮払いのときに減っている。精算で消すのは仮払金で、現金は戻ってきた分だけ増える
     concepts: [suspense_accounts, asset]
+    remediation: receivables-and-payables/temporary-and-deposits
+  - id: prepaid_asset_accounts_confused
+    name: 先に払ったお金の科目を取り違える
+    description: 立替金・仮払金・前払金を、どれも「先に払ったお金」として区別せずに使ってしまう
+    correct: 立替金は他人の代わりに払って本人から返してもらうお金、仮払金は使い道や金額がまだ決まっていないお金、前払金は商品を受け取る前に払う手付金
+    concepts: [advances_and_deposits, suspense_accounts, advance_payment_receipt]
+    remediation: receivables-and-payables/temporary-and-deposits
+  - id: suspense_receipt_moved_to_liability
+    name: 仮受金を別の負債へ移すだけ
+    description: 入金の正体が権利の回収だと分かったのに、仮受金を前受金など別の負債へ移してしまう
+    correct: 正体が分かったら、中身に合う科目へ移す。未収入金や売掛金の回収なら、仮受金を消してその権利(資産)を減らす
+    concepts: [suspense_accounts, liability]
     remediation: receivables-and-payables/temporary-and-deposits
   - id: suspense_receipt_is_revenue
     name: 正体不明の入金は売上
