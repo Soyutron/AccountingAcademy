@@ -146,7 +146,8 @@ function Group({ element, lines, diff, accounts, children }: { element: Element;
 function Row({ id, name, amount, delta, magnitude = false }: { id?: string; name: React.ReactNode; amount: number; delta: number; magnitude?: boolean }) {
   const changed = delta !== 0;
   // 当期純損失・評価勘定の △ は損失額・控除額の大きさなので、増減もその大きさの向きで示す。通常の科目のマイナス残高は符号どおり
-  const shown = magnitude && amount < 0 ? -delta : delta;
+  // 利益から損失に転じた記帳は増減額が損失額を超え、大きさの増減として読めないので符号どおり(0 からの発生は大きさの増加)
+  const shown = magnitude && amount < 0 && amount - delta <= 0 ? -delta : delta;
   return (
     <div data-account={id} className={`flex flex-wrap items-baseline justify-between gap-x-2 rounded px-1 ${changed ? "bg-changed motion-safe:animate-highlight" : ""}`}>
       <span className="min-w-0">{name}</span>
