@@ -140,6 +140,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const answered = useRef(new Map<number, unknown>());
   // このステップで最後に採点した答え。同じ答えの連打(ダブルクリック)は 1 回の回答として扱う(Issue #15)
   const gradedAnswer = useRef<string | null>(null);
+  // 自由記帳で最後に記帳した下書き。同じ仕訳を入れ直して記帳するのは正当なので、内容ではなくインスタンスで同一ティックの連打を弾く(Issue #158)
+  const freePostedDraft = useRef<EditableEntry | null>(null);
   // 保存済みの step。見直しや案内前の「次へ」で保存する step を下げないために持つ
   const savedStep = useRef(0);
   // 失敗した回答は最新の 1 件だけ持ち、次の保存の前に再送する。進捗は次の upsert が最新で上書きするので持たない
@@ -572,7 +574,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const freeBalanced = computeImpact(entryDraft, accountMap).balanced;
   const canPostFreely = freeBalanced && !draftIncomplete;
   const postFreely = () => {
-    if (!canPostFreely) return;
+    if (!canPostFreely || freePostedDraft.current === draft) return;
+    freePostedDraft.current = draft;
     setPosted((prev) => [...prev, { step: stepIndex, memo: "自由に記帳", entry: entryDraft }]);
     setViewUpto(null);
     markSeen("sandbox");
