@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { GlossaryEntry } from "@/lib/content";
 import { ElementBadge } from "./element-badge";
+import { useCloseWhenHidden } from "./use-close-when-hidden";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 // 本文中の用語。ホバーまたはタップで short → summary / example → 単元へ、と段階的に掘れる(要件 1 章)
@@ -36,6 +37,16 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
     }, delay);
   };
 
+  const changeOpen = (next: boolean) => {
+    // 予約済みのホバーのタイマーが残ると、クリック直後の Esc で閉じた後に開き直る
+    if (timer.current) clearTimeout(timer.current);
+    byHover.current = false;
+    setOpen(next);
+    if (!next) setExpanded(false);
+  };
+
+  useCloseWhenHidden(trigger, open, () => changeOpen(false));
+
   useEffect(() => () => {
     if (timer.current) clearTimeout(timer.current);
   }, []);
@@ -47,13 +58,7 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
   return (
     <Popover
       open={open}
-      onOpenChange={(next) => {
-        // 予約済みのホバーのタイマーが残ると、クリック直後の Esc で閉じた後に開き直る
-        if (timer.current) clearTimeout(timer.current);
-        byHover.current = false;
-        setOpen(next);
-        if (!next) setExpanded(false);
-      }}
+      onOpenChange={changeOpen}
     >
       <PopoverTrigger asChild>
         <button
