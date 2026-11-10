@@ -24,7 +24,7 @@ test("390px の calc の「やること」と汎用の不正解文が「右の�
   await page.getByRole("button", { name: "次へ →" }).first().click();
   await expect(page.getByText("ステップ 2 /")).toBeVisible();
   const guide = page.getByRole("region", { name: "ガイド" });
-  await expect(guide.getByText("結果の表を読んで答えましょう")).toBeVisible();
+  await expect(guide.getByText("金額を答えましょう")).toBeVisible();
   await expect(guide).not.toContainText("右の");
 
   await page.getByRole("tab", { name: "ワークスペース" }).click();
