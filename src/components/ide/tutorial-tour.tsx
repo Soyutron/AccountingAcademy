@@ -83,8 +83,9 @@ export function TutorialTour({ ctx, onExit, onPane }: { ctx: TourContext; onExit
     onExit();
   };
   const skip = () => {
-    // 最後のカードまで来ていれば完了扱い。途中なら「スキップ」として記録し、あとで「使い方」からやり直せる
-    updateTutorial({ status: last ? "done" : "skipped" });
+    // 最後のカードまで来ていれば完了扱い。途中なら「スキップ」として記録し、あとで「使い方」からやり直せる。
+    // 案内を止めたことが「使い方」のチェックに映るよう enabled も切る(Issue #165)
+    updateTutorial(last ? { status: "done" } : { status: "skipped", enabled: false });
     onExit();
   };
   const next = () => {
