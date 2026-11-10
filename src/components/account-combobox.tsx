@@ -114,7 +114,11 @@ export function AccountCombobox({ accounts, value, onChange, onCompositionChange
             if (!open) setActive(null);
             setOpen(true);
           }}
-          onBlur={() => setOpen(false)}
+          onBlur={() => {
+            setOpen(false);
+            // 読みや漢字の一部のままだと科目として数えられず、金額が合計に入らない(Issue #236)。select() はフォーカスを戻すので使わない
+            if (query && options.length === 1 && options[0].name !== value) onChange(options[0].name);
+          }}
           onKeyDown={onKeyDown}
         />
       </PopoverAnchor>
