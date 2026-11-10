@@ -123,7 +123,17 @@ wrong_patterns:
     misconception: no_cost_allocation
     feedback: 全額ではなく、6 年に分けた 1 年分の 100,000 だけを費用にします。
   - match: { debit: [{ account: equipment }] }
+    misconception: direct_writeoff_vs_contra
     feedback: 左に備品を書くと、マシンの金額が増えてしまいます。使った 1 年分は費用なので、左には減価償却費を書きましょう。
+  - match: { credit: [{ account: accounts_payable_other }] }
+    misconception: expense_as_liability
+    feedback: 未払金は、後で払う義務を表す科目です。マシンの代金は買ったときに払い終えていて、減価償却で新しく払う相手は生まれません。
+  - match: { credit: [{ account: accounts_payable }] }
+    misconception: expense_as_liability
+    feedback: 買掛金は、商品の代金を後で払う義務を表す科目です。マシンの代金は買ったときに払い終えていて、減価償却で新しく払う相手は生まれません。
+  - match: { debit: [{ account: supplies_expense }] }
+    misconception: depreciation_as_supplies_expense
+    feedback: 消耗品費は、文房具のようにすぐ使い切る物の費用です。何年も使うマシンの使った分には、減価償却のための費用の科目があります。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 100,000 にしましょう。
 hint: 左に減価償却費 100,000、右に減価償却累計額 100,000 です。
@@ -193,6 +203,18 @@ wrong_patterns:
     feedback: 現金はマシンを買ったときにもう減っています。減価償却ではお金は動きません。
   - match: { debit: [{ account: depreciation_expense, amount: 500000 }] }
     feedback: 帳簿価額ではなく、1 年分の 100,000 を費用にします。
+  - match: { debit: [{ account: equipment }] }
+    misconception: direct_writeoff_vs_contra
+    feedback: 左に備品を書くと、マシンの金額が増えてしまいます。使った 1 年分は費用なので、左には減価償却費を書きましょう。
+  - match: { credit: [{ account: accounts_payable_other }] }
+    misconception: expense_as_liability
+    feedback: 未払金は、後で払う義務を表す科目です。マシンの代金は買ったときに払い終えていて、減価償却で新しく払う相手は生まれません。
+  - match: { credit: [{ account: accounts_payable }] }
+    misconception: expense_as_liability
+    feedback: 買掛金は、商品の代金を後で払う義務を表す科目です。マシンの代金は買ったときに払い終えていて、減価償却で新しく払う相手は生まれません。
+  - match: { debit: [{ account: supplies_expense }] }
+    misconception: depreciation_as_supplies_expense
+    feedback: 消耗品費は、文房具のようにすぐ使い切る物の費用です。何年も使うマシンの使った分には、減価償却のための費用の科目があります。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 100,000 にしましょう。
 hint: 1 年目とまったく同じ仕訳です。

@@ -178,6 +178,21 @@ wrong_patterns:
   - match: { credit: [{ account: cash }] }
     misconception: depreciation_as_cash_outflow
     feedback: 現金はマシンを買ったときにもう減っています。減価償却ではお金は動きません。
+  - match: { credit: [{ account: vehicle }] }
+    misconception: direct_writeoff_vs_contra
+    feedback: 車両運搬具は軽バンの科目で、この問いはコーヒーマシンの減価償却です。それに間接法では、資産の科目を直接減らしません。
+  - match: { debit: [{ account: equipment }] }
+    misconception: direct_writeoff_vs_contra
+    feedback: 左に備品を書くと、マシンの金額が増えてしまいます。使った 6 か月分は費用なので、左には減価償却費を書きましょう。
+  - match: { credit: [{ account: accounts_payable_other }] }
+    misconception: expense_as_liability
+    feedback: 未払金は、後で払う義務を表す科目です。マシンの代金は買ったときに払い終えていて、減価償却で新しく払う相手は生まれません。
+  - match: { credit: [{ account: accounts_payable }] }
+    misconception: expense_as_liability
+    feedback: 買掛金は、商品の代金を後で払う義務を表す科目です。マシンの代金は買ったときに払い終えていて、減価償却で新しく払う相手は生まれません。
+  - match: { debit: [{ account: supplies_expense }] }
+    misconception: depreciation_as_supplies_expense
+    feedback: 消耗品費は、文房具のようにすぐ使い切る物の費用です。何年も使うマシンの使った分には、減価償却のための費用の科目があります。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。
 hint: 600,000 ÷ 6 年 = 100,000。それを 6 か月分にすると 50,000 です。
