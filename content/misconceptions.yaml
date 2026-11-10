@@ -153,13 +153,13 @@ misconceptions:
   - id: incidental_cost_separate
     name: 仕入の運賃を別の費用にする
     description: 商品を仕入れるときにかかった運賃を、仕入とは別の費用として記録してしまう
-    correct: 商品を手に入れるまでにかかった運賃(仕入諸掛)は、商品の値段の一部として仕入に含める
+    correct: お店が負担する、商品を手に入れるまでにかかった運賃(仕入諸掛)は、商品の値段の一部として仕入に含める
     concepts: [incidental_costs, purchase]
     remediation: merchandise/returns-and-costs
   - id: shipping_in_purchases
     name: 発送費を仕入に含める
     description: 売った商品を送る運賃を、仕入に含めてしまう
-    correct: 売るときにかかる運賃は発送費という費用。仕入に含めるのは、仕入れるときにかかった運賃だけ
+    correct: お店が負担する売るときの運賃は発送費という費用。仕入に含めるのは、仕入れるときにかかった運賃だけ
     concepts: [incidental_costs, expense]
     remediation: merchandise/returns-and-costs
   - id: shipping_mixed_into_sale
@@ -333,7 +333,7 @@ misconceptions:
   - id: asset_sale_is_sales
     name: 備品を売ったら売上
     description: 使っていた備品を売ったときに、代金を売上として記録してしまう
-    correct: 売上は商品を売ったときだけ。備品を売ったときは備品(資産)が減り、帳簿価額との差額があれば固定資産売却損益になる
+    correct: 売上は商品を売ったときだけ。備品を売ったときは、備品(資産)そのものを減らす
     concepts: [non_trade_receivable_payable, revenue]
     remediation: receivables-and-payables/other-receivables-and-payables
   - id: advance_is_expense
