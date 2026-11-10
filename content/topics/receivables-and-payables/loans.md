@@ -54,9 +54,13 @@ wrong_patterns:
   - match: { swapped: true }
     feedback: 増えるのは貸付金(権利)なので左、減るのは普通預金なので右です。
   - match: { debit: [{ account: loans_payable }] }
+    misconception: lender_borrower_confused
     feedback: 借入金は自分が借りたときの科目です。今回は貸した側なので貸付金です。
   - match: { debit: [{ account: interest_expense }] }
     feedback: 貸したお金は費用ではありません。返してもらう権利として資産に残ります。
+  - match: { credit: [{ account: cash }] }
+    misconception: deposit_is_cash
+    feedback: 取引文は普通預金からの振り込みです。現金は動いていないので、右は普通預金です。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 100,000 にしましょう。
 hint: 左に貸付金 100,000、右に普通預金 100,000 です。
@@ -102,6 +106,12 @@ wrong_patterns:
   - match: { debit: [{ account: loans_payable }] }
     misconception: interest_reduces_principal
     feedback: 利息を払っても借入金(元本)は減りません。利息は借りているための費用、支払利息です。
+  - match: { debit: [{ account: interest_income }] }
+    misconception: interest_income_expense_confused
+    feedback: 受取利息は利息をもらう側の収益です。今回は銀行に払う側なので、費用の支払利息です。
+  - match: { credit: [{ account: cash }] }
+    misconception: deposit_is_cash
+    feedback: 取引文は普通預金からの支払いです。現金は動いていないので、右は普通預金です。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 3,000 にしましょう。
 hint: 左に支払利息 3,000、右に普通預金 3,000 です。
@@ -123,6 +133,9 @@ wrong_patterns:
     feedback: 年利は 2% です。300,000 × 0.02 = 6,000 が 1 年分、その半分です。
   - match: 1500
     feedback: 半年は 6/12 = 1/2 です。6,000 × 1/2 で 3,000 円になります。
+  - match: 36000
+    misconception: interest_months_not_divided
+    feedback: 36,000 円は 6 か月をそのまま掛けた金額です。年利は 1 年分の率なので、6 ではなく 6/12 を掛けます。
 hint: 300,000 × 2% × 6/12。
 success: 300,000 × 0.02 × 6/12 = 3,000 円。利息は元本・利率・期間の 3 つで決まります。
 ```
@@ -148,6 +161,12 @@ wrong_patterns:
     feedback: 返ってきたのは元本です。もうけではないので、受取利息ではなく貸付金を減らします。
   - match: { credit: [{ account: sales }] }
     feedback: 商品を売ったわけではありません。貸したお金が戻ってきただけです。
+  - match: { credit: [{ account: loans_payable }] }
+    misconception: lender_borrower_confused
+    feedback: 返してもらった側なので、消すのは借入金ではなく貸付金です。借入金は自分が借りたお金の科目です。
+  - match: { debit: [{ account: cash }] }
+    misconception: deposit_is_cash
+    feedback: 取引文は普通預金への振り込みです。現金は動いていないので、左は普通預金です。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 100,000 にしましょう。
 hint: 左に普通預金 100,000、右に貸付金 100,000 です。
@@ -173,6 +192,8 @@ wrong_patterns:
     feedback: 100,000 円返したので、借入金という義務が減ります。
   - match: { equity: decrease }
     feedback: 資産と負債が同じだけ減るので、差し引きの純資産は変わりません。
+  - match: { asset: none }
+    feedback: 普通預金から 100,000 円を払ったので、資産は減ります。
 hint: 普通預金(資産)と借入金(負債)が同じだけ減ります。もうけは動きません。
 success: 借入金が 200,000 になりました。費用になったのは利息の 3,000 円だけです。
 ```
@@ -187,8 +208,11 @@ accounts: [loans_receivable, loans_payable, interest_income, interest_expense]
 misconceptions:
   interest_income:
     asset: interest_is_loan_return
+  loans_receivable:
+    liability: lender_borrower_confused
   loans_payable:
     expense: repayment_is_expense
+    asset: lender_borrower_confused
 hint: 貸付金は資産、借入金は負債、受取利息は収益、支払利息は費用です。
 success: 元本は資産か負債、利息は収益か費用。お金の貸し借りは、この 2 組で記録します。
 ```

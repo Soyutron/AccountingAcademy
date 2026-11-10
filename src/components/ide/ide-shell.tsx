@@ -617,7 +617,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
 
   const onTaskAmount = task.type === "post" && !result?.correct ? insertAmount : undefined;
 
-  // min-w-0: スマホ幅(1 列の grid)で、仕訳帳の摘要(truncate の nowrap)の min-content 幅が列を押し広げないようにする(Issue #28)
+  // min-w-0: スマホ幅(1 列の grid)で、ペインの中身の min-content 幅が列を押し広げないようにする(Issue #28)
   const paneClass = (p: Pane) => `${pane === p ? "block" : "hidden"} lg:block min-h-0 min-w-0 lg:overflow-y-auto p-4`;
 
   return (
@@ -891,7 +891,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               <ol className="space-y-1 text-xs">
                 {posted.map((p, i) => (
                   <li key={i} className={`rounded border px-2 py-1 ${p.step === stepIndex ? "border-primary/50 bg-primary/5 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1" : ""}`}>
-                    <div className="text-muted-foreground truncate">{p.memo}</div>
+                    <div className="text-muted-foreground">{p.memo}</div>
                     <div className="grid grid-cols-2 gap-2 font-mono tabular-nums">
                       <div className="space-x-1">
                         {p.entry.debit.map((l, j) => {

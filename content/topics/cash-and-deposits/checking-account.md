@@ -79,6 +79,9 @@ wrong_patterns:
     feedback: 仕入は商品を受け取ったときに記録済みです。今回は「払う義務」を果たしただけなので、費用は増えません。
   - match: { liability: none }
     feedback: 買掛金という「払う義務」が無くなります。負債が減ります。
+  - match: { liability: increase }
+    misconception: issued_check_leaves_payable
+    feedback: 小切手を渡した時点で、支払いは済んでいます。買掛金は「払う義務」なので、払えば増えるのではなく減ります。
 hint: 買掛金(負債)と当座預金(資産)が同じだけ減ります。もうけは動きません。
 success: 買掛金が消え、当座預金が 140,000 になりました。手元の現金は 297,000 のままです。
 ```
@@ -101,6 +104,9 @@ wrong_patterns:
     feedback: 自分が振り出した小切手は当座預金から引き落とされます。手元の現金は動きません。
   - match: { credit: [{ account: bank_deposit }] }
     feedback: 小切手が落ちるのは当座預金です。普通預金からは引き落とされません。
+  - match: { credit: [{ account: accounts_payable }] }
+    misconception: issued_check_leaves_payable
+    feedback: 小切手を渡した時点で、支払いは済んでいます。引き落としが後でも、代金を後で払う約束(買掛金)は残りません。右は当座預金です。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 25,000 にしましょう。
 hint: 左に仕入 25,000、右に当座預金 25,000 です。
@@ -124,6 +130,9 @@ wrong_patterns:
   - match: { debit: [{ account: checking_account }] }
     misconception: received_check_is_checking_account
     feedback: 他人が振り出した小切手を受け取ったときは現金として扱います。当座預金に入れたわけではありません。
+  - match: { debit: [{ account: bank_deposit }] }
+    misconception: received_check_is_checking_account
+    feedback: 小切手を受け取っただけで、まだ銀行には入れていません。受け取った小切手は現金として記録します。普通預金も現金も同じ資産なので、比較表では違いが見えにくいところです。
   - match: { debit: [{ account: accounts_receivable }] }
     feedback: 代金はもう小切手で受け取っています。「後で受け取る権利」ではありません。
   - match: { unbalanced: true }

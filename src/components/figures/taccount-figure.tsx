@@ -22,8 +22,8 @@ export function TAccountFigure({ account, debit, credit }: { account: AccountInf
       <ul className="text-xs font-mono tabular-nums">
         {lines.map((l, i) => (
           <li key={i} className="flex justify-between gap-2 px-1">
-            <span className="truncate">{l.label}</span>
-            <span>{formatAmount(l.amount)}</span>
+            <span className="min-w-0 break-words">{l.label}</span>
+            <span className="shrink-0">{formatAmount(l.amount)}</span>
           </li>
         ))}
       </ul>
