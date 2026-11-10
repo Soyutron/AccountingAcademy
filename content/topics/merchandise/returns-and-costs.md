@@ -49,6 +49,8 @@ wrong_patterns:
     feedback: 運賃 2,000 も仕入に含めます。仕入は 52,000 です。
   - match: { credit: [{ account: cash, amount: 52000 }] }
     feedback: 豆の代金 50,000 は掛け(買掛金)で、現金で払ったのは運賃の 2,000 だけです。右を 2 行に分けてみましょう。
+  - match: { credit: [{ account: accounts_payable, amount: 52000 }] }
+    feedback: 掛けにしたのは豆の代金 50,000 だけです。運賃 2,000 は運送会社に現金で払ったので、右を買掛金と現金の 2 行に分けてみましょう。
   - match: { swapped: true }
     misconception: debit_means_increase
     feedback: 仕入は費用なので左、買掛金と減った現金は右です。
@@ -91,6 +93,15 @@ wrong_patterns:
   - match: { debit: [{ account: sales }] }
     misconception: return_as_new_transaction
     feedback: 問屋に返すのは「売る」ことではありません。元の仕入を取り消すので、右に仕入を書きます。
+  - match: { credit: [{ account: sales }] }
+    misconception: return_as_new_transaction
+    feedback: 問屋に返すのは「売る」ことではないので、売上は動きません。元の仕入を取り消すので、右に仕入を書きます。
+  - match: { credit: [{ account: merchandise_inventory }] }
+    misconception: return_as_new_transaction
+    feedback: 返品は、元の仕訳の取り消しです。豆を買ったときに左に書いたのは仕入なので、取り消すときは右に仕入を書きます。
+  - match: { debit: [{ account: accounts_receivable }] }
+    misconception: receivable_payable_confused
+    feedback: 売掛金はお客さんから受け取る権利です。問屋に払う義務が減るので、左は買掛金です。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 10,000 にしましょう。
 hint: 左に買掛金 10,000、右に仕入 10,000 です。
@@ -130,10 +141,18 @@ wrong_patterns:
   - match: { debit: [{ account: accounts_receivable, amount: 31500 }], credit: [{ account: sales, amount: 30000 }, { account: cash, amount: 1500 }] }
     misconception: shipping_mixed_into_sale
     feedback: 売掛金は焼き菓子の代金 30,000 のままです。運賃はお客さんから受け取るお金ではなく、お店が負担する費用なので、発送費として左に書きます。
-  - match: { debit: [{ account: accounts_receivable, amount: 30000 }, { account: shipping_expense }], credit: [{ account: sales, amount: 30000 }, { account: cash }] }
+  - match: { debit: [{ account: accounts_receivable, amount: 31500 }], credit: [{ account: sales, amount: 31500 }] }
+    misconception: shipping_mixed_into_sale
+    feedback: 売掛金も売上も、焼き菓子の代金 30,000 のままです。運賃はお客さんに請求するお金ではなく、お店が現金で払った費用なので、発送費 1,500 と現金 1,500 の行で記録します。
+  - match: { debit: [{ account: accounts_receivable, amount: 28500 }] }
+    misconception: shipping_mixed_into_sale
+    feedback: 売掛金は焼き菓子の代金 30,000 のままで、運賃の分を引かずに書きます。お店は運賃を現金で払ったので、右に現金 1,500 の行が要ります。
+  - match: { debit: [{ account: accounts_receivable }, { account: shipping_expense }], credit: [{ account: sales }, { account: cash }] }
     feedback: 科目は合っています。金額をもう一度確かめましょう。
   - match: { debit: [{ account: accounts_receivable, amount: 30000 }], credit: [{ account: sales, amount: 30000 }] }
     feedback: 売掛金と売上の 30,000 は合っています。運賃の支払いも同じ取引なので、左に発送費 1,500、右に現金 1,500 の行が要ります。
+  - match: { debit: [{ account: shipping_expense, amount: 1500 }], credit: [{ account: cash, amount: 1500 }] }
+    feedback: 発送費 1,500 と現金 1,500 は合っています。焼き菓子を掛けで売った分も同じ取引なので、左に売掛金 30,000、右に売上 30,000 の行が要ります。
 hint: 左に売掛金 30,000 と発送費 1,500、右に売上 30,000 と現金 1,500 です。
 success: 売上は 30,000 のまま、発送費 1,500 が費用に並びました。同じ運賃でも、仕入れるときは仕入に含め、売るときは発送費。向きで扱いが変わります。
 ```
@@ -157,6 +176,9 @@ wrong_patterns:
     feedback: お客さんから戻ってきた菓子を「仕入れた」わけではありません。元の売上を取り消すので、左に売上を書きます。
   - match: { credit: [{ account: cash }] }
     feedback: 代金はまだ受け取っていなかったので、現金は動きません。減るのは売掛金(受け取る権利)です。
+  - match: { credit: [{ account: accounts_payable }] }
+    misconception: receivable_payable_confused
+    feedback: 買掛金は問屋に払う義務です。お客さんから受け取る権利が減るので、右は売掛金です。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 5,000 にしましょう。
 hint: 左に売上 5,000、右に売掛金 5,000 です。
@@ -182,6 +204,11 @@ wrong_patterns:
     feedback: 運賃を引いてしまっています。仕入は運賃込みの 52,000 から、返品 10,000 を引いた金額です。
   - match: 132000
     feedback: 132,000 は結果の損益計算書の仕入で、先月までの 90,000 を含んだ合計です。今月の分だけを、運賃込みの仕入から返品を引いて求めましょう。
+  - match: 62000
+    misconception: return_as_new_transaction
+    feedback: 返品は元の仕入の取り消しなので、足さずに引きます。
+  - match: 122000
+    feedback: 結果の損益計算書の仕入は先月までの 90,000 を含み、返品もすでに引かれた合計です。そこからさらに引かず、今月の運賃込みの仕入から返品を引いて求めましょう。
 hint: 52,000 − 10,000。
 success: 今月の仕入は 42,000 円。運賃は足して、返品は引く。これが仕入の純額です。
 ```
@@ -198,8 +225,10 @@ misconceptions:
     asset: purchase_is_asset
   accounts_receivable:
     revenue: receivable_is_cash
+    liability: receivable_payable_confused
   accounts_payable:
     expense: expense_as_liability
+    asset: receivable_payable_confused
 hint: 発送費と仕入は費用、買掛金は負債、売掛金は資産です。
 success: 発送費も仕入も費用の箱に入りますが、仕入に含めるのは仕入れるときの運賃だけ。売るときの運賃は発送費として分けます。
 ```
