@@ -53,6 +53,20 @@ describe("help topics", () => {
     for (const text of [calc.short, topicBody(calc, { ...base, taskType: "calc" })]) expect(text).not.toContain("結果の表");
   });
 
+  it("「記帳する」が不一致で押せないと言うのは、自由に試すのときだけ(Issue #199)", () => {
+    const journal = helpTopic("journal");
+    const cannotPress = "合計がそろうまで「記帳する」は押せません";
+    // calc は「すべての機能」で開いたときの文脈
+    for (const taskType of ["post", "calc"] as const) {
+      const body = topicBody(journal, { ...base, taskType });
+      expect(body).not.toContain(cannotPress);
+      expect(body).toContain("そろえるよう案内が出ます");
+    }
+    const free = topicBody(journal, { ...base, taskType: "observe", isLast: true });
+    expect(free).toContain(cannotPress);
+    expect(free).not.toContain("案内が出ます");
+  });
+
   it("無い話題は例外", () => {
     expect(() => helpTopic("nope")).toThrow();
   });
