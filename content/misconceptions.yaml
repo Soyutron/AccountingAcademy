@@ -30,6 +30,18 @@ misconceptions:
     correct: 借入金は、いつか返す義務があるお金。資本金は、持ち主が事業のために出した元手で、返す義務がない。「返す必要があるか」で見分ける
     concepts: [equity, liability, five_elements]
     remediation: bookkeeping-basics/five-elements
+  - id: payment_reduces_capital
+    name: お金を払うと元手が減る
+    description: お金が出ていくと元手がそのまま減ると考えて、費用として書かずに資本金を減らしてしまう
+    correct: 資本金は持ち主が出した元手の金額で、支払いでは書き換えない。使ったお金は費用として記録し、費用の分だけ当期純利益が減ることで純資産が減る
+    concepts: [expense, equity]
+    remediation: bookkeeping-basics/five-elements
+  - id: sale_proceeds_as_capital_or_loan
+    name: 売上の代金を元手や借入金と書く
+    description: お店に入ったお金の出どころを区別せず、商品を売って受け取った代金まで資本金や借入金として記録してしまう
+    correct: 資本金は持ち主が出した元手、借入金は返す義務があるお金、売上は商品を売って得た返す必要のないお金。「何によって入ったお金か」で見分ける
+    concepts: [revenue, equity, liability]
+    remediation: bookkeeping-basics/five-elements
   - id: expense_at_payment
     name: 支払った時に費用
     description: 現金を支払った時点で費用になると思っている。支払いと費用の発生を区別していない
@@ -141,13 +153,13 @@ misconceptions:
   - id: incidental_cost_separate
     name: 仕入の運賃を別の費用にする
     description: 商品を仕入れるときにかかった運賃を、仕入とは別の費用として記録してしまう
-    correct: 商品を手に入れるまでにかかった運賃(仕入諸掛)は、商品の値段の一部として仕入に含める
+    correct: お店が負担する、商品を手に入れるまでにかかった運賃(仕入諸掛)は、商品の値段の一部として仕入に含める
     concepts: [incidental_costs, purchase]
     remediation: merchandise/returns-and-costs
   - id: shipping_in_purchases
     name: 発送費を仕入に含める
     description: 売った商品を送る運賃を、仕入に含めてしまう
-    correct: 売るときにかかる運賃は発送費という費用。仕入に含めるのは、仕入れるときにかかった運賃だけ
+    correct: お店が負担する売るときの運賃は発送費という費用。仕入に含めるのは、仕入れるときにかかった運賃だけ
     concepts: [incidental_costs, expense]
     remediation: merchandise/returns-and-costs
   - id: shipping_mixed_into_sale
@@ -190,6 +202,12 @@ misconceptions:
     name: 足りない分を雑益にする
     description: 決算まで原因が分からなかった現金の不足を、雑益(収益)に振り替えてしまう
     correct: 現金が足りなかったのなら損なので雑損(費用)、多かったのなら得なので雑益(収益)。不足は現金過不足の左に預けてあるので、右に書いて消し、左に雑損を書く
+    concepts: [cash_over_and_short, miscellaneous_loss_gain]
+    remediation: cash-and-deposits/cash-over-and-short
+  - id: shortage_transfer_moves_money
+    name: 雑損への振り替えでお金が動く
+    description: 現金過不足を雑損へ振り替える手続きを支払いと考えて、預金などのお金を減らしてしまう
+    correct: 不足した現金は差額が分かったときに帳簿から減らしてある。決算の振り替えは帳簿の中で現金過不足を雑損へ移すだけで、お金は動かない
     concepts: [cash_over_and_short, miscellaneous_loss_gain]
     remediation: cash-and-deposits/cash-over-and-short
   - id: check_is_cash
@@ -315,7 +333,7 @@ misconceptions:
   - id: asset_sale_is_sales
     name: 備品を売ったら売上
     description: 使っていた備品を売ったときに、代金を売上として記録してしまう
-    correct: 売上は商品を売ったときだけ。備品を売ったときは備品(資産)が減り、帳簿価額との差額があれば固定資産売却損益になる
+    correct: 売上は商品を売ったときだけ。備品を売ったときは、備品(資産)そのものを減らす
     concepts: [non_trade_receivable_payable, revenue]
     remediation: receivables-and-payables/other-receivables-and-payables
   - id: advance_is_expense

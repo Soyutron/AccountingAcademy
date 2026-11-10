@@ -60,7 +60,7 @@ right:
 
 ```task
 type: post
-transaction: 古いショーケース(備品、帳簿価額 50,000 円)を 50,000 円で売却し、代金は来月受け取ることにした
+transaction: 帳簿に 50,000 円で載っている古いショーケース(備品)を 50,000 円で売却し、代金は来月受け取ることにした
 answer:
   debit: [{ account: accounts_receivable_other, amount: 50000 }]
   credit: [{ account: equipment, amount: 50000 }]
