@@ -48,6 +48,11 @@ describe("help topics", () => {
     }
   });
 
+  it("calc の説明は表を読むとも読まないとも言わない。指示は本文に任せる(Issue #154)", () => {
+    const calc = helpTopic("calc");
+    for (const text of [calc.short, topicBody(calc, { ...base, taskType: "calc" })]) expect(text).not.toContain("結果の表");
+  });
+
   it("無い話題は例外", () => {
     expect(() => helpTopic("nope")).toThrow();
   });
