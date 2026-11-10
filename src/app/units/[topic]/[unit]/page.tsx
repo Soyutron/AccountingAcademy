@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { units } from "#content";
-import { glossaryAccountList, misconceptionMap, nextUnit, unitMap } from "@/lib/content";
+import { dependsOnUnit, glossaryAccountList, misconceptionMap, nextUnit, unitMap } from "@/lib/content";
 import { Markdown } from "@/components/markdown";
 import { IdeShell, type MisconceptionInfo } from "@/components/ide/ide-shell";
 
@@ -27,7 +27,7 @@ export default async function UnitPage({ params }: { params: Promise<{ topic: st
   const misconceptions: Record<string, MisconceptionInfo> = {};
   for (const m of misconceptionMap.values()) {
     const remediation = unitMap.get(m.remediation)!;
-    misconceptions[m.id] = { id: m.id, name: m.name, description: m.description, correct: m.correct, remediation: { id: remediation.id, title: remediation.title } };
+    misconceptions[m.id] = { id: m.id, name: m.name, description: m.description, correct: m.correct, remediation: { id: remediation.id, title: remediation.title, isLater: dependsOnUnit(remediation, unit.id) } };
   }
 
   return (
