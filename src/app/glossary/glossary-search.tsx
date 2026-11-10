@@ -33,9 +33,9 @@ export function GlossarySearch({ entries, domainTitles, domainOf, urlQuery = "" 
     setQuery(new URLSearchParams(window.location.search).get("q") ?? "");
   }, [urlQuery]);
   // 単元から戻ったときに検索語を復元するため URL に持たせる(Issue #111)。打鍵ごとに履歴を増やさないよう replace にする
-  const updateQuery = (next: string, hash = "") => {
+  const updateQuery = (next: string) => {
     setQuery(next);
-    window.history.replaceState(null, "", `${next ? `?q=${encodeURIComponent(next)}` : window.location.pathname}${hash}`);
+    window.history.replaceState(null, "", next ? `?q=${encodeURIComponent(next)}` : window.location.pathname);
   };
   const q = normalizeSearchText(query);
   const hits = q ? entries.filter((e) => [e.name, ...e.aliases, ...e.reading, e.short].some((t) => normalizeSearchText(t).includes(q))) : entries;
@@ -79,8 +79,15 @@ export function GlossarySearch({ entries, domainTitles, domainOf, urlQuery = "" 
                             href={`#${r.id}`}
                             className="underline"
                             // 絞り込み中は関連先が描画されていないので、検索を解いて DOM に戻してからブラウザのアンカー移動に任せる
-                            // アンカーも URL に含める。replaceState の同期を Next.js が後から反映するとき、含めていない URL で上書きされるため
-                            onClick={() => query && flushSync(() => updateQuery("", `#${r.id}`))}
+                            // アンカーも URL に含める。pushState の同期を Next.js が後から反映するとき、含めていない URL で上書きされるため
+                            // replace だと検索結果の履歴が消え、「戻る」で用語集から出てしまう(Issue #235)
+                            onClick={() =>
+                              query &&
+                              flushSync(() => {
+                                setQuery("");
+                                window.history.pushState(null, "", `${window.location.pathname}#${r.id}`);
+                              })
+                            }
                           >
                             {r.name}
                           </a>
