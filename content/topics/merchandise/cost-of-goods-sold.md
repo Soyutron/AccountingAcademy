@@ -85,6 +85,14 @@ wrong_patterns:
     feedback: 費用が減ると当期純利益が増え、そのぶん純資産も増えます。
   - match: { revenue: increase }
     feedback: 売ったわけではないので、売上は動きません。費用が減るだけです。
+  - match: { expense: increase }
+    misconception: purchases_equal_cogs
+    feedback: 売れ残りの分は、まだ費用ではありません。費用から取り出すので、仕入(費用)は増えずに減ります。
+  - match: { asset: decrease }
+    misconception: purchases_equal_cogs
+    feedback: 売れ残った商品は、これから売れる財産です。費用から資産へ移すので、資産は減らずに増えます。
+  - match: { equity: decrease }
+    feedback: 費用が減ると当期純利益が増えるので、純資産は減らずに増えます。
 hint: 資産(繰越商品)が増え、費用(仕入)が減ります。費用が減れば利益も純資産も増えます。
 success: 仕入が 110,000 に減り、資産に繰越商品 22,000 が現れました。損益計算書の仕入が、ちょうど売上原価になっています。
 ```
@@ -126,6 +134,15 @@ wrong_patterns:
     feedback: まだ売っていません。商品を仕入の列に戻すだけです。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 22,000 にしましょう。
+  - match: { credit: [{ account: cash }] }
+    misconception: inventory_transfer_as_transaction
+    feedback: 前の期から持ち越した商品を、帳簿の中で別の科目へ移すだけです。お金は払っていないので、右に現金は書きません。
+  - match: { debit: [{ account: cash }] }
+    misconception: inventory_transfer_as_transaction
+    feedback: 帳簿の中で別の科目へ移すだけなので、お金は入ってきていません。左に現金は書きません。
+  - match: { debit: [{ account: sales }] }
+    misconception: inventory_transfer_as_transaction
+    feedback: まだ売っていませんし、売った分を取り消すわけでもありません。売上は動かさず、持ち越した商品の金額を帳簿の中で移します。
 hint: 左に仕入 22,000、右に繰越商品 22,000 です。
 success: 繰越商品が消えて、仕入に 22,000 が戻りました。前期の売れ残りが、この期の売り物として並んだ形です。
 ```
@@ -149,6 +166,12 @@ wrong_patterns:
     feedback: 日々の仕入は、繰越商品ではなく仕入に書きます。繰越商品を使うのは決算と期首だけです。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 20,000 にしましょう。
+  - match: { credit: [{ account: cash }] }
+    misconception: credit_purchase_paid_in_cash
+    feedback: 「掛け」は代金を後で払う約束です。まだ払っていませんから現金は減らず、後で払う義務を右に書きます。
+  - match: { credit: [{ account: accounts_payable_other }] }
+    misconception: trade_as_nontrade
+    feedback: 未払金は商品以外の物の後払いに使います。商品を掛けで仕入れたときの払う義務は買掛金です。
 hint: 左に仕入 20,000、右に買掛金 20,000 です。
 success: 仕入が 42,000(前期の繰り越し 22,000 + 今回 20,000)になりました。この期の決算で、また売れ残りを数えます。
 ```
