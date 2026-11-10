@@ -153,7 +153,7 @@ misconceptions:
   - id: shortage_is_loss
     name: 足りない分はすぐ費用
     description: 金庫の現金が帳簿より少ないと分かった時点で、差額をそのまま雑損などの費用にしてしまう
-    correct: まず現金過不足という仮の置き場に差額を入れ、原因を調べる。記帳漏れが見つかれば本来の科目へ移し、決算まで分からなかった分だけが雑損になる
+    correct: 期中(決算の日より前)に分かった差額は、まず現金過不足という仮の置き場に入れ、原因を調べる。記帳漏れが見つかれば本来の科目へ移し、決算まで分からなかった分だけが雑損になる
     concepts: [cash_over_and_short, miscellaneous_loss_gain]
     remediation: cash-and-deposits/cash-over-and-short
   - id: unknown_shortage_as_known_expense
