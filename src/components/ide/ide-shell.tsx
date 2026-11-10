@@ -31,7 +31,7 @@ import { HelpControlsContext, HelpIcon } from "./help-icon";
 import { FirstTimeNote } from "./first-time-note";
 import { Spotlight } from "./spotlight";
 import { type HelpContext, type HelpTopic, firstTimeTopic } from "@/lib/help-topics";
-import { TUTORIAL_UNIT_ID, markSeen, updateTutorial, useTutorialState } from "@/lib/tutorial-store";
+import { FIRST_UNIT_AFTER_TUTORIAL, TUTORIAL_UNIT_ID, markSeen, updateTutorial, useTutorialState } from "@/lib/tutorial-store";
 import { REPO_URL } from "@/lib/repo";
 
 // 会計 IDE の本体。ステップの進行、帳簿(記帳済みの仕訳)、課題の確認と記録をまとめて持つ(docs/ide-design.md)
@@ -1055,6 +1055,13 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           ) : unit.next ? (
             <Button asChild>
               <Link href={`/units/${unit.next.id}`}>次の単元: {unit.next.title} →</Link>
+            </Button>
+          ) : isTutorialUnit ? (
+            <Button asChild>
+              {/* ツアーの途中で進むと pending のまま残り、次の単元で「初めてですか?」と勧めてしまう */}
+              <Link href={`/units/${FIRST_UNIT_AFTER_TUTORIAL}`} onClick={() => tutorial.status === "pending" && updateTutorial({ status: "done" })}>
+                3 級パスの最初の単元へ →
+              </Link>
             </Button>
           ) : (
             <Button asChild variant="outline">
