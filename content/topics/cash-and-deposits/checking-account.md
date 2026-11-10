@@ -152,7 +152,7 @@ question: いまの当座預金の残高はいくらですか(円)
 answer: 115000
 wrong_patterns:
   - match: 145000
-    misconception: check_is_cash
+    misconception: received_check_is_checking_account
     feedback: 受け取った小切手 30,000 円は現金に入れました。当座預金には足しません。
   - match: 140000
     feedback: 買掛金 60,000 円のあとに、仕入 25,000 円も小切手で払いました。
