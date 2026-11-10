@@ -200,7 +200,7 @@ accounts:
     element: liability
     why: 将来返済しなければならない義務だからです。受け取った現金は資産ですが、返す義務は負債として別に記録します。
     example: 銀行から借りて、3 年かけて返す 100 万円。
-    concepts: [liability]
+    concepts: [liability, loan]
   - id: capital_stock
     name: 資本金
     reading: [しほんきん]
@@ -277,7 +277,7 @@ accounts:
     element: expense
     why: お金を借りるために使った犠牲で、純資産を減らす原因だからです。
     example: 銀行から借りた 100 万円に対して、1 年分として払う 2 万円。
-    concepts: [expense]
+    concepts: [expense, interest]
   - id: depreciation_expense
     name: 減価償却費
     reading: [げんかしょうきゃくひ]
