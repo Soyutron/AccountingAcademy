@@ -76,6 +76,9 @@ wrong_patterns:
   - match: { asset: none }
     misconception: purchase_is_asset
     feedback: マシンのときとは違い、商品は資産にしません。現金が減った分だけ、資産は減ります。
+  - match: { asset: increase }
+    misconception: purchase_is_asset
+    feedback: 三分法では、買った商品を資産にしません。増える資産はなく、払った現金の分だけ資産は減ります。
   - match: { equity: none }
     feedback: 費用が増えると当期純利益が減り、そのぶん純資産も減ります。
 hint: 現金(資産)が減り、仕入(費用)が増えます。費用が増えれば純資産も減ります。
