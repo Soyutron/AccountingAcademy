@@ -50,6 +50,9 @@ wrong_patterns:
   - match: { debit: [{ account: miscellaneous_loss }] }
     misconception: shortage_is_loss
     feedback: 理由が分からないうちから費用にはしません。まず現金過不足に預けて、原因を探します。
+  - match: { debit: [{ account: communication_expense }] }
+    misconception: shortage_is_loss
+    feedback: 原因がまだ分からないので通信費にはできません。まず現金過不足に預けて、原因を探します。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 3,000 にしましょう。
 hint: 左に現金過不足 3,000、右に現金 3,000 です。
@@ -117,6 +120,9 @@ wrong_patterns:
   - match: { credit: [{ account: miscellaneous_gain }] }
     misconception: shortage_is_gain
     feedback: 今回は現金が足りなかったので損(雑損)です。雑益は現金が多かったときに使います。足りなかった分は現金過不足の左に預けてあるので、右に書いて消します。
+  - match: { debit: [{ account: communication_expense }] }
+    misconception: unknown_shortage_as_known_expense
+    feedback: 通信費は原因が分かった 2,000 円の分です。残りの 1,000 円は原因が分からないままなので、雑損にします。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 1,000 にしましょう。
 hint: 左に雑損 1,000、右に現金過不足 1,000 です。
