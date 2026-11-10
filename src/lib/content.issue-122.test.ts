@@ -15,6 +15,6 @@ describe("掛けで売る、掛けで買う の本文(Issue #122)", () => {
 
   it("普通預金の初出に定義を添える", () => {
     const firstLine = body.split("\n").find((line) => line.includes("普通預金"));
-    expect(firstLine).toContain("普通預金(銀行に預けてあるお金)");
+    expect(firstLine).toContain("[[bank_deposit|普通預金]](銀行に預けてあるお金)");
   });
 });
