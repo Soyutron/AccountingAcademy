@@ -48,6 +48,12 @@ misconceptions:
     correct: 減価償却累計額は資産のマイナスを表す評価勘定。誰かに支払う義務ではないので負債ではなく、貸借対照表では資産から控除して表示する
     concepts: [contra_account, indirect_method]
     remediation: depreciation/what-is-depreciation
+  - id: contra_increase_as_asset_increase
+    name: 累計額が増えると資産が増える
+    description: 減価償却累計額の金額が増えるのを見て、資産の合計も増えると思っている
+    correct: 減価償却累計額は資産のマイナスを表す評価勘定。累計額が増えるほど差し引く金額が大きくなり、資産の合計は減る
+    concepts: [contra_account, indirect_method]
+    remediation: depreciation/what-is-depreciation
   - id: direct_writeoff_vs_contra
     name: 資産を直接減らす
     description: 間接法と指定されているのに、建物や備品の勘定科目を直接減らしてしまう
