@@ -57,7 +57,8 @@ export interface MisconceptionInfo {
   name: string;
   description: string;
   correct: string;
-  remediation: { id: string; title: string };
+  // isLater: 案内先がいまの単元を前提にしている(まだ読めない)
+  remediation: { id: string; title: string; isLater: boolean };
 }
 
 interface Props {
@@ -1006,10 +1007,14 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
                   <p className="font-semibold">よくある思い込み: {mis.name}</p>
                   <p>{mis.description}</p>
                   <p>見方: {mis.correct}</p>
-                  {mis.remediation.id !== unit.id && (
-                    <Link href={`/units/${mis.remediation.id}`} className="underline">
-                      解きほぐす単元: {mis.remediation.title}
-                    </Link>
+                  {mis.remediation.isLater ? (
+                    <p>あとの単元「{mis.remediation.title}」で詳しく学びます</p>
+                  ) : (
+                    mis.remediation.id !== unit.id && (
+                      <Link href={`/units/${mis.remediation.id}`} className="underline">
+                        解きほぐす単元: {mis.remediation.title}
+                      </Link>
+                    )
                   )}
                 </div>
               ))}
