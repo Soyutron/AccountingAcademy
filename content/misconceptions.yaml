@@ -60,6 +60,12 @@ misconceptions:
     correct: 現金は資産を買った時点で減っている。減価償却はその支出を各期に配分する手続きであり、お金の動きを伴わない
     concepts: [depreciation, cost_allocation]
     remediation: depreciation/what-is-depreciation
+  - id: depreciation_as_supplies_expense
+    name: 使った分は消耗品費
+    description: 長く使う資産の使った分を、使って減ったものという連想から消耗品費として記録してしまう
+    correct: 消耗品費はすぐ使い切る物の費用。何年も使う資産の、その期に使った分は減価償却費として記録する
+    concepts: [depreciation, cost_allocation]
+    remediation: depreciation/what-is-depreciation
   - id: forgot_monthly_proration
     name: 月割りを忘れる
     description: 期の途中で取得した資産でも、1 年分の減価償却費を計上してしまう
