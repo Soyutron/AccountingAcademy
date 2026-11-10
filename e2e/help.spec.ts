@@ -40,6 +40,7 @@ test("見出し横の「?」でその機能だけの説明が読め、「もっ�
   const help = page.getByRole("dialog", { name: "会計 IDE の使い方" });
   await expect(help).toBeVisible();
   await expect(help.locator("#help-impact")).toBeFocused();
+  await expect(help.locator("#help-impact")).toBeInViewport();
   await expect(help.locator("#help-impact dd")).toBeVisible();
 });
 
