@@ -88,7 +88,7 @@ test("クリックで固定した用語から別の用語へマウスを移す�
   await work.getByRole("button", { name: "記帳する" }).click();
   await expect(page.getByRole("status").filter({ hasText: "できました" })).toBeVisible();
 
-  await page.getByRole("region", { name: "ガイド" }).locator("button.term").first().click();
+  await page.getByRole("region", { name: "ガイド" }).locator("button.term", { hasText: "仕訳" }).first().click();
   await expect(popover(page)).toHaveAttribute("aria-label", "仕訳");
   await page.getByRole("region", { name: "結果" }).locator("button.term").first().hover();
   await expect(page.locator('[data-slot=popover-content][aria-label="現金"]')).toBeVisible();
