@@ -333,7 +333,7 @@ misconceptions:
   - id: asset_sale_is_sales
     name: 備品を売ったら売上
     description: 使っていた備品を売ったときに、代金を売上として記録してしまう
-    correct: 売上は商品を売ったときだけ。備品を売ったときは備品(資産)が減り、帳簿価額との差額があれば固定資産売却損益になる
+    correct: 売上は商品を売ったときだけ。備品を売ったときは、備品(資産)そのものを減らす
     concepts: [non_trade_receivable_payable, revenue]
     remediation: receivables-and-payables/other-receivables-and-payables
   - id: advance_is_expense
