@@ -244,23 +244,21 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       .catch((e: Error) => console.error(e));
   }, [unit.id, unit.steps.length]);
 
+  // 「← 前へ」で戻っても posted には後のステップの仕訳が残るので、画面の帳簿と残高は表示中のステップまでで出す
+  const visiblePosted = useMemo(() => posted.filter((p) => p.step <= stepIndex), [posted, stepIndex]);
   const balancesBefore = useMemo(
     () => computeBalances(unit.opening, posted.filter((p) => p.step < stepIndex).map((p) => p.entry), accountMap),
     [unit.opening, posted, stepIndex, accountMap],
   );
-  const balancesNow = useMemo(() => computeBalances(unit.opening, posted.map((p) => p.entry), accountMap), [unit.opening, posted, accountMap]);
-  // 「← 前へ」で戻ると posted に後のステップの仕訳も残っているので、差分は表示中のステップまでで取る
-  const diff = useMemo(
-    () => diffBalances(balancesBefore, computeBalances(unit.opening, posted.filter((p) => p.step <= stepIndex).map((p) => p.entry), accountMap)),
-    [balancesBefore, unit.opening, posted, stepIndex, accountMap],
-  );
+  const balancesNow = useMemo(() => computeBalances(unit.opening, visiblePosted.map((p) => p.entry), accountMap), [unit.opening, visiblePosted, accountMap]);
+  const diff = useMemo(() => diffBalances(balancesBefore, balancesNow), [balancesBefore, balancesNow]);
   // さかのぼり表示中は、その時点の残高と、その 1 件で動いた差分を見せる
   const view = useMemo(() => {
-    if (viewUpto === null || viewUpto >= posted.length) return { balances: balancesNow, diff };
-    const upto = computeBalances(unit.opening, posted.slice(0, viewUpto).map((p) => p.entry), accountMap);
-    const prev = computeBalances(unit.opening, posted.slice(0, Math.max(0, viewUpto - 1)).map((p) => p.entry), accountMap);
+    if (viewUpto === null || viewUpto >= visiblePosted.length) return { balances: balancesNow, diff };
+    const upto = computeBalances(unit.opening, visiblePosted.slice(0, viewUpto).map((p) => p.entry), accountMap);
+    const prev = computeBalances(unit.opening, visiblePosted.slice(0, Math.max(0, viewUpto - 1)).map((p) => p.entry), accountMap);
     return { balances: upto, diff: viewUpto === 0 ? new Map<string, number>() : diffBalances(prev, upto) };
-  }, [viewUpto, posted, balancesNow, diff, unit.opening, accountMap]);
+  }, [viewUpto, visiblePosted, balancesNow, diff, unit.opening, accountMap]);
 
   // 失敗の詳細(RLS の英文など)は console に出し、学習者には取るべき行動だけ見せる
   const trySave = async (fn: () => Promise<void>, isAttempt: boolean) => {
@@ -600,7 +598,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const canReveal = attempts >= 2 && canRevealAnswer(task.type) && !result?.correct;
   const misIds = result && "misconceptions" in result ? result.misconceptions : result?.misconception ? [result.misconception] : [];
   const misList = misIds.flatMap((id) => misconceptions[id] ?? []);
-  const helpCtx: HelpContext = { taskType: task.type, postedCount: posted.length, isLast, hasHint: Boolean(hint) };
+  const helpCtx: HelpContext = { taskType: task.type, postedCount: visiblePosted.length, isLast, hasHint: Boolean(hint) };
   const openHelpTopic = (id: string, returnTo: HTMLElement | null) => {
     helpReturnTo.current = returnTo;
     setHelpFocus(id);
@@ -887,14 +885,14 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               <TabsTrigger value="ledger">総勘定元帳(T 勘定)</TabsTrigger>
             </TabsList>
             <TabsContent value="ledger" className="pt-2">
-              <LedgerTab opening={unit.opening} posted={posted} accounts={accountMap} />
+              <LedgerTab opening={unit.opening} posted={visiblePosted} accounts={accountMap} />
             </TabsContent>
             <TabsContent value="journal" className="pt-2">
-            {posted.length === 0 ? (
+            {visiblePosted.length === 0 ? (
               <p className="text-xs text-muted-foreground">まだ記帳はありません。</p>
             ) : (
               <ol className="space-y-1 text-xs">
-                {posted.map((p, i) => (
+                {visiblePosted.map((p, i) => (
                   <li key={i} className={`rounded border px-2 py-1 ${p.step === stepIndex ? "border-primary/50 bg-primary/5 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1" : ""}`}>
                     <div className="text-muted-foreground">{p.memo}</div>
                     <div className="grid grid-cols-2 gap-2 font-mono tabular-nums">
@@ -928,30 +926,30 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         </section>
 
         <section id="pane-result" role="region" aria-label="結果" className={`${paneClass("result")} bg-surface-result`} data-tour="statements">
-          {posted.length > 1 && (
+          {visiblePosted.length > 1 && (
             <div className="mb-3 rounded-md border p-2 text-xs space-y-1" data-tour="rewind">
               <div className="flex items-center gap-1">
               <label className="flex flex-1 items-center justify-between gap-2">
                 <span className="font-medium">帳簿をさかのぼる</span>
                 <span className="text-muted-foreground font-mono tabular-nums">
-                  {viewUpto === null || viewUpto >= posted.length ? "最新" : viewUpto === 0 ? "記帳前" : `${viewUpto} 件目まで`}
+                  {viewUpto === null || viewUpto >= visiblePosted.length ? "最新" : viewUpto === 0 ? "記帳前" : `${viewUpto} 件目まで`}
                 </span>
                 <input
                   ref={rewindSlider}
                   type="range"
                   min={0}
-                  max={posted.length}
-                  value={viewUpto ?? posted.length}
-                  onChange={(e) => setViewUpto(Number(e.target.value) >= posted.length ? null : Number(e.target.value))}
+                  max={visiblePosted.length}
+                  value={viewUpto ?? visiblePosted.length}
+                  onChange={(e) => setViewUpto(Number(e.target.value) >= visiblePosted.length ? null : Number(e.target.value))}
                   className="flex-1"
-                  aria-valuetext={viewUpto === null || viewUpto >= posted.length ? "最新" : `${viewUpto} 件目まで`}
+                  aria-valuetext={viewUpto === null || viewUpto >= visiblePosted.length ? "最新" : `${viewUpto} 件目まで`}
                 />
               </label>
               <HelpIcon topic="rewind" />
               </div>
-              {viewUpto !== null && viewUpto < posted.length && (
+              {viewUpto !== null && viewUpto < visiblePosted.length && (
                 <p className="text-muted-foreground">
-                  {viewUpto === 0 ? "まだ何も記帳していない状態です。" : `「${posted[viewUpto - 1].memo}」を記帳した直後の姿です。`}
+                  {viewUpto === 0 ? "まだ何も記帳していない状態です。" : `「${visiblePosted[viewUpto - 1].memo}」を記帳した直後の姿です。`}
                   <button
                     type="button"
                     className="ml-2 underline"
