@@ -25,7 +25,7 @@ export type ParsedAmount = { value: number } | { reason: string };
 const MAX_AMOUNT = 9_999_999_999_999;
 
 /**
- * 金額の入力を円単位の整数として解釈する。IME をオンのまま打った全角数字・全角カンマ・末尾の「円」は受け付け、
+ * 金額の入力を円単位の整数として解釈する。IME をオンのまま打った全角数字・全角カンマ・末尾の「円」(問題文の「30,000 円」のように前に空白があってもよい。Issue #211)は受け付け、
  * それ以外は理由を返す(Issue #43)。`Number()` に任せると「1e6」や上限を超える桁まで通ってしまう。
  * signed は calc 用で、負数と 0 を許す(当期純損失などを答える課題がある)。
  * 先頭の「ー」は IME のマイナスキーで出る長音符、「△」「▲」は結果ペインも使う日本の会計の負号なので、負号として読む(Issue #131)。
@@ -35,7 +35,7 @@ export function parseAmount(text: string, signed = false): ParsedAmount {
     .trim()
     .replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0))
     .replace(/[,，]/g, "")
-    .replace(/円$/, "")
+    .replace(/\s*円$/, "")
     .replace(/^[−－ー△▲]/, "-");
   if (s === "") return { reason: "金額を入れてください" };
   if (/^-?\d+\.\d+$/.test(s)) return { reason: "小数は使えません。円単位の整数で入力してください" };
