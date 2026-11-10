@@ -51,7 +51,7 @@ export function HelpDialog({ open, onOpenChange, focusTopic, returnToRef, ctx, s
       </DialogTrigger>
       <DialogContent
         ref={content}
-        className="max-h-[85dvh] overflow-y-auto sm:max-w-lg"
+        className="flex max-h-[85dvh] flex-col sm:max-w-lg"
         onCloseAutoFocus={(e) => {
           if (toTour.current) {
             e.preventDefault();
@@ -70,68 +70,71 @@ export function HelpDialog({ open, onOpenChange, focusTopic, returnToRef, ctx, s
           <DialogDescription>困ったときに、必要なところだけ開いて読めます。</DialogDescription>
         </DialogHeader>
 
-        {current.length > 0 && (
-          <section aria-labelledby="help-current" className="space-y-2">
-            <h3 id="help-current" className="flex flex-wrap items-baseline justify-between gap-x-2 text-sm font-semibold">
-              いまの画面でできること
-              <span className="text-xs font-normal text-muted-foreground">{stepLabel}</span>
+        {/* × は DialogContent に absolute で置かれるので、一緒に流れないよう本文だけをスクロールさせる */}
+        <div className="-mx-4 -mb-4 space-y-4 overflow-y-auto px-4 pb-4">
+          {current.length > 0 && (
+            <section aria-labelledby="help-current" className="space-y-2">
+              <h3 id="help-current" className="flex flex-wrap items-baseline justify-between gap-x-2 text-sm font-semibold">
+                いまの画面でできること
+                <span className="text-xs font-normal text-muted-foreground">{stepLabel}</span>
+              </h3>
+              <TopicList topics={current} idPrefix="now" ctx={ctx} onShowTarget={onShowTarget} />
+            </section>
+          )}
+
+          <section aria-labelledby="help-all" className="space-y-1">
+            <h3 id="help-all" className="text-sm font-semibold">
+              すべての機能
             </h3>
-            <TopicList topics={current} idPrefix="now" ctx={ctx} onShowTarget={onShowTarget} />
+            {HELP_CATEGORIES.map((cat) => {
+              const topics = HELP_TOPICS.filter((t) => t.category === cat.id);
+              return (
+                // key に focusCategory を含め、「?」から開き直したときに open 属性を初期値から効かせる
+                <details key={`${cat.id}-${focusCategory === cat.id}`} open={focusCategory === cat.id} className="group rounded-md border">
+                  <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 px-3 text-sm marker:hidden [&::-webkit-details-marker]:hidden">
+                    <span className="font-medium">{cat.label}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {topics.length} 項目 <span aria-hidden className="inline-block transition-transform group-open:rotate-90">▸</span>
+                    </span>
+                  </summary>
+                  <div className="border-t px-3 py-2">
+                    <TopicList topics={topics} idPrefix="help" ctx={ctx} onShowTarget={onShowTarget} />
+                  </div>
+                </details>
+              );
+            })}
           </section>
-        )}
 
-        <section aria-labelledby="help-all" className="space-y-1">
-          <h3 id="help-all" className="text-sm font-semibold">
-            すべての機能
-          </h3>
-          {HELP_CATEGORIES.map((cat) => {
-            const topics = HELP_TOPICS.filter((t) => t.category === cat.id);
-            return (
-              // key に focusCategory を含め、「?」から開き直したときに open 属性を初期値から効かせる
-              <details key={`${cat.id}-${focusCategory === cat.id}`} open={focusCategory === cat.id} className="group rounded-md border">
-                <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 px-3 text-sm marker:hidden [&::-webkit-details-marker]:hidden">
-                  <span className="font-medium">{cat.label}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {topics.length} 項目 <span aria-hidden className="inline-block transition-transform group-open:rotate-90">▸</span>
-                  </span>
-                </summary>
-                <div className="border-t px-3 py-2">
-                  <TopicList topics={topics} idPrefix="help" ctx={ctx} onShowTarget={onShowTarget} />
-                </div>
-              </details>
-            );
-          })}
-        </section>
-
-        <section aria-labelledby="help-tutorial" className="space-y-2 border-t pt-3">
-          <h3 id="help-tutorial" className="text-sm font-semibold">
-            チュートリアルと設定
-          </h3>
-          <div className="flex flex-wrap items-center gap-2 text-sm">
-            {onRestartTour ? (
-              // 同じページでツアーを始めるので、ダイアログを閉じないとツアーがモーダルの背後に隠れる
-              <DialogClose asChild>
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    toTour.current = true;
-                    onRestartTour();
-                  }}
-                >
-                  チュートリアルを最初から
+          <section aria-labelledby="help-tutorial" className="space-y-2 border-t pt-3">
+            <h3 id="help-tutorial" className="text-sm font-semibold">
+              チュートリアルと設定
+            </h3>
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              {onRestartTour ? (
+                // 同じページでツアーを始めるので、ダイアログを閉じないとツアーがモーダルの背後に隠れる
+                <DialogClose asChild>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      toTour.current = true;
+                      onRestartTour();
+                    }}
+                  >
+                    チュートリアルを最初から
+                  </Button>
+                </DialogClose>
+              ) : (
+                <Button size="sm" asChild>
+                  <Link href={`/units/${TUTORIAL_UNIT_ID}?tour=1`}>チュートリアルを最初から</Link>
                 </Button>
-              </DialogClose>
-            ) : (
-              <Button size="sm" asChild>
-                <Link href={`/units/${TUTORIAL_UNIT_ID}?tour=1`}>チュートリアルを最初から</Link>
-              </Button>
-            )}
-            <label className="flex items-center gap-2 text-xs text-muted-foreground">
-              <input type="checkbox" checked={state.enabled} onChange={(e) => updateTutorial({ enabled: e.target.checked })} />
-              初めて単元を開いたときにチュートリアルを案内する
-            </label>
-          </div>
-        </section>
+              )}
+              <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                <input type="checkbox" checked={state.enabled} onChange={(e) => updateTutorial({ enabled: e.target.checked })} />
+                初めて単元を開いたときにチュートリアルを案内する
+              </label>
+            </div>
+          </section>
+        </div>
       </DialogContent>
     </Dialog>
   );
