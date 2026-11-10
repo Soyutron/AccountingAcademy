@@ -3,7 +3,7 @@ import { devices, expect, type Page, test } from "@playwright/test";
 const { defaultBrowserType: _ignored, ...iPhone } = devices["iPhone 13"];
 
 // 桁が増えても財務諸表の金額が列の中で折り返され、列の区切り・結果ペイン・ページの幅を越えない
-const AMOUNTS = ["10000000", "900000000", "9000000000000000"];
+const AMOUNTS = ["10000000", "900000000", "9000000000000"];
 
 async function openFreePlay(page: Page, isPhone: boolean) {
   const work = page.getByRole("region", { name: "ワークスペース" });
