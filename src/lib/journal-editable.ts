@@ -20,9 +20,13 @@ export const emptyEntry = (): EditableEntry => ({
 
 export type ParsedAmount = { value: number } | { reason: string };
 
+// 安全な整数ぎりぎりまで通すと、残高や合計を足した時点で丸められて貸借が合わなくなる(Issue #209)。
+// 13 桁なら、この金額を約 900 回足しても安全な整数に収まる
+const MAX_AMOUNT = 9_999_999_999_999;
+
 /**
  * 金額の入力を円単位の整数として解釈する。IME をオンのまま打った全角数字・全角カンマ・末尾の「円」は受け付け、
- * それ以外は理由を返す(Issue #43)。`Number()` に任せると「1e6」や安全な整数を超える桁まで通ってしまう。
+ * それ以外は理由を返す(Issue #43)。`Number()` に任せると「1e6」や上限を超える桁まで通ってしまう。
  * signed は calc 用で、負数と 0 を許す(当期純損失などを答える課題がある)。
  * 先頭の「ー」は IME のマイナスキーで出る長音符、「△」「▲」は結果ペインも使う日本の会計の負号なので、負号として読む(Issue #131)。
  */
@@ -38,7 +42,7 @@ export function parseAmount(text: string, signed = false): ParsedAmount {
   if (!signed && s.startsWith("-")) return { reason: "マイナスは使えません。半角の数字で入力してください(例: 100000)" };
   if (!/^-?\d+$/.test(s)) return { reason: signed ? "半角の数字だけで入力してください。マイナスは先頭に - を付けます(例: -100000)" : "半角の数字だけで入力してください(例: 100000)" };
   const value = Number(s);
-  if (!Number.isSafeInteger(value)) return { reason: "桁が多すぎます" };
+  if (Math.abs(value) > MAX_AMOUNT) return { reason: "桁が多すぎます" };
   if (!signed && value === 0) return { reason: "1 円以上の金額を入れてください" };
   return { value };
 }
