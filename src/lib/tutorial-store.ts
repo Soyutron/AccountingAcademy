@@ -9,7 +9,7 @@ export type TutorialStatus = "pending" | "skipped" | "done";
 
 export interface TutorialState {
   status: TutorialStatus;
-  // 初回の案内(バナーと自動開始)を出すか。設定から切り替えられる
+  // 初回の案内(バナーと自動開始)を出すか。設定から切り替えられ、「今はしない」とスキップでも切れる
   enabled: boolean;
   // 初出の案内を閉じた(または課題を済ませた)話題 id
   seen: string[];
