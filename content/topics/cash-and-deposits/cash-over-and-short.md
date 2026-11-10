@@ -123,6 +123,9 @@ wrong_patterns:
   - match: { debit: [{ account: communication_expense }] }
     misconception: unknown_shortage_as_known_expense
     feedback: 通信費は原因が分かった 2,000 円の分です。残りの 1,000 円は原因が分からないままなので、雑損にします。
+  - match: { credit: [{ account: bank_deposit }] }
+    misconception: shortage_transfer_moves_money
+    feedback: 普通預金は動いていません。この振り替えは、帳簿の中で現金過不足を雑損へ移すだけです。消すのは現金過不足のほうなので、右に書きます。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 1,000 にしましょう。
 hint: 左に雑損 1,000、右に現金過不足 1,000 です。

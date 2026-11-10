@@ -52,6 +52,9 @@ wrong_patterns:
     feedback: 豆は売るための商品で、マシンのように長く使う備品ではありません。仕入を使います。
   - match: { debit: [{ account: supplies_expense }] }
     feedback: 消耗品費はお店で使い切る物の代金です。売り物の豆は仕入です。
+  - match: { credit: [{ account: bank_deposit }] }
+    misconception: deposit_is_cash
+    feedback: 代金は現金で支払っています。口座から払ったわけではないので、右は現金にしてみましょう。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 30,000 にしましょう。
 hint: 左に仕入 30,000、右に現金 30,000 です。
@@ -104,6 +107,12 @@ wrong_patterns:
   - match: { credit: [{ account: merchandise_inventory }] }
     misconception: purchase_is_asset
     feedback: 商品を資産として持っていたわけではないので、減らす資産もありません。右は売上です。
+  - match: { credit: [{ account: capital_stock }] }
+    misconception: sale_proceeds_as_capital_or_loan
+    feedback: 資本金はあなたが出した元手です。お客さんから受け取った商品の代金は売上です。
+  - match: { credit: [{ account: loans_payable }] }
+    misconception: sale_proceeds_as_capital_or_loan
+    feedback: 売上は返す必要のないお金です。借入金ではなく売上を使います。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 90,000 にしましょう。
 hint: 左に現金 90,000、右に売上 90,000 です。
