@@ -32,6 +32,11 @@ export function nextUnit(unit: Unit): Unit | undefined {
   return undefined;
 }
 
+/** unit が targetId の単元を(前提の前提も含めて)前提にしているか。循環は velite の検査で弾いている */
+export function dependsOnUnit(unit: Unit, targetId: string): boolean {
+  return unit.requires.some((id) => id === targetId || dependsOnUnit(unitMap.get(id)!, targetId));
+}
+
 export function getPath(id: string) {
   return paths.find((p) => p.id === id);
 }

@@ -72,6 +72,12 @@ misconceptions:
     correct: 配分するのは取得原価から残存価額を引いた金額。残存価額は使い終わった後に残る価値なので費用にしない
     concepts: [residual_value, straight_line_method]
     remediation: depreciation/straight-line
+  - id: vehicle_is_equipment
+    name: 車も備品
+    description: 長く使う資産をまとめて備品と考え、配達用の車まで備品として記録してしまう
+    correct: 車は車両運搬具という別の勘定科目。備品も車両運搬具も有形固定資産だが、何を買ったかで科目を分ける
+    concepts: [tangible_fixed_assets, account_title]
+    remediation: depreciation/straight-line
   - id: purchase_is_asset
     name: 仕入は資産
     description: 売るための商品を買ったとき、備品と同じように資産として記録すると思っている
@@ -91,9 +97,9 @@ misconceptions:
     concepts: [accounts_receivable, asset]
     remediation: merchandise/credit-transactions
   - id: deposit_is_cash
-    name: 預金も現金
-    description: 銀行の口座に入ったお金を、手元のお金と同じ「現金」の科目で記録してしまう
-    correct: 現金は手元の通貨、普通預金は銀行の口座の残高で、別の勘定科目。口座に振り込まれたら増えるのは普通預金で、手元の現金は動かない
+    name: 現金と普通預金の取り違え
+    description: 銀行の口座で動いたお金を「現金」と書いたり、手元の現金で払ったのに「普通預金」と書いたりして、2 つの科目を区別しない
+    correct: 現金は手元の通貨、普通預金は銀行の口座の残高で、別の勘定科目。口座への振り込みや口座からの支払いで動くのは普通預金で、手元の現金は動かない
     concepts: [asset, account_title]
     remediation: merchandise/credit-transactions
   - id: receivable_payable_confused
@@ -148,6 +154,12 @@ misconceptions:
     name: 足りない分はすぐ費用
     description: 金庫の現金が帳簿より少ないと分かった時点で、差額をそのまま雑損などの費用にしてしまう
     correct: まず現金過不足という仮の置き場に差額を入れ、原因を調べる。記帳漏れが見つかれば本来の科目へ移し、決算まで分からなかった分だけが雑損になる
+    concepts: [cash_over_and_short, miscellaneous_loss_gain]
+    remediation: cash-and-deposits/cash-over-and-short
+  - id: unknown_shortage_as_known_expense
+    name: 原因不明の分も分かった費用と同じ科目にする
+    description: 決算まで原因が分からなかった不足を、原因が分かった分と同じ通信費などの科目に振り替えてしまう
+    correct: 本来の科目へ移せるのは原因が分かった分だけ。決算まで原因が分からなかった不足は雑損にする
     concepts: [cash_over_and_short, miscellaneous_loss_gain]
     remediation: cash-and-deposits/cash-over-and-short
   - id: shortage_is_gain
@@ -210,6 +222,24 @@ misconceptions:
     correct: 報告された支払いはすべて費用になり、小口現金はその合計だけ減る。報告の内訳と仕訳の行を 1 つずつ突き合わせる
     concepts: [petty_cash, expense]
     remediation: cash-and-deposits/petty-cash
+  - id: lender_borrower_confused
+    name: 貸付金と借入金の取り違え
+    description: 貸した側と借りた側を逆に捉えて、貸付金と借入金を入れ替えて使ってしまう
+    correct: 貸付金は貸したお金を後で返してもらう権利(資産)、借入金は借りたお金を後で返す義務(負債)。「自分は貸したのか、借りたのか」で見分ける
+    concepts: [loan, asset, liability]
+    remediation: receivables-and-payables/loans
+  - id: interest_income_expense_confused
+    name: 受取利息と支払利息の取り違え
+    description: 利息を払ったのに受取利息と書くなど、利息をもらう側と払う側を逆にしてしまう
+    correct: 受取利息は貸した側がもらう収益、支払利息は借りた側が払う費用。「自分はもらったのか、払ったのか」で見分ける
+    concepts: [interest, revenue, expense]
+    remediation: receivables-and-payables/loans
+  - id: interest_months_not_divided
+    name: 月数をそのまま掛ける
+    description: 年利に月数をそのまま掛けて、利息を実際の何倍にも計算してしまう
+    correct: 年利は 1 年分の率。利息は 元本 × 年利率 × 月数 ÷ 12 で、月数は 12 で割って年に直してから掛ける
+    concepts: [interest]
+    remediation: receivables-and-payables/loans
   - id: interest_is_loan_return
     name: 利息も貸したお金の戻り
     description: 受け取った利息を、貸付金が戻ってきた分として貸付金を減らしてしまう
