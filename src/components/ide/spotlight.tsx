@@ -15,7 +15,8 @@ export function useTargetRect(target?: string, { reveal = false }: { reveal?: bo
     let pendingReveal = reveal;
     const measure = () => {
       const el = document.querySelector<HTMLElement>(`[data-tour="${target}"]`);
-      if (el && pendingReveal && el.getBoundingClientRect().width > 0) {
+      // 閉じる途中の Dialog の暗幕が残っている間は、対象が見えていても隠れと判定されるので待つ
+      if (el && pendingReveal && el.getBoundingClientRect().width > 0 && !document.querySelector('[data-slot="dialog-overlay"]')) {
         pendingReveal = false;
         revealIfCovered(el);
       }
@@ -54,7 +55,7 @@ export function SpotlightRing({ rect }: { rect: DOMRect }) {
 
 /** 「場所を示す」: 対象を数秒光らせる。何か操作するか Esc で消える */
 export function Spotlight({ target, onDone }: { target: string; onDone: () => void }) {
-  const rect = useTargetRect(target);
+  const rect = useTargetRect(target, { reveal: true });
   // onDone は描画ごとに作り直されるが、位置の計測で再描画するたびに 3 秒を数え直さないよう ref で参照する
   const done = useRef(onDone);
   useEffect(() => {
