@@ -40,6 +40,25 @@ test("「今はしない」を押すと「使い方」のチェックが外れ�
   await expect(bannerOf(page)).toBeVisible();
 });
 
+test("付け直して戻った案内の「はじめる」でツアーが始まり、スキップ後の reload では始まり直さない", async ({ page }) => {
+  await declineFromBanner(page);
+  await openHelp(page);
+  await settingOf(page).check();
+  await page.keyboard.press("Escape");
+
+  await page.goto(otherUnit);
+  await bannerOf(page).getByRole("link", { name: "はじめる" }).click();
+  const tour = page.getByRole("dialog", { name: "チュートリアル" });
+  await expect(tour).toBeVisible();
+  await tour.getByRole("button", { name: "スキップ" }).click();
+  await expect(tour).toHaveCount(0);
+
+  await page.reload();
+  await page.waitForLoadState("networkidle");
+  await expect(page.getByRole("region", { name: "ガイド" })).toBeVisible();
+  await expect(tour).toHaveCount(0);
+});
+
 test("「今はしない」の後、チェックを外したままなら未着手の単元で案内は出ない", async ({ page }) => {
   await declineFromBanner(page);
   await expectNoBannerAfterHydration(page, otherUnit);

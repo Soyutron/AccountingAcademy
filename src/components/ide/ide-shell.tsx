@@ -685,7 +685,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
             <div className="mb-3 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm flex flex-wrap items-center gap-2" role="note">
               <span className="flex-1">初めてですか? 2 分のチュートリアルで、実際に 1 件記帳しながら使い方を覚えられます。</span>
               <Button size="sm" asChild>
-                <Link href={`/units/${TUTORIAL_UNIT_ID}`}>はじめる</Link>
+                {/* skipped でもバナーは出るので、status に頼らずツアーを始める(Issue #165) */}
+                <Link href={`/units/${TUTORIAL_UNIT_ID}?tour=1`}>はじめる</Link>
               </Button>
               <Button
                 size="sm"
