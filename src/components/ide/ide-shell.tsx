@@ -790,7 +790,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
                 {ELEMENTS.map((el) => (
                   <label key={el} className="text-sm space-y-1">
                     <ElementBadge element={el} />
-                    <select aria-label={`${ELEMENT_LABELS[el]}の予想`} className="block w-full rounded-md border bg-background px-2 py-1" value={effect[el] ?? ""} onChange={(e) => setEffect({ ...effect, [el]: e.target.value as Change })}>
+                    <select aria-label={`${ELEMENT_LABELS[el]}の予想`} className="block h-8 w-full rounded-md border bg-background px-2 py-1 text-base md:text-sm" value={effect[el] ?? ""} onChange={(e) => setEffect({ ...effect, [el]: e.target.value as Change })}>
                       <option value="">選ぶ</option>
                       {(Object.keys(CHANGE_LABELS) as Change[]).map((c) => (
                         <option key={c} value={c}>
