@@ -1128,7 +1128,7 @@ function TaskBox({ task, onAmount }: { task: Task; onAmount?: (digits: string) =
       case "classify":
         return { title: "科目を 5 つの箱に分けましょう", body: null };
       case "calc":
-        return { title: "結果の表を読んで答えましょう", body: task.question };
+        return { title: "金額を答えましょう", body: task.question };
       case "observe":
         return null;
     }
