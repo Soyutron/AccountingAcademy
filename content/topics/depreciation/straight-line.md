@@ -49,6 +49,12 @@ wrong_patterns:
   - match: { debit: [{ account: supplies_expense }] }
     misconception: expense_at_payment
     feedback: 軽バンは何年も使う財産なので、払った時点では費用になりません。車両運搬具を使います。
+  - match: { debit: [{ account: equipment }] }
+    misconception: vehicle_is_equipment
+    feedback: 軽バンは備品ではなく車両運搬具です。同じ有形固定資産でも、コーヒーマシンのような機器は備品、車は車両運搬具と分けて記録します。
+  - match: { credit: [{ account: bank_deposit }] }
+    misconception: deposit_is_cash
+    feedback: 取引文は現金での購入です。普通預金は動いていないので、右は現金です。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも 1,200,000 にしましょう。
 hint: 左に車両運搬具 1,200,000、右に現金 1,200,000 です。
