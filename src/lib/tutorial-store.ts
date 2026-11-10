@@ -78,3 +78,5 @@ export function useTutorialState(): TutorialState {
 }
 
 export const TUTORIAL_UNIT_ID = "tutorial/first-entry";
+// チュートリアルの次に進む単元。boki-3 パスの先頭
+export const FIRST_UNIT_AFTER_TUTORIAL = "bookkeeping-basics/five-elements";
