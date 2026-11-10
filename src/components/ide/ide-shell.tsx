@@ -681,18 +681,19 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       <div className="grid flex-1 min-h-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)]">
         <section id="pane-guide" role="region" aria-label="ガイド" className={`${paneClass("guide")} bg-surface-guide lg:border-r`} data-tour="guide">
           <h2 ref={stepHeading} tabIndex={-1} className={`text-lg font-semibold mb-2 ${FOCUS_TARGET_CLASS}`}>{step.title}</h2>
-          {!isTutorialUnit && noRecord && tutorial.status === "pending" && tutorial.enabled && (
+          {!isTutorialUnit && noRecord && tutorial.status !== "done" && tutorial.enabled && (
             <div className="mb-3 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm flex flex-wrap items-center gap-2" role="note">
               <span className="flex-1">初めてですか? 2 分のチュートリアルで、実際に 1 件記帳しながら使い方を覚えられます。</span>
               <Button size="sm" asChild>
-                <Link href={`/units/${TUTORIAL_UNIT_ID}`}>はじめる</Link>
+                {/* skipped でもバナーは出るので、status に頼らずツアーを始める(Issue #165) */}
+                <Link href={`/units/${TUTORIAL_UNIT_ID}?tour=1`}>はじめる</Link>
               </Button>
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={() => {
                   stepHeading.current?.focus();
-                  updateTutorial({ status: "skipped" });
+                  updateTutorial({ status: "skipped", enabled: false });
                 }}
               >
                 今はしない
