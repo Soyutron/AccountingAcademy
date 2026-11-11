@@ -6,7 +6,7 @@ import { gradePost } from "./grading";
 describe("預かったお金、仮のお金", () => {
   const postTask = (title: string) => {
     const step = unitMap.get("receivables-and-payables/temporary-and-deposits")!.steps.find((s) => s.title === title)!;
-    if (step.task.type !== "post") throw new Error("post ではない");
+    if (step.task.type !== "post") throw new Error("postではない");
     return step.task;
   };
 

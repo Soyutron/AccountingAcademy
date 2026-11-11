@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
-# needs-triage の Issue を、読み取り専用の Claude が main で再現して振り分ける。設計は docs/quality-loop.md §4.3。
+# needs-triageのIssueを、読み取り専用のClaudeがmainで再現して振り分ける。設計はdocs/quality-loop.md §4.3。
 #
-#   scripts/triage-agent.sh <Issue 番号>   # 1 件
-#   scripts/triage-agent.sh loop           # needs-triage を古い順に全部
+#   scripts/triage-agent.sh <Issue番号>   # 1件
+#   scripts/triage-agent.sh loop           # needs-triageを古い順に全部
 #
-# 結果: ready-for-agent(+ Agent Brief コメント)/ ready-for-human / needs-info / duplicate(閉じる)/ wontfix(閉じる)。
-# 優先度ラベル p1〜p3 は判定に合わせて付け替える。
+# 結果: ready-for-agent(+ Agent Briefコメント)/ ready-for-human / needs-info / duplicate(閉じる)/ wontfix(閉じる)。
+# 優先度ラベルp1〜p3は判定に合わせて付け替える。
 #
 # 環境変数:
-#   TRIAGE_MODEL          モデル(既定 opus)
-#   TRIAGE_PHASE_TIMEOUT  claude -p 1 回の上限秒(既定 1800)
-#   TRIAGE_MAX_TURNS      ターン上限(既定 120)
-#   TRIAGE_LOG_DIR        ログ置き場(既定 logs/triage)
-#   TRIAGE_WAIT=1         loop で needs-triage が無くても終了せず待つ(Monkey と並走させるとき)
-# loop は複数同時に走らせてよい(Issue ごとのロックで同じ Issue を二重に判定しない)。
+#   TRIAGE_MODEL          モデル(既定opus)
+#   TRIAGE_PHASE_TIMEOUT  claude -p 1回の上限秒(既定1800)
+#   TRIAGE_MAX_TURNS      ターン上限(既定120)
+#   TRIAGE_LOG_DIR        ログ置き場(既定logs/triage)
+#   TRIAGE_WAIT=1         loopでneeds-triageが無くても終了せず待つ(Monkeyと並走させるとき)
+# loopは複数同時に走らせてよい(Issueごとのロックで同じIssueを二重に判定しない)。
 set -u
 cd "$(dirname "$0")/.."
 ROOT=$PWD
@@ -39,19 +39,19 @@ print(d if not isinstance(d, (dict, list)) else json.dumps(d, ensure_ascii=False
 triage_one() {
   local n=$1 dir="$LOG_DIR/$1" out rc verdict prio reason brief dup labels
   mkdir -p "$dir"
-  # 同じ Issue を別の loop と同時に判定しない
+  # 同じIssueを別のloopと同時に判定しない
   exec 9>"$dir/lock"
-  flock -n 9 || { log "#$n は別のトリアージが処理中です"; return 6; }
+  flock -n 9 || { log "#${n}は別のトリアージが処理中です"; return 6; }
   out="$dir/triage.json"
-  labels=$(gh issue view "$n" --json state,labels --jq 'if .state != "OPEN" then "CLOSED" else ([.labels[].name] | join(" ")) end') || { log "#$n を取得できません"; return 6; }
-  [ "$labels" != "CLOSED" ] || { log "#$n は open ではありません"; return 6; }
-  case " $labels " in *" needs-triage "*) ;; *) log "#$n に needs-triage がありません($labels)"; return 6 ;; esac
-  log "#$n を振り分けます($MODEL、上限 ${PHASE_TIMEOUT}s)"
+  labels=$(gh issue view "$n" --json state,labels --jq 'if .state != "OPEN" then "CLOSED" else ([.labels[].name] | join(" ")) end') || { log "#${n}を取得できません"; return 6; }
+  [ "$labels" != "CLOSED" ] || { log "#${n}はopenではありません"; return 6; }
+  case " $labels " in *" needs-triage "*) ;; *) log "#${n}にneeds-triageがありません($labels)"; return 6 ;; esac
+  log "#${n}を振り分けます($MODEL、上限${PHASE_TIMEOUT}s)"
   local tree_before; tree_before=$(git diff HEAD | sha1sum)
   export ISSUE=$n TRIAGE_DIR=$dir CUTOFF
   CUTOFF=$(date -d "@$(( $(date +%s) + PHASE_TIMEOUT ))" '+%H:%M')
   envsubst '$ISSUE $TRIAGE_DIR $CUTOFF' <scripts/issue-agent/triage.md >"$dir/triage.prompt.md"
-  # 未信頼ワークスペース扱いだと settings.json の allow が効かないので、使う道具は明示的に許可する
+  # 未信頼ワークスペース扱いだとsettings.jsonのallowが効かないので、使う道具は明示的に許可する
   MONKEY_SESSION_DIR="$dir" GUARD_WRITE_DIR="$dir" timeout --foreground -k 30 "$PHASE_TIMEOUT" \
     claude -p "$(cat "$dir/triage.prompt.md")" --model "$MODEL" \
       --permission-mode acceptEdits --max-turns "$MAX_TURNS" \
@@ -61,9 +61,9 @@ triage_one() {
       --settings "$HOOK_SETTINGS" >"$out" 2>"$dir/triage.stderr"
   rc=$?
   if [ "$(json_get "$out" is_error)" != "False" ] && scripts/claude-usage-limit.sh limited "$out" "$dir/triage.stderr"; then return 7; fi
-  [ "$rc" -eq 0 ] && [ -n "$(json_get "$out" structured_output)" ] || { log "#$n: claude が失敗しました(rc=$rc、$dir/)"; return 5; }
-  # 書き込みは guard で $dir に限っている。差分が変わっていたら人が同時に編集した可能性が高いので、警告に留める
-  [ "$(git diff HEAD | sha1sum)" = "$tree_before" ] || log "#$n: 注意: 実行中に作業ツリーの差分が変わりました(人の編集か、guard のすり抜け)"
+  [ "$rc" -eq 0 ] && [ -n "$(json_get "$out" structured_output)" ] || { log "#$n: claudeが失敗しました(rc=$rc、$dir/)"; return 5; }
+  # 書き込みはguardで${dir}に限っている。差分が変わっていたら人が同時に編集した可能性が高いので、警告に留める
+  [ "$(git diff HEAD | sha1sum)" = "$tree_before" ] || log "#$n: 注意: 実行中に作業ツリーの差分が変わりました(人の編集か、guardのすり抜け)"
 
   verdict=$(json_get "$out" structured_output.verdict)
   prio=$(json_get "$out" structured_output.priority)
@@ -71,7 +71,7 @@ triage_one() {
   brief=$(json_get "$out" structured_output.brief)
   dup=$(json_get "$out" structured_output.duplicate_of)
   log "#$n: $verdict ($prio) — $reason"
-  # 同じラベルを remove と add に並べると外れたままになるので、判定した優先度は外さない
+  # 同じラベルをremoveとaddに並べると外れたままになるので、判定した優先度は外さない
   local drop=()
   for l in p1 p2 p3; do [ "$l" != "$prio" ] && drop+=(--remove-label "$l"); done
   gh issue edit "$n" --remove-label needs-triage "${drop[@]}" --add-label "$prio" >/dev/null
@@ -84,13 +84,13 @@ triage_one() {
       printf '%s\n\n## 人の判断が要ります\n\n%s\n\n_判定の根拠: %s_\n' "$AI_NOTE" "$brief" "$reason" | gh issue comment "$n" --body-file - >/dev/null ;;
     needs_info)
       gh issue edit "$n" --add-label needs-info >/dev/null
-      printf '%s\n\n再現しませんでした。%s\n\n次の Monkey テストで同じ現象を観測したら、このコメントの下に追記してください。\n' "$AI_NOTE" "$reason" | gh issue comment "$n" --body-file - >/dev/null ;;
+      printf '%s\n\n再現しませんでした。%s\n\n次のMonkeyテストで同じ現象を観測したら、このコメントの下に追記してください。\n' "$AI_NOTE" "$reason" | gh issue comment "$n" --body-file - >/dev/null ;;
     duplicate)
       gh issue edit "$n" --add-label duplicate >/dev/null
       gh issue close "$n" --comment "$AI_NOTE
 
-#$dup と同じ現象のため閉じます。$reason" >/dev/null
-      [ "$dup" != "0" ] && printf '%s\n\n#%s は同じ現象として閉じました。%s\n' "$AI_NOTE" "$n" "$reason" | gh issue comment "$dup" --body-file - >/dev/null ;;
+#${dup}と同じ現象のため閉じます。$reason" >/dev/null
+      [ "$dup" != "0" ] && printf '%s\n\n#%sは同じ現象として閉じました。%s\n' "$AI_NOTE" "$n" "$reason" | gh issue comment "$dup" --body-file - >/dev/null ;;
     wontfix)
       gh issue edit "$n" --add-label wontfix >/dev/null
       gh issue close "$n" --comment "$AI_NOTE
@@ -110,7 +110,7 @@ case "${1:-}" in
       done
       if [ -z "$n" ]; then
         [ "${TRIAGE_WAIT:-0}" = 1 ] && { sleep 60; continue; }
-        log "needs-triage の Issue はありません"; break
+        log "needs-triageのIssueはありません"; break
       fi
       triage_one "$n"; rc=$?
       case $rc in
@@ -118,10 +118,10 @@ case "${1:-}" in
         7) scripts/claude-usage-limit.sh wait $(( $(date +%s) + 6*3600 )) || break ;;
         *) log "停止します(rc=$rc)"; exit $rc ;;
       esac
-      # 同じ Issue を延々と回さない(ラベルを書けなかったとき)
-      # gh の --jq は null を空で出すので、真偽値で判定する
-      [ "$rc" -ne 0 ] || [ "$(gh issue view "$n" --json labels --jq '[.labels[].name] | any(. == "needs-triage")')" = "false" ] || { log "#$n のラベルを更新できていません。停止します"; exit 5; }
+      # 同じIssueを延々と回さない(ラベルを書けなかったとき)
+      # ghの --jqはnullを空で出すので、真偽値で判定する
+      [ "$rc" -ne 0 ] || [ "$(gh issue view "$n" --json labels --jq '[.labels[].name] | any(. == "needs-triage")')" = "false" ] || { log "#${n}のラベルを更新できていません。停止します"; exit 5; }
     done ;;
-  ""|*[!0-9]*) echo "使い方: scripts/triage-agent.sh <Issue 番号> | loop" >&2; exit 64 ;;
+  ""|*[!0-9]*) echo "使い方: scripts/triage-agent.sh <Issue番号> | loop" >&2; exit 64 ;;
   *) triage_one "$1" ;;
 esac

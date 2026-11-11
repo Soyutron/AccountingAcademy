@@ -77,7 +77,7 @@ export function buildStatements(balances: Balances, accounts: ReadonlyMap<string
   };
 }
 
-/** 2 つの残高の差分(科目 → 増減額)。変わらない科目は含めない */
+/** 2つの残高の差分(科目 → 増減額)。変わらない科目は含めない */
 export function diffBalances(before: Balances, after: Balances): Map<string, number> {
   const diff = new Map<string, number>();
   const ids = new Set([...before.keys(), ...after.keys()]);

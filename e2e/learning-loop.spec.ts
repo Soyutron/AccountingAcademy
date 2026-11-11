@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 
-// 会計 IDE の学習ループ。コンテンツ(.velite)を読んで各ステップを正しく操作し、最後まで進めて進捗が保存されることを確かめる。
-// 最初の post ステップでは、わざと貸借を逆にして「もう一歩」と誤解の説明が出ることも確かめる。
+// 会計IDEの学習ループ。コンテンツ(.velite)を読んで各ステップを正しく操作し、最後まで進めて進捗が保存されることを確かめる。
+// 最初のpostステップでは、わざと貸借を逆にして「もう一歩」と誤解の説明が出ることも確かめる。
 
 type Line = { account: string; amount: number };
 type Entry = { debit: Line[]; credit: Line[] };
@@ -22,7 +22,7 @@ const ELEMENT_LABELS: Record<string, string> = { asset: "資産", liability: "�
 
 async function fillEntry(page: Page, entry: Entry) {
   const work = page.getByRole("region", { name: "ワークスペース" });
-  // 前の入力(わざと間違えた分)が残っていれば、余分な行を消して 1 行目を空にする
+  // 前の入力(わざと間違えた分)が残っていれば、余分な行を消して1行目を空にする
   const removable = work.getByRole("button", { name: "行を削除" });
   for (let guard = 0; guard < 10; guard++) {
     const enabled = await removable.evaluateAll((els) => els.filter((e) => !(e as HTMLButtonElement).disabled).length);
@@ -30,20 +30,20 @@ async function fillEntry(page: Page, entry: Entry) {
     await removable.filter({ hasNot: page.locator("[disabled]") }).first().click();
   }
   for (const side of ["借方", "貸方"]) {
-    await work.getByLabel(`${side}の科目 1`).fill("");
-    await work.getByLabel(`${side}の金額 1`).fill("");
+    await work.getByLabel(`${side}の科目1`).fill("");
+    await work.getByLabel(`${side}の金額1`).fill("");
   }
   for (const [side, lines] of [["借方", entry.debit], ["貸方", entry.credit]] as const) {
     for (let i = 0; i < lines.length; i++) {
       if (i > 0) await work.getByRole("button", { name: "行を追加" }).nth(side === "借方" ? 0 : 1).click();
-      await work.getByLabel(`${side}の科目 ${i + 1}`).fill(nameOf(lines[i].account));
-      await work.getByLabel(`${side}の金額 ${i + 1}`).fill(String(lines[i].amount));
+      await work.getByLabel(`${side}の科目${i + 1}`).fill(nameOf(lines[i].account));
+      await work.getByLabel(`${side}の金額${i + 1}`).fill(String(lines[i].amount));
     }
   }
 }
 
 function solveTweak(task: Extract<Task, { type: "tweak" }>): Record<string, number> {
-  // 定額法: (cost - residual) / useful_life を目標値にするパラメータを総当たりで探す
+  // 定額法: (cost - residual) / useful_lifeを目標値にするパラメータを総当たりで探す
   const values = Object.fromEntries(task.params.map((p) => [p.id, p.value]));
   const compute = (v: Record<string, number>) => {
     const annual = Math.floor(((v.cost ?? 0) - (v.residual_value ?? 0)) / (v.useful_life ?? 1));
@@ -56,11 +56,11 @@ function solveTweak(task: Extract<Task, { type: "tweak" }>): Record<string, numb
       if (compute(trial) === task.goal.equals) return trial;
     }
   }
-  throw new Error(`tweak の解が見つからない: ${JSON.stringify(task)}`);
+  throw new Error(`tweakの解が見つからない: ${JSON.stringify(task)}`);
 }
 
 for (const unit of units) {
-  test(`${unit.title} を最後まで進められる`, async ({ page }) => {
+  test(`${unit.title}を最後まで進められる`, async ({ page }) => {
     await page.goto(`/units/${unit.id}`);
     // チュートリアルの案内やツアーは、学習ループの検証では閉じる
     const tourSkip = page.getByRole("dialog", { name: "チュートリアル" }).getByRole("button", { name: "スキップ" });
@@ -70,7 +70,7 @@ for (const unit of units) {
     let triedWrong = false;
     for (let i = 0; i < unit.steps.length; i++) {
       const { task } = unit.steps[i];
-      await expect(page.getByText(`ステップ ${i + 1} / ${unit.steps.length}`)).toBeVisible();
+      await expect(page.getByText(`ステップ${i + 1} / ${unit.steps.length}`)).toBeVisible();
       const work = page.getByRole("region", { name: "ワークスペース" });
       switch (task.type) {
         case "post": {

@@ -1,17 +1,17 @@
 import { expect, test } from "@playwright/test";
 
-// Issue #11: predict の「これから記帳する仕訳」に 5 要素の増減がそのまま出て、予想する前に答えが見えていた
+// Issue #11: predictの「これから記帳する仕訳」に5要素の増減がそのまま出て、予想する前に答えが見えていた
 test("predict: 予想を送るまで「これから記帳する仕訳」に要素の増減を出さず、送ったあとは出る", async ({ page }) => {
   const work = page.getByRole("region", { name: "ワークスペース" });
   const next = page.getByRole("button", { name: "次へ →" });
   const done = page.getByText("できました", { exact: true });
   await page.goto("/units/depreciation/straight-line");
   await next.click();
-  await work.getByLabel("借方の科目 1").fill("車両運搬具");
-  await work.getByLabel("借方の金額 1").fill("1200000");
-  await work.getByLabel("貸方の科目 1").fill("現金");
-  await work.getByLabel("貸方の金額 1").fill("1200000");
-  // post では入力に応じた影響表示が出る(従来どおり)
+  await work.getByLabel("借方の科目1").fill("車両運搬具");
+  await work.getByLabel("借方の金額1").fill("1200000");
+  await work.getByLabel("貸方の科目1").fill("現金");
+  await work.getByLabel("貸方の金額1").fill("1200000");
+  // postでは入力に応じた影響表示が出る(従来どおり)
   await expect(work.locator('[data-tour="impact"]')).toBeVisible();
   await work.getByRole("button", { name: "記帳する" }).click();
   await expect(done).toBeVisible();
@@ -26,7 +26,7 @@ test("predict: 予想を送るまで「これから記帳する仕訳」に要�
   await work.getByRole("button", { name: "確認する" }).click();
   await expect(done).toBeVisible();
   await next.click();
-  await expect(page.getByText("ステップ 6 / 9")).toBeVisible();
+  await expect(page.getByText("ステップ6 / 9")).toBeVisible();
   await expect(work.getByText("これから記帳する仕訳")).toBeVisible();
   await expect(work.locator('[data-tour="impact"]')).toHaveCount(0);
   await expect(work.getByText("−100,000")).toHaveCount(0);

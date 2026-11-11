@@ -8,10 +8,10 @@ test("利益と損失をまたいだ行の増減は純資産の向きで読め�
   const next = page.getByRole("button", { name: "次へ →" });
   const netIncomeRow = (label: string) => page.getByRole("region", { name: "貸借対照表" }).getByText(label, { exact: true }).locator("xpath=ancestor::div[1]");
   const journal = async (debit: string, credit: string, amount: string) => {
-    await work.getByLabel("借方の科目 1").fill(debit);
-    await work.getByLabel("借方の金額 1").fill(amount);
-    await work.getByLabel("貸方の科目 1").fill(credit);
-    await work.getByLabel("貸方の金額 1").fill(amount);
+    await work.getByLabel("借方の科目1").fill(debit);
+    await work.getByLabel("借方の金額1").fill(amount);
+    await work.getByLabel("貸方の科目1").fill(credit);
+    await work.getByLabel("貸方の金額1").fill(amount);
     await work.getByRole("button", { name: "記帳する" }).click();
   };
   await page.goto("/units/merchandise/three-account-method");
@@ -31,7 +31,7 @@ test("利益と損失をまたいだ行の増減は純資産の向きで読め�
   const profit = netIncomeRow("当期純利益");
   await expect(profit).toContainText("70,000");
   await expect(profit).toContainText("▲");
-  await expect(profit).toContainText("増加 90,000");
+  await expect(profit).toContainText("増加90,000");
 
   await next.click();
   await work.getByPlaceholder("金額(円)").fill("40000");
@@ -46,14 +46,14 @@ test("利益と損失をまたいだ行の増減は純資産の向きで読め�
   await work.getByRole("button", { name: "確認する" }).click();
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   await next.click();
-  await expect(page.getByText("ステップ 7 / 7")).toBeVisible();
+  await expect(page.getByText("ステップ7 / 7")).toBeVisible();
 
   // 利益 → 損失
   await journal("給料", "現金", "100000");
   const loss = netIncomeRow("当期純損失");
   await expect(loss).toContainText("30,000");
   await expect(loss).toContainText("▼");
-  await expect(loss).toContainText("減少 100,000");
+  await expect(loss).toContainText("減少100,000");
   await expect(loss).not.toContainText("▲");
   await expect(loss).not.toContainText("増加");
 });

@@ -4,7 +4,7 @@ import { type AccountInfo, type JournalEntry, accountIncreaseSide } from "@/lib/
 import type { OpeningLine } from "@/lib/ledger";
 import { TAccountFigure } from "@/components/figures/taccount-figure";
 
-// 総勘定元帳タブ。開始残高と記帳済みの仕訳から、科目ごとの T 勘定を組み立てる
+// 総勘定元帳タブ。開始残高と記帳済みの仕訳から、科目ごとのT勘定を組み立てる
 
 interface Posted {
   memo: string;
@@ -26,9 +26,9 @@ export function LedgerTab({ opening, posted, accounts }: { opening: OpeningLine[
     p.entry.credit.forEach((l) => of(l.account).credit.push({ label: p.memo, amount: l.amount }));
   }
   const ids = [...lines.keys()].filter((id) => accounts.has(id));
-  if (ids.length === 0) return <p className="text-xs text-muted-foreground">まだ記帳がありません。記帳すると科目ごとの T 勘定がここに並びます。</p>;
+  if (ids.length === 0) return <p className="text-xs text-muted-foreground">まだ記帳がありません。記帳すると科目ごとのT勘定がここに並びます。</p>;
   return (
-    // grid-cols-1(minmax(0, 1fr))がないと、暗黙の auto 列が T 勘定の中身の幅まで広がる
+    // grid-cols-1(minmax(0, 1fr))がないと、暗黙のauto列がT勘定の中身の幅まで広がる
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       {ids.map((id) => {
         const t = lines.get(id)!;

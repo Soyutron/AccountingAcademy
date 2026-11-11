@@ -9,17 +9,17 @@ describe("parseAmount", () => {
     ["１，０００，０００", 1000000],
     ["100000円", 100000],
     [" 100000 ", 100000],
-  ])("%s を %d と読む", (text, value) => {
+  ])("%sを%dと読む", (text, value) => {
     expect(parseAmount(text)).toEqual({ value });
   });
 
-  it.each(["10万", "1e6", "-1", "0", "1000000.5", " 1 000 000", "9999999999999999", "", "abc"])("%s は理由付きで拒否する", (text) => {
+  it.each(["10万", "1e6", "-1", "0", "1000000.5", " 1 000 000", "9999999999999999", "", "abc"])("%sは理由付きで拒否する", (text) => {
     const r = parseAmount(text);
     expect(r).toHaveProperty("reason");
     expect("reason" in r && r.reason.length > 0).toBe(true);
   });
 
-  it("signed なら負数と 0 を受け付ける(calc の当期純損失など)", () => {
+  it("signedなら負数と0を受け付ける(calcの当期純損失など)", () => {
     expect(parseAmount("-260000", true)).toEqual({ value: -260000 });
     expect(parseAmount("−２６００００", true)).toEqual({ value: -260000 });
     expect(parseAmount("0", true)).toEqual({ value: 0 });

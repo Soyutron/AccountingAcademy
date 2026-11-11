@@ -14,7 +14,7 @@ const entry = (debit: [string, number], credit: [string, number]) => ({
   credit: [{ account: credit[0], amount: credit[1] }],
 });
 
-describe("売れ残りと売上原価 ステップ 3: 振替を逆向きに予想する", () => {
+describe("売れ残りと売上原価 ステップ3: 振替を逆向きに予想する", () => {
   it("資産 減る・純資産 減る・費用 増えるの予想に、それぞれの説明と誤解が付く", () => {
     const result = gradePredict(predictTask(), { asset: "decrease", liability: "none", equity: "decrease", revenue: "none", expense: "increase" });
     expect(result.correct).toBe(false);
@@ -36,13 +36,13 @@ describe("売れ残りと売上原価 ステップ 3: 振替を逆向きに予�
   });
 });
 
-describe("売れ残りと売上原価 ステップ 5: 翌期首の振替", () => {
+describe("売れ残りと売上原価 ステップ5: 翌期首の振替", () => {
   const cases: [string, [string, number], [string, number], string][] = [
     ["右に現金", ["purchases", 22000], ["cash", 22000], "お金"],
     ["左に現金", ["cash", 22000], ["merchandise_inventory", 22000], "お金"],
     ["左に売上", ["sales", 22000], ["merchandise_inventory", 22000], "売って"],
   ];
-  it.each(cases)("%s は、お金も売上も動かない振替だと説明する", (_name, debit, credit, word) => {
+  it.each(cases)("%sは、お金も売上も動かない振替だと説明する", (_name, debit, credit, word) => {
     const result = gradePost(postTask(4), entry(debit, credit));
     expect(result.correct).toBe(false);
     expect(result.misconception).toBe("inventory_transfer_as_transaction");
@@ -61,7 +61,7 @@ describe("売れ残りと売上原価 ステップ 5: 翌期首の振替", () =>
   });
 });
 
-describe("売れ残りと売上原価 ステップ 6: 掛けの仕入", () => {
+describe("売れ残りと売上原価 ステップ6: 掛けの仕入", () => {
   it("右に現金を書くと、掛けはまだ払っていないと説明する", () => {
     const result = gradePost(postTask(5), entry(["purchases", 20000], ["cash", 20000]));
     expect(result.correct).toBe(false);
@@ -70,7 +70,7 @@ describe("売れ残りと売上原価 ステップ 6: 掛けの仕入", () => {
     expect(result.feedback).toContain("まだ払っていません");
   });
 
-  it("右に未払金を書くと trade_as_nontrade", () => {
+  it("右に未払金を書くとtrade_as_nontrade", () => {
     const result = gradePost(postTask(5), entry(["purchases", 20000], ["accounts_payable_other", 20000]));
     expect(result.correct).toBe(false);
     expect(result.misconception).toBe("trade_as_nontrade");

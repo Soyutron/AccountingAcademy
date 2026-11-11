@@ -20,10 +20,10 @@ test("結果ペインの勘定科目のポップオーバーに具体例と分�
   await page.goto("/units/bookkeeping-basics/five-elements");
   await page.getByRole("button", { name: "次へ →" }).click();
   const work = page.getByRole("region", { name: "ワークスペース" });
-  await work.getByLabel("借方の科目 1").fill("現金");
-  await work.getByLabel("借方の金額 1").fill("1000000");
-  await work.getByLabel("貸方の科目 1").fill("資本金");
-  await work.getByLabel("貸方の金額 1").fill("1000000");
+  await work.getByLabel("借方の科目1").fill("現金");
+  await work.getByLabel("借方の金額1").fill("1000000");
+  await work.getByLabel("貸方の科目1").fill("資本金");
+  await work.getByLabel("貸方の金額1").fill("1000000");
   await work.getByRole("button", { name: "記帳する" }).click();
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   await page.getByRole("region", { name: "結果" }).getByRole("button", { name: "現金", exact: true }).first().click();

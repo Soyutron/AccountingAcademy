@@ -4,10 +4,10 @@ const work = (page: Page) => page.getByRole("region", { name: "ワークスペ�
 const next = (page: Page) => page.getByRole("button", { name: "次へ →" }).click();
 async function post(page: Page, debit: [string, string], credit: [string, string]) {
   const w = work(page);
-  await w.getByLabel("借方の科目 1").fill(debit[0]);
-  await w.getByLabel("借方の金額 1").fill(debit[1]);
-  await w.getByLabel("貸方の科目 1").fill(credit[0]);
-  await w.getByLabel("貸方の金額 1").fill(credit[1]);
+  await w.getByLabel("借方の科目1").fill(debit[0]);
+  await w.getByLabel("借方の金額1").fill(debit[1]);
+  await w.getByLabel("貸方の科目1").fill(credit[0]);
+  await w.getByLabel("貸方の金額1").fill(credit[1]);
   await w.getByRole("button", { name: "記帳する" }).click();
   await expect(page.getByRole("status").filter({ hasText: "できました" })).toBeVisible();
 }
@@ -20,7 +20,7 @@ async function calc(page: Page, value: string) {
   await work(page).getByRole("button", { name: "確認する" }).click();
 }
 
-// Issue #181: 145000 は受け取った小切手を当座預金に足した誤答なので、受け取り側の誤解が付くこと
+// Issue #181: 145000は受け取った小切手を当座預金に足した誤答なので、受け取り側の誤解が付くこと
 test("当座預金の計算で受け取った小切手を足すと、該当する誤解が付く", async ({ page }) => {
   await page.goto("/units/cash-and-deposits/checking-account");
   await next(page);

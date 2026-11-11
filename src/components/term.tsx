@@ -8,15 +8,15 @@ import { ElementBadge } from "./element-badge";
 import { useCloseWhenHidden } from "./use-close-when-hidden";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-// 本文中の用語。ホバーまたはタップで short → summary / example → 単元へ、と段階的に掘れる(要件 1 章)
+// 本文中の用語。ホバーまたはタップでshort → summary / example → 単元へ、と段階的に掘れる(要件1章)
 
 export function Term({ entry, children }: { entry: GlossaryEntry; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // ホバーで開いたときだけフォーカスを動かさない。キーボードで開いたときは中身にフォーカスを移して Tab で辿れるようにする
+  // ホバーで開いたときだけフォーカスを動かさない。キーボードで開いたときは中身にフォーカスを移してTabで辿れるようにする
   const byHover = useRef(false);
-  // 開いている間に中身へフォーカスが入ったかを覚えておく。onCloseAutoFocus は DOM を外した後に呼ばれるので、その時点では中身を調べられない
+  // 開いている間に中身へフォーカスが入ったかを覚えておく。onCloseAutoFocusはDOMを外した後に呼ばれるので、その時点では中身を調べられない
   const focusEntered = useRef(false);
   // 「もっと見る」は押すと消えるので、展開した説明にフォーカスを移して位置を失わないようにする
   const details = useRef<HTMLDivElement>(null);
@@ -24,10 +24,10 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
   const trigger = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
 
-  // ホバーの開閉はマウスだけ。タップ後にブラウザが出す互換の mouseleave で閉じないよう、pointer イベントの種類で区別する
+  // ホバーの開閉はマウスだけ。タップ後にブラウザが出す互換のmouseleaveで閉じないよう、pointerイベントの種類で区別する
   const schedule = (e: React.PointerEvent, next: boolean, delay: number) => {
     if (e.pointerType !== "mouse") return;
-    // クリックやキーボードで固定した用語は、Esc か外側のクリックで閉じるまでホバーでは動かさない
+    // クリックやキーボードで固定した用語は、Escか外側のクリックで閉じるまでホバーでは動かさない
     if (open && !byHover.current) return;
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => {
@@ -38,7 +38,7 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
   };
 
   const changeOpen = (next: boolean) => {
-    // 予約済みのホバーのタイマーが残ると、クリック直後の Esc で閉じた後に開き直る
+    // 予約済みのホバーのタイマーが残ると、クリック直後のEscで閉じた後に開き直る
     if (timer.current) clearTimeout(timer.current);
     byHover.current = false;
     setOpen(next);
@@ -97,7 +97,7 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
           focusEntered.current = false;
         }}
         onInteractOutside={(e) => {
-          // Radix は用語の押下も「外側の操作」と覚え、ホバー後にクリックで固定した用語を Esc で閉じたときに用語へフォーカスを戻さない
+          // Radixは用語の押下も「外側の操作」と覚え、ホバー後にクリックで固定した用語をEscで閉じたときに用語へフォーカスを戻さない
           if (trigger.current?.contains(e.target as Node)) e.preventDefault();
         }}
         aria-label={entry.name}

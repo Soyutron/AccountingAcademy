@@ -4,7 +4,7 @@ import { unitMap } from "./content";
 
 function postTask(unitId: string, transaction: string): TaskOf<"post"> {
   const task = unitMap.get(unitId)!.steps.map((s) => s.task).find((t) => t.type === "post" && t.transaction.includes(transaction));
-  if (task?.type !== "post") throw new Error("post の課題が見つからない");
+  if (task?.type !== "post") throw new Error("postの課題が見つからない");
   return task;
 }
 
@@ -16,7 +16,7 @@ describe("科目が合っていて金額だけ違う仕訳", () => {
     credit: [{ account: accounts[1], amount: credit }],
   });
 
-  it.each([5000, 500000])("%i には金額を確かめる説明を返し、誤解 ID は付けない", (amount) => {
+  it.each([5000, 500000])("%iには金額を確かめる説明を返し、誤解IDは付けない", (amount) => {
     const result = gradePost(task, entry(amount, amount));
     expect(result.correct).toBe(false);
     expect(result.misconception).toBeUndefined();
@@ -35,7 +35,7 @@ describe("科目が合っていて金額だけ違う仕訳", () => {
     expect(result.feedback).toContain("金額");
   });
 
-  it("alternatives の科目でも金額の説明になる", () => {
+  it("alternativesの科目でも金額の説明になる", () => {
     const alternative = { debit: [{ account: "cash", amount: 50000 }], credit: [{ account: "equipment", amount: 50000 }] };
     const result = gradePost({ ...task, alternatives: [alternative] }, entry(5000, 5000, ["cash", "equipment"]));
     expect(result.correct).toBe(false);
@@ -43,7 +43,7 @@ describe("科目が合っていて金額だけ違う仕訳", () => {
     expect(result.feedback).not.toContain("何が動くはず");
   });
 
-  it("単元の wrong_patterns が優先される", () => {
+  it("単元のwrong_patternsが優先される", () => {
     const unbalanced = gradePost(task, entry(5000, 50000));
     expect(unbalanced.feedback).toContain("そろっていません");
     const swapped = gradePost(task, entry(50000, 50000, ["equipment", "accounts_receivable_other"]));

@@ -12,8 +12,8 @@ async function fillEntry(page: Page, entry: { debit: { account: string; amount: 
   for (const [side, lines] of [["借方", entry.debit], ["貸方", entry.credit]] as const) {
     for (let i = 0; i < lines.length; i++) {
       if (i > 0) await work(page).getByRole("button", { name: "行を追加" }).nth(side === "借方" ? 0 : 1).click();
-      await work(page).getByLabel(`${side}の科目 ${i + 1}`).fill(lines[i].account);
-      await work(page).getByLabel(`${side}の金額 ${i + 1}`).fill(String(lines[i].amount));
+      await work(page).getByLabel(`${side}の科目${i + 1}`).fill(lines[i].account);
+      await work(page).getByLabel(`${side}の金額${i + 1}`).fill(String(lines[i].amount));
     }
   }
 }
@@ -23,7 +23,7 @@ async function post(page: Page, debit: string, credit: string, amount: number) {
   await work(page).getByRole("button", { name: "記帳する" }).click();
 }
 
-// target(0 始まり)のステップまで正解で進める
+// target(0始まり)のステップまで正解で進める
 async function walk(page: Page, unitId: string, target: number) {
   const unit = units.find((u: { id: string }) => u.id === unitId);
   await page.goto(`/units/${unitId}`);
@@ -50,7 +50,7 @@ async function walk(page: Page, unitId: string, target: number) {
     }
     if (t.type !== "observe") await expect(page.getByText("できました", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "次へ →" }).click();
-    await expect(page.getByText(`ステップ ${i + 2} / ${unit.steps.length}`)).toBeVisible();
+    await expect(page.getByText(`ステップ${i + 2} / ${unit.steps.length}`)).toBeVisible();
   }
 }
 
@@ -72,7 +72,7 @@ test("現金が減ってマイナスに転じた行は増加と読まれない",
   await expect(row(page, "cash")).not.toContainText("増加");
 });
 
-// 評価勘定は △ で絶対値を見せる行なので、控除額が増えたら増加のまま(#46 の反転を残す)
+// 評価勘定は △ で絶対値を見せる行なので、控除額が増えたら増加のまま(#46の反転を残す)
 test("評価勘定の控除額が増えた行は増加と読める", async ({ page }) => {
   await walk(page, unitId, lastStep());
   await post(page, "減価償却費", "減価償却累計額", 1000);

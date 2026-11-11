@@ -1,13 +1,13 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// Issue #223: 箱に入れた後のフォーカスが箱に残り、次の科目へ毎回 Shift+Tab で戻っていた
+// Issue #223: 箱に入れた後のフォーカスが箱に残り、次の科目へ毎回Shift+Tabで戻っていた
 const UNIT = "/units/bookkeeping-basics/five-elements";
 
 const post = async (page: Page, debit: string, credit: string, amount: string) => {
-  await page.getByLabel("借方の科目 1").fill(debit);
-  await page.getByLabel("借方の金額 1").fill(amount);
-  await page.getByLabel("貸方の科目 1").fill(credit);
-  await page.getByLabel("貸方の金額 1").fill(amount);
+  await page.getByLabel("借方の科目1").fill(debit);
+  await page.getByLabel("借方の金額1").fill(amount);
+  await page.getByLabel("貸方の科目1").fill(credit);
+  await page.getByLabel("貸方の金額1").fill(amount);
   await page.getByRole("button", { name: "記帳する" }).click();
   await expect(page.getByRole("status").getByText("できました", { exact: true })).toBeVisible();
 };
@@ -42,7 +42,7 @@ async function openBoard(page: Page, mobile = false) {
 
 const binButton = (label: string) => `${label} ← ここに入れる`;
 
-test("Enter で箱に入れると残りの先頭の科目へフォーカスが移り、Shift+Tab なしで続けられる", async ({ page }) => {
+test("Enterで箱に入れると残りの先頭の科目へフォーカスが移り、Shift+Tabなしで続けられる", async ({ page }) => {
   const board = await openBoard(page);
   await board.locator("[data-chip=cash]").focus();
   await page.keyboard.press("Enter");
@@ -66,7 +66,7 @@ test("Enter で箱に入れると残りの先頭の科目へフォーカスが�
   await expect(board.locator("[data-drop=pool] [data-chip]").first()).toBeFocused();
 });
 
-test("最後の 1 件を Enter で入れても、フォーカスが body に落ちない", async ({ page }) => {
+test("最後の1件をEnterで入れても、フォーカスがbodyに落ちない", async ({ page }) => {
   const board = await openBoard(page);
   const chips = board.locator("[data-drop=pool] [data-chip]");
   const count = await chips.count();
@@ -80,7 +80,7 @@ test("最後の 1 件を Enter で入れても、フォーカスが body に落�
   expect(await page.evaluate(() => document.activeElement?.tagName)).toBe("BUTTON");
 });
 
-test.describe("390px 幅のタップ", () => {
+test.describe("390px幅のタップ", () => {
   test.use({ viewport: { width: 390, height: 480 }, hasTouch: true });
 
   test("箱をタップして入れても、ページがプールまで跳ねない", async ({ page }) => {

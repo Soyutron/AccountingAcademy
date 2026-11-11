@@ -7,7 +7,7 @@ describe("nextUnit", () => {
     ["merchandise/three-account-method", "merchandise/credit-transactions"],
     ["cash-and-deposits/petty-cash", "receivables-and-payables/loans"],
     ["receivables-and-payables/temporary-and-deposits", "depreciation/what-is-depreciation"],
-  ])("%s の次は %s", (from, to) => {
+  ])("%sの次は%s", (from, to) => {
     expect(nextUnit(unitMap.get(from)!)?.id).toBe(to);
   });
   it("最後のテーマの最後の単元には次が無い", () => {

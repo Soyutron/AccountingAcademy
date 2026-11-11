@@ -26,7 +26,7 @@ describe("matchesAccountQuery(Issue #79)", () => {
     expect(matchesAccountQuery({ ...purchases, aliases: [], reading: undefined }, "しいれ")).toBe(false);
   });
 
-  it("どこにも当たらない文字は false", () => {
+  it("どこにも当たらない文字はfalse", () => {
     expect(matchesAccountQuery(purchases, "げんきん")).toBe(false);
   });
 
@@ -37,7 +37,7 @@ describe("matchesAccountQuery(Issue #79)", () => {
 });
 
 describe("content/accounts.yaml(Issue #79)", () => {
-  it.each(raw.map((a) => [a.id, a] as const))("%s に読み(ひらがな)がある", (_id, account) => {
+  it.each(raw.map((a) => [a.id, a] as const))("%sに読み(ひらがな)がある", (_id, account) => {
     expect(account.reading?.length).toBeGreaterThan(0);
     for (const r of account.reading ?? []) expect(r).toMatch(/^[ぁ-ゖー]+$/);
   });
@@ -47,7 +47,7 @@ describe("content/accounts.yaml(Issue #79)", () => {
     ["買い掛け金", "accounts_payable"],
     ["売り掛け金", "accounts_receivable"],
     ["売り上げ", "sales"],
-  ])("送り仮名違いの「%s」は %s の別名", (alias, id) => {
+  ])("送り仮名違いの「%s」は%sの別名", (alias, id) => {
     expect(raw.find((a) => a.id === id)?.aliases).toContain(alias);
   });
 });

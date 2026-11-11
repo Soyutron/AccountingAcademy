@@ -9,7 +9,7 @@ const concepts: RawConcept[] = readdirSync("content/concepts").flatMap(
 );
 
 describe("content/concepts(Issue #102)", () => {
-  it.each(concepts.map((c) => [c.id, c] as const))("%s に読み(ひらがな)がある", (_id, concept) => {
+  it.each(concepts.map((c) => [c.id, c] as const))("%sに読み(ひらがな)がある", (_id, concept) => {
     expect(concept.reading?.length).toBeGreaterThan(0);
     for (const r of concept.reading ?? []) expect(r).toMatch(/^[ぁ-ゖー]+$/);
   });

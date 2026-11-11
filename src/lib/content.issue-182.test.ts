@@ -14,7 +14,7 @@ describe("計算課題の誤答の説明(Issue #182)", () => {
   it.each([
     ["content/topics/receivables-and-payables/loans.md"],
     ["content/topics/merchandise/returns-and-costs.md"],
-  ])("%s の feedback に正解の金額を書かない", (path) => {
+  ])("%sのfeedbackに正解の金額を書かない", (path) => {
     const tasks = calcTasks(path);
     expect(tasks.length).toBeGreaterThan(0);
     for (const task of tasks) {

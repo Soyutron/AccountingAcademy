@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-// 別タブの localStorage の変更が、開いたままのタブの表示とメニューに反映される
+// 別タブのlocalStorageの変更が、開いたままのタブの表示とメニューに反映される
 
 test("別タブで変えたテーマと明るさが、開いたままのタブに反映される", async ({ context }) => {
   const stale = await context.newPage();
@@ -23,7 +23,7 @@ test("別タブで変えたテーマと明るさが、開いたままのタブ�
   await expect(stale.getByRole("button", { name: "ダーク" })).toHaveAttribute("aria-pressed", "true");
 });
 
-test("別タブで localStorage を消すと、開いたままのタブも既定のテーマと明るさに戻る", async ({ context }) => {
+test("別タブでlocalStorageを消すと、開いたままのタブも既定のテーマと明るさに戻る", async ({ context }) => {
   const stale = await context.newPage();
   await stale.emulateMedia({ colorScheme: "light" });
   await stale.goto("/");

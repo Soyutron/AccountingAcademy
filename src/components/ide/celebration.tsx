@@ -4,9 +4,9 @@ import { useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { CheckCircle2 } from "lucide-react";
 
-// 正解した瞬間の祝福(docs/visual-guidelines.md 2 章「達成・区切り」)。
+// 正解した瞬間の祝福(docs/visual-guidelines.md 2章「達成・区切り」)。
 // 画面の両下からクラッカーが上がり、上から紙吹雪が降り、中央に「できました」の札を短く出す。
-// FlyingAmounts と同じく、イベントを state に積んで onDone で消す。装飾なので aria-hidden、クリックは通す
+// FlyingAmountsと同じく、イベントをstateに積んでonDoneで消す。装飾なのでaria-hidden、クリックは通す
 
 export interface Burst {
   id: string;
@@ -29,7 +29,7 @@ interface Piece {
   duration: number;
 }
 
-// 5 要素の帯の色とブランドの差し色(テーマが決める)。色だけに意味は持たせない
+// 5要素の帯の色とブランドの差し色(テーマが決める)。色だけに意味は持たせない
 const COLORS = ["bg-revenue-bar", "bg-asset-bar", "bg-equity-bar", "bg-expense-bar", "bg-liability-bar", "bg-brand-accent"];
 const SHAPES: Piece["shape"][] = ["rect", "dot", "strip", "rect"];
 const SHAPE_CLASS: Record<Piece["shape"], string> = {
@@ -44,7 +44,7 @@ const rand = (min: number, max: number) => min + Math.random() * (max - min);
 function cracker(side: "left" | "right", count: number, vw: number, vh: number, offset: number): Piece[] {
   const reach = Math.max(vw, vh);
   return Array.from({ length: count }, (_, i) => {
-    // 左は右上へ、右は左上へ。鉛直から 15〜75 度の扇形
+    // 左は右上へ、右は左上へ。鉛直から15〜75度の扇形
     const deg = side === "left" ? rand(-75, -15) : rand(-165, -105);
     const angle = deg * (Math.PI / 180);
     const distance = rand(0.45, 0.95) * reach;
@@ -108,7 +108,7 @@ function BurstView({ burst, onDone }: { burst: Burst; onDone: () => void }) {
           style={{ left: p.startX, top: p.startY }}
           initial={{ x: 0, y: 0, opacity: 1, rotate: 0 }}
           animate={{ x: p.dx, y: p.dy, opacity: [1, 1, 0.9, 0], rotate: p.rotate }}
-          // 値ごとの指定は duration と delay を引き継がないので、opacity にも同じ時間を渡す
+          // 値ごとの指定はdurationとdelayを引き継がないので、opacityにも同じ時間を渡す
           transition={{
             duration: p.duration,
             delay: p.delay,

@@ -1,6 +1,6 @@
 import type { JournalLine } from "./accounting";
 
-// 解説本文の ```journal ブロックを仕訳に変換する。1 行 = 「借方: 科目 金額」または「貸方: 科目 金額」
+// 解説本文の```journalブロックを仕訳に変換する。1行 = 「借方: 科目 金額」または「貸方: 科目 金額」
 
 export interface NamedJournalLine {
   side: "debit" | "credit";

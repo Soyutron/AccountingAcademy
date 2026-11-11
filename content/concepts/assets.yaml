@@ -5,7 +5,7 @@ concepts:
   - id: tangible_fixed_assets
     name: 有形固定資産
     reading: [ゆうけいこていしさん]
-    short: 建物、備品、車両など、形があって 1 年を超えて使う資産
+    short: 建物、備品、車両など、形があって1年を超えて使う資産
     summary: 事業のために長期間使う目的で持つ、形のある資産。売るために持つ商品とは違い、使い続けることで価値が少しずつ減っていく。減価償却の対象になる(土地は使っても減らないので対象外)。
     example: 配達用のトラック、店舗の建物、事務所のパソコンや机。
     requires: [asset]
@@ -16,7 +16,7 @@ concepts:
     reading: [しゅとくげんか, げんか]
     short: 資産を買って使えるようにするまでにかかった金額
     summary: 資産の購入代金に、運送料や据付費など使える状態にするために払った付随費用を加えた金額。減価償却はこの取得原価を各期に配分していく。
-    example: トラックの本体 115 万円と登録手数料 5 万円を払ったなら、取得原価は 120 万円。
+    example: トラックの本体115万円と登録手数料5万円を払ったなら、取得原価は120万円。
     requires: [tangible_fixed_assets]
     related: [depreciation, book_value]
     contrasts: [book_value]
@@ -25,7 +25,7 @@ concepts:
     reading: [ひようはいぶんのげんそく]
     short: 長く使うものの購入代金を、使う期間に分けて費用にする考え方
     summary: 資産の取得原価を、その資産が使われる期間にわたって費用として配分する考え方。各期の収益と、それを得るために使った費用を同じ期間に対応させるためにある。発生主義を固定資産に当てはめたもの。
-    example: 120 万円のトラックを 6 年使うなら、買った年に 120 万円の費用にするのではなく、毎年 20 万円ずつ費用にする。
+    example: 120万円のトラックを6年使うなら、買った年に120万円の費用にするのではなく、毎年20万円ずつ費用にする。
     requires: [accrual_basis, five_elements]
     related: [depreciation]
     contrasts: []
@@ -34,7 +34,7 @@ concepts:
     reading: [げんかしょうきゃく]
     short: 建物や備品などの購入代金を、使える年数に分けて毎年少しずつ費用にすること
     summary: 有形固定資産の取得原価を耐用年数にわたって費用配分する手続き。費用配分の原則を固定資産に適用したもの。お金の支払いを伴わず、計上しても現金は減らない。
-    example: 耐用年数 6 年のトラック 120 万円を、毎年 20 万円ずつ減価償却費にする。
+    example: 耐用年数6年のトラック120万円を、毎年20万円ずつ減価償却費にする。
     requires: [cost_allocation, tangible_fixed_assets]
     related: [book_value, indirect_method, straight_line_method]
     contrasts: []
@@ -43,7 +43,7 @@ concepts:
     reading: [ちょうぼかがく]
     short: 取得原価から、これまでの減価償却の合計を引いた、帳簿上の今の価値
     summary: 取得原価から減価償却累計額を差し引いた金額。その資産が帳簿上いくらの価値として残っているかを表す。売却したときの損益は、売った金額と帳簿価額の差で決まる。
-    example: 取得原価 120 万円のトラックを 2 年償却(累計 40 万円)した後の帳簿価額は 80 万円。
+    example: 取得原価120万円のトラックを2年償却(累計40万円)した後の帳簿価額は80万円。
     requires: [acquisition_cost, depreciation]
     related: [contra_account]
     contrasts: [acquisition_cost]
@@ -52,7 +52,7 @@ concepts:
     reading: [ひょうかかんじょう]
     short: ある資産の金額を直接減らさず、「マイナス分」として別に記録する勘定科目
     summary: 資産そのものの金額はそのまま残し、価値の減少分を別の勘定科目に積み上げて、差し引きで今の価値を示す仕組み。減価償却累計額が代表例。貸方で増えるが、負債ではなく資産のマイナスとして扱う。
-    example: 建物 1,000 万円、建物減価償却累計額 300 万円と並べて書けば、「元は 1,000 万円で、今は 700 万円」と一目で分かる。
+    example: 建物1,000万円、建物減価償却累計額300万円と並べて書けば、「元は1,000万円で、今は700万円」と一目で分かる。
     requires: [asset, debit_credit]
     related: [indirect_method, book_value]
     contrasts: [liability]
@@ -61,7 +61,7 @@ concepts:
     reading: [かんせつほう]
     short: 減価償却を、資産を直接減らさずに減価償却累計額で記録する方法
     summary: 減価償却費の相手科目を減価償却累計額(評価勘定)にする記録方法。固定資産の勘定科目は取得原価のまま残るので、取得原価と減価の累計の両方を読み取れる。
-    example: 減価償却費 20 万円を計上するとき、借方に減価償却費、貸方に減価償却累計額を書く。
+    example: 減価償却費20万円を計上するとき、借方に減価償却費、貸方に減価償却累計額を書く。
     requires: [depreciation, contra_account]
     related: [book_value]
     contrasts: [direct_method]
@@ -70,7 +70,7 @@ concepts:
     reading: [ちょくせつほう]
     short: 減価償却を、固定資産の金額を直接減らして記録する方法
     summary: 減価償却費の相手科目を建物や備品そのものにして、固定資産の金額を直接減らす記録方法。帳簿価額は分かりやすいが、取得原価がいくらだったかは勘定科目から読み取れなくなる。
-    example: 減価償却費 20 万円を計上するとき、借方に減価償却費、貸方に車両運搬具を書く。
+    example: 減価償却費20万円を計上するとき、借方に減価償却費、貸方に車両運搬具を書く。
     requires: [depreciation]
     related: [indirect_method]
     contrasts: [indirect_method]
@@ -78,8 +78,8 @@ concepts:
     name: 定額法
     reading: [ていがくほう]
     short: 毎年同じ金額ずつ減価償却する計算方法
-    summary: (取得原価 − 残存価額)÷ 耐用年数 で 1 年分の減価償却費を求め、毎年同じ金額を計上する方法。資産が毎年同じように使われて価値が減ると考える。
-    example: 取得原価 60 万円、残存価額ゼロ、耐用年数 5 年なら、毎年 12 万円。
+    summary: (取得原価 − 残存価額)÷ 耐用年数 で1年分の減価償却費を求め、毎年同じ金額を計上する方法。資産が毎年同じように使われて価値が減ると考える。
+    example: 取得原価60万円、残存価額ゼロ、耐用年数5年なら、毎年12万円。
     requires: [depreciation]
     related: [useful_life, residual_value, monthly_proration]
     contrasts: [declining_balance_method]
@@ -88,7 +88,7 @@ concepts:
     reading: [ていりつほう]
     short: 帳簿価額に一定の割合を掛けて減価償却する計算方法。初めの年ほど金額が大きい
     summary: 期首の帳簿価額に一定の償却率を掛けて各年の減価償却費を求める方法。使い始めの年ほど費用が大きく、年を追うごとに小さくなる。
-    example: 帳簿価額 60 万円に償却率 40% を掛けると、その年の減価償却費は 24 万円。
+    example: 帳簿価額60万円に償却率40%を掛けると、その年の減価償却費は24万円。
     requires: [depreciation, book_value]
     related: [straight_line_method]
     contrasts: [straight_line_method]
@@ -97,7 +97,7 @@ concepts:
     reading: [たいようねんすう]
     short: その資産を何年使えると見込むか
     summary: 固定資産を事業に使えると見込む年数。減価償却では、この年数にわたって取得原価を配分する。会計上は会社が見積もるが、実務では税法の定める年数を使うことが多い。
-    example: パソコンなら 4 年、トラックなら 5〜6 年といった見積もりをする。
+    example: パソコンなら4年、トラックなら5〜6年といった見積もりをする。
     requires: [depreciation]
     related: [straight_line_method, residual_value]
     contrasts: []
@@ -106,7 +106,7 @@ concepts:
     reading: [ざんぞんかがく]
     short: 耐用年数が終わった時に、その資産に残ると見込む価値
     summary: 使い終わった後に処分や売却で回収できると見込む金額。この分は費用にならないので、減価償却で配分するのは取得原価から残存価額を引いた金額。ゼロとして計算することも多い。
-    example: 取得原価 60 万円で残存価額が 6 万円なら、5 年で配分する費用の総額は 54 万円。
+    example: 取得原価60万円で残存価額が6万円なら、5年で配分する費用の総額は54万円。
     requires: [depreciation, acquisition_cost]
     related: [straight_line_method, useful_life]
     contrasts: []
@@ -114,8 +114,8 @@ concepts:
     name: 月割り計算
     reading: [つきわりけいさん]
     short: 期の途中で買った資産の減価償却費を、使った月数の分だけ計上すること
-    summary: 会計期間の途中で取得した資産は、取得した月から決算月までの月数で 1 年分の減価償却費を按分する。使った期間に対応する費用だけを計上するためで、発生主義の考え方に基づく。
-    example: 1 年分が 12 万円で、10 月 1 日に取得して 3 月 31 日が決算なら、6 か月分の 6 万円。
+    summary: 会計期間の途中で取得した資産は、取得した月から決算月までの月数で1年分の減価償却費を按分する。使った期間に対応する費用だけを計上するためで、発生主義の考え方に基づく。
+    example: 1年分が12万円で、10月1日に取得して3月31日が決算なら、6か月分の6万円。
     requires: [straight_line_method, accrual_basis]
     related: [useful_life]
     contrasts: []

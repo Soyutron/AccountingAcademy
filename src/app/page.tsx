@@ -9,7 +9,7 @@ export default function Home() {
       <section className="space-y-2">
         <h1 className="text-2xl font-bold">会計を原理から、手を動かして学ぶ</h1>
         <p className="text-muted-foreground">
-          短い解説を読み、その場で仕訳を切り、5 要素と財務諸表がどう動くかを確かめる。暗記ではなく「なぜ」を積み上げる学習サイトです。
+          短い解説を読み、その場で仕訳を切り、5要素と財務諸表がどう動くかを確かめる。暗記ではなく「なぜ」を積み上げる学習サイトです。
         </p>
       </section>
 
@@ -50,7 +50,7 @@ export default function Home() {
                       </Link>
                       <p className="text-sm text-muted-foreground">{t.summary}</p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        {units.length} 単元({levels})
+                        {units.length}単元({levels})
                       </p>
                     </li>
                   );

@@ -86,8 +86,8 @@ misconceptions:
     remediation: depreciation/what-is-depreciation
   - id: forgot_monthly_proration
     name: 月割りを忘れる
-    description: 期の途中で取得した資産でも、1 年分の減価償却費を計上してしまう
-    correct: 使った期間に対応する費用だけを計上する。取得した月から決算月までの月数で 1 年分を按分する
+    description: 期の途中で取得した資産でも、1年分の減価償却費を計上してしまう
+    correct: 使った期間に対応する費用だけを計上する。取得した月から決算月までの月数で1年分を按分する
     concepts: [monthly_proration, straight_line_method]
     remediation: depreciation/straight-line
   - id: residual_value_ignored
@@ -122,7 +122,7 @@ misconceptions:
     remediation: merchandise/credit-transactions
   - id: deposit_is_cash
     name: 現金と普通預金の取り違え
-    description: 銀行の口座で動いたお金を「現金」と書いたり、手元の現金で払ったのに「普通預金」と書いたりして、2 つの科目を区別しない
+    description: 銀行の口座で動いたお金を「現金」と書いたり、手元の現金で払ったのに「普通預金」と書いたりして、2つの科目を区別しない
     correct: 現金は手元の通貨、普通預金は銀行の口座の残高で、別の勘定科目。口座への振り込みや口座からの支払いで動くのは普通預金で、手元の現金は動かない
     concepts: [asset, account_title]
     remediation: merchandise/credit-transactions
@@ -170,7 +170,7 @@ misconceptions:
     remediation: merchandise/returns-and-costs
   - id: purchases_equal_cogs
     name: 仕入の合計がそのまま売上原価
-    description: 1 年に仕入れた金額の全部が、売った商品の原価だと思っている
+    description: 1年に仕入れた金額の全部が、売った商品の原価だと思っている
     correct: 売れ残った商品の分は、まだ費用ではない。仕入の合計から期末の商品を引いた金額が売上原価で、売れ残りは繰越商品(資産)として次の期に持ち越す
     concepts: [cost_of_goods_sold, ending_inventory]
     remediation: merchandise/cost-of-goods-sold
@@ -253,15 +253,15 @@ misconceptions:
     concepts: [petty_cash]
     remediation: cash-and-deposits/petty-cash
   - id: petty_expenses_lumped
-    name: 使い道が違っても 1 つの費用にまとめてよい
-    description: 担当者から報告された使い道の違う支払いを、合計して 1 つの費用の科目で記録してしまう
+    name: 使い道が違っても1つの費用にまとめてよい
+    description: 担当者から報告された使い道の違う支払いを、合計して1つの費用の科目で記録してしまう
     correct: 費用は使い道ごとの科目で記録する。切手代は通信費、文房具代は消耗品費、電車代は旅費交通費のように分ける
     concepts: [petty_cash, expense]
     remediation: cash-and-deposits/petty-cash
   - id: petty_payment_omitted
     name: 報告された支払いの一部だけを記録する
     description: 担当者から報告された複数の支払いのうち一部を書き忘れ、小口現金の減少もその分だけで記録してしまう
-    correct: 報告された支払いはすべて費用になり、小口現金はその合計だけ減る。報告の内訳と仕訳の行を 1 つずつ突き合わせる
+    correct: 報告された支払いはすべて費用になり、小口現金はその合計だけ減る。報告の内訳と仕訳の行を1つずつ突き合わせる
     concepts: [petty_cash, expense]
     remediation: cash-and-deposits/petty-cash
   - id: lender_borrower_confused
@@ -279,7 +279,7 @@ misconceptions:
   - id: interest_months_not_divided
     name: 月数をそのまま掛ける
     description: 年利に月数をそのまま掛けて、利息を実際の何倍にも計算してしまう
-    correct: 年利は 1 年分の率。利息は 元本 × 年利率 × 月数 ÷ 12 で、月数は 12 で割って年に直してから掛ける
+    correct: 年利は1年分の率。利息は 元本 × 年利率 × 月数 ÷ 12で、月数は12で割って年に直してから掛ける
     concepts: [interest]
     remediation: receivables-and-payables/loans
   - id: interest_is_loan_return

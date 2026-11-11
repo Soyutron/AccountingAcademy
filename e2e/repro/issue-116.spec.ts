@@ -3,12 +3,12 @@ import { devices, expect, test } from "@playwright/test";
 const { defaultBrowserType: _ignored, ...iPhone } = devices["iPhone 13"];
 test.use(iPhone);
 
-test("390px の仕訳エディタで 8〜10 桁の金額と長い科目名が欄に収まる", async ({ page }) => {
+test("390pxの仕訳エディタで8〜10桁の金額と長い科目名が欄に収まる", async ({ page }) => {
   await page.goto("/units/bookkeeping-basics/five-elements");
   await page.getByRole("button", { name: "次へ →" }).click({ timeout: 15000 });
   await page.getByRole("tab", { name: "ワークスペース" }).click();
   const work = page.getByRole("region", { name: "ワークスペース" });
-  const amount = work.getByLabel("借方の金額 1");
+  const amount = work.getByLabel("借方の金額1");
   const clipped = (el: HTMLInputElement) => el.scrollWidth > el.clientWidth;
 
   for (const [typed, shown] of [
@@ -23,7 +23,7 @@ test("390px の仕訳エディタで 8〜10 桁の金額と長い科目名が欄
   }
 
   // 金額欄に幅を回した分、科目欄で名前が切れないこと
-  const account = work.getByLabel("借方の科目 1");
+  const account = work.getByLabel("借方の科目1");
   await account.fill("繰越利益剰余金");
   await account.blur();
   expect(await account.evaluate(clipped)).toBe(false);

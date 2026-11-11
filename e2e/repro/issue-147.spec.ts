@@ -9,7 +9,7 @@ test("スマホ幅で問題文の金額を押すと、ワークスペースへ�
   await page.getByRole("button", { name: "次へ →" }).first().click();
   const guideTab = page.getByRole("tab", { name: "ガイド" });
   const workSelected = page.getByRole("tab", { name: "ワークスペース", selected: true });
-  const amount = page.getByRole("button", { name: "100,000 円を仕訳帳に入れる" });
+  const amount = page.getByRole("button", { name: "100,000円を仕訳帳に入れる" });
   const debit = page.locator('[data-amount-field="debit-0"]');
   const credit = page.locator('[data-amount-field="credit-0"]');
 

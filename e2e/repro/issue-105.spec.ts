@@ -12,10 +12,10 @@ async function openFreePlay(page: Page, isPhone: boolean) {
   };
   const post = async (debit: string, credit: string, amount: string) => {
     await showWork();
-    await work.getByLabel("借方の科目 1").fill(debit);
-    await work.getByLabel("借方の金額 1").fill(amount);
-    await work.getByLabel("貸方の科目 1").fill(credit);
-    await work.getByLabel("貸方の金額 1").fill(amount);
+    await work.getByLabel("借方の科目1").fill(debit);
+    await work.getByLabel("借方の金額1").fill(amount);
+    await work.getByLabel("貸方の科目1").fill(credit);
+    await work.getByLabel("貸方の金額1").fill(amount);
     await work.getByRole("button", { name: "記帳する" }).click();
   };
   await page.goto("/units/tutorial/first-entry");
@@ -25,14 +25,14 @@ async function openFreePlay(page: Page, isPhone: boolean) {
   await expect(page.getByRole("status")).toContainText("できました");
   await page.getByRole("button", { name: "次へ →" }).click();
   await page.getByRole("button", { name: "次へ →" }).click();
-  await expect(page.getByText("ステップ 4 / 4")).toBeVisible();
+  await expect(page.getByText("ステップ4 / 4")).toBeVisible();
   return post;
 }
 
 /** 文字の実際の描画範囲で測る(折り返す要素の箱は列に収まっても、中の文字がはみ出すことがあるため) */
 async function expectFits(page: Page, building: number) {
   const row = page.locator("section[aria-label='貸借対照表'] [data-account]").filter({ hasText: "建物" });
-  await expect(row).toContainText(`増加 ${building.toLocaleString("ja-JP")}`);
+  await expect(row).toContainText(`増加${building.toLocaleString("ja-JP")}`);
   const overflow = await page.getByRole("region", { name: "結果" }).evaluate((pane) => {
     const range = document.createRange();
     const rights = [...pane.querySelectorAll<HTMLElement>("section .tabular-nums, section .font-mono")].map((el) => {

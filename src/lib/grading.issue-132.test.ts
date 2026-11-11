@@ -5,7 +5,7 @@ import { gradePost } from "./grading";
 // Issue #132: 左の「預金」が別名で普通預金に解決され、左右とも普通預金の仕訳が汎用文に落ちていた
 describe("小切手で払う「当座預金を開く」", () => {
   const step = unitMap.get("cash-and-deposits/checking-account")!.steps.find((s) => s.title === "当座預金を開く")!;
-  if (step.task.type !== "post") throw new Error("post ではない");
+  if (step.task.type !== "post") throw new Error("postではない");
   const task = step.task;
 
   it("左右とも普通預金なら、預金の種類の取り違えだと説明する", () => {

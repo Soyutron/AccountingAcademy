@@ -12,10 +12,10 @@ async function open(page: Page) {
 }
 async function fill(page: Page, debit: string, credit: string, amount: number) {
   const work = page.getByRole("region", { name: "ワークスペース" });
-  await work.getByLabel("借方の科目 1").fill(debit);
-  await work.getByLabel("借方の金額 1").fill(String(amount));
-  await work.getByLabel("貸方の科目 1").fill(credit);
-  await work.getByLabel("貸方の金額 1").fill(String(amount));
+  await work.getByLabel("借方の科目1").fill(debit);
+  await work.getByLabel("借方の金額1").fill(String(amount));
+  await work.getByLabel("貸方の科目1").fill(credit);
+  await work.getByLabel("貸方の金額1").fill(String(amount));
   await work.getByRole("button", { name: "記帳する" }).click();
 }
 const nextBtn = (page: Page) => page.getByRole("button", { name: "次へ →" }).first();
@@ -23,7 +23,7 @@ async function dismissNotes(page: Page) {
   for (const b of await page.getByRole("button", { name: "わかった" }).all()) await b.click().catch(() => {});
 }
 async function toStep(page: Page, n: number) {
-  await expect(page.getByText(`ステップ ${n} / 8`)).toBeVisible();
+  await expect(page.getByText(`ステップ${n} / 8`)).toBeVisible();
   await dismissNotes(page);
 }
 async function predict(page: Page, values: Record<string, string>) {
@@ -57,7 +57,7 @@ test("仕訳と計算の誤答に、なぜ違うかの説明が出る", async ({
   await toStep(page, 2);
   await fill(page, "仕入", "売上", 40000);
   await expect(status(page)).toBeVisible();
-  await expect.soft(status(page), "ステップ 2 仕入/売上").not.toContainText(GENERIC);
+  await expect.soft(status(page), "ステップ2仕入/売上").not.toContainText(GENERIC);
   await fill(page, "仕入", "買掛金", 40000);
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   await nextBtn(page).click();
@@ -68,7 +68,7 @@ test("仕訳と計算の誤答に、なぜ違うかの説明が出る", async ({
   await toStep(page, 4);
   await fill(page, "当座預金", "売掛金", 60000);
   await expect(status(page)).toBeVisible();
-  await expect.soft(status(page), "ステップ 4 当座預金/売掛金").not.toContainText(GENERIC);
+  await expect.soft(status(page), "ステップ4当座預金/売掛金").not.toContainText(GENERIC);
   await fill(page, "普通預金", "売掛金", 60000);
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   await nextBtn(page).click();
@@ -77,7 +77,7 @@ test("仕訳と計算の誤答に、なぜ違うかの説明が出る", async ({
     await fill(page, d, c, 40000);
     await expect(status(page)).toBeVisible();
     await page.waitForTimeout(300);
-    await expect.soft(status(page), `ステップ 5 ${d}/${c}`).not.toContainText(GENERIC);
+    await expect.soft(status(page), `ステップ5 ${d}/${c}`).not.toContainText(GENERIC);
   }
   await fill(page, "買掛金", "現金", 40000);
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
@@ -96,7 +96,7 @@ test("仕訳と計算の誤答に、なぜ違うかの説明が出る", async ({
   const work = page.getByRole("region", { name: "ワークスペース" });
   await work.getByRole("button", { name: "確認する" }).click();
   await expect(status(page)).toBeVisible();
-  await expect.soft(page.getByText("よくある思い込み: 売掛金と買掛金の取り違え"), "ステップ 6 売掛金と買掛金の入れ替え").toBeVisible();
+  await expect.soft(page.getByText("よくある思い込み: 売掛金と買掛金の取り違え"), "ステップ6売掛金と買掛金の入れ替え").toBeVisible();
   await place("accounts_receivable", "資産");
   await place("accounts_payable", "負債");
   await work.getByRole("button", { name: "確認する" }).click();
@@ -109,6 +109,6 @@ test("仕訳と計算の誤答に、なぜ違うかの説明が出る", async ({
     await work.getByRole("button", { name: "確認する" }).click();
     await expect(status(page)).toBeVisible();
     await page.waitForTimeout(300);
-    await expect.soft(status(page), `ステップ 7 ${v}`).not.toContainText(CALC_GENERIC);
+    await expect.soft(status(page), `ステップ7 ${v}`).not.toContainText(CALC_GENERIC);
   }
 });

@@ -3,10 +3,10 @@ import { test, expect } from "@playwright/test";
 const unitPath = "/units/bookkeeping-basics/five-elements";
 
 for (const width of [320, 340, 360, 390]) {
-  test(`ステップの点が多い単元でも ${width}px で横スクロールが出ず、単元タイトルが読める`, async ({ page }) => {
+  test(`ステップの点が多い単元でも${width}pxで横スクロールが出ず、単元タイトルが読める`, async ({ page }) => {
     await page.setViewportSize({ width, height: 700 });
     await page.goto(unitPath);
-    await expect(page.getByText("ステップ 1 / 10")).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText("ステップ1 / 10")).toBeVisible({ timeout: 15000 });
 
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
 

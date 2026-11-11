@@ -6,12 +6,12 @@ const narrative = (title: string): string =>
     .find((u: { id: string }) => u.id === "receivables-and-payables/temporary-and-deposits")
     .steps.find((s: { title: string }) => s.title === title).narrative;
 
-test("ステップ 1 の本文が図と同じく振り込みと読める", async ({ page }) => {
+test("ステップ1の本文が図と同じく振り込みと読める", async ({ page }) => {
   await page.goto("/units/receivables-and-payables/temporary-and-deposits");
   const guide = page.getByRole("region", { name: "ガイド" });
-  await expect(guide).toContainText("手取り 97,000 を振り込む");
-  await expect(guide).toContainText("本人に渡るのは 97,000 円");
-  await expect(guide).not.toContainText("手渡すのは 97,000 円");
+  await expect(guide).toContainText("手取り97,000を振り込む");
+  await expect(guide).toContainText("本人に渡るのは97,000円");
+  await expect(guide).not.toContainText("手渡すのは97,000円");
 });
 
 test("出張の仮払いの本文が仮払金を金額にも触れて説明する", () => {

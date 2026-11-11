@@ -5,10 +5,10 @@ const UNIT = "/units/bookkeeping-basics/five-elements";
 const ANSWER: [string, string][] = [["現金", "asset"], ["備品", "asset"], ["借入金", "liability"], ["資本金", "equity"], ["売上", "revenue"], ["支払家賃", "expense"]];
 
 const post = async (page: Page, debit: string, credit: string, amount: string) => {
-  await page.getByLabel("借方の科目 1").fill(debit);
-  await page.getByLabel("借方の金額 1").fill(amount);
-  await page.getByLabel("貸方の科目 1").fill(credit);
-  await page.getByLabel("貸方の金額 1").fill(amount);
+  await page.getByLabel("借方の科目1").fill(debit);
+  await page.getByLabel("借方の金額1").fill(amount);
+  await page.getByLabel("貸方の科目1").fill(credit);
+  await page.getByLabel("貸方の金額1").fill(amount);
   await page.getByRole("button", { name: "記帳する" }).click();
   await expect(page.getByRole("status").getByText("できました", { exact: true })).toBeVisible();
 };
@@ -52,7 +52,7 @@ const center = async (target: Locator) => {
 const drop = (board: Locator, id: string) => board.locator(`[data-drop="${id}"]`);
 const chipOf = (scope: Locator, name: string) => scope.getByRole("button", { name: new RegExp(`^${name}`) });
 
-// dnd-kit は最初の移動で持ち上げるだけなので、dragTo の 1 回移動では落ちない。人の手と同じく刻んで動かす
+// dnd-kitは最初の移動で持ち上げるだけなので、dragToの1回移動では落ちない。人の手と同じく刻んで動かす
 async function hold(page: Page, board: Locator, name: string, to: string) {
   const from = await center(chipOf(board, name));
   await page.mouse.move(from.x, from.y);

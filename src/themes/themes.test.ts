@@ -3,8 +3,8 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { DEFAULT_THEME, THEMES, isThemeId } from "./index";
 
-// テーマの検査(docs/design-system.md 6 章)。登録簿のテーマごとに、ライト・ダークの両ブロックに必須トークンがそろい、
-// 文字と背景のコントラストが AA(4.5:1)を満たし、状態色が要素色と同じ値になっていないことを確かめる
+// テーマの検査(docs/design-system.md 6章)。登録簿のテーマごとに、ライト・ダークの両ブロックに必須トークンがそろい、
+// 文字と背景のコントラストがAA(4.5:1)を満たし、状態色が要素色と同じ値になっていないことを確かめる
 
 const ELEMENTS = ["asset", "liability", "equity", "revenue", "expense"] as const;
 
@@ -44,7 +44,7 @@ const REQUIRED = [
 // 形と書体はライトのブロックにだけ書く(ダークで変えない)
 const REQUIRED_LIGHT_ONLY = ["radius", "type-heading", "type-body", "type-mono"];
 
-// 文字 / 背景の組。すべて 4.5:1 以上
+// 文字 / 背景の組。すべて4.5:1以上
 const CONTRAST_PAIRS: [string, string][] = [
   ["foreground", "background"],
   ["muted-foreground", "background"],
@@ -105,16 +105,16 @@ describe("テーマの登録簿", () => {
   it("既定テーマが登録されている", () => {
     expect(isThemeId(DEFAULT_THEME)).toBe(true);
   });
-  it("id は重複せず kebab-case", () => {
+  it("idは重複せずkebab-case", () => {
     const ids = THEMES.map((t) => t.id);
     expect(new Set(ids).size).toBe(ids.length);
     for (const id of ids) expect(id).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
   });
 });
 
-describe.each(THEMES.map((t) => [t.id, t] as const))("テーマ %s", (id) => {
+describe.each(THEMES.map((t) => [t.id, t] as const))("テーマ%s", (id) => {
   const file = path.join(__dirname, `${id}.css`);
-  it("CSS ファイルがある", () => {
+  it("CSSファイルがある", () => {
     expect(existsSync(file)).toBe(true);
   });
   const css = existsSync(file) ? readFileSync(file, "utf8") : "";
@@ -130,10 +130,10 @@ describe.each(THEMES.map((t) => [t.id, t] as const))("テーマ %s", (id) => {
         const missing = REQUIRED.filter((t) => !(t in tokens));
         expect(missing).toEqual([]);
       });
-      it("色は 6 桁の小文字 hex", () => {
+      it("色は6桁の小文字hex", () => {
         for (const t of REQUIRED) expect(tokens[t], t).toMatch(HEX);
       });
-      it.each(CONTRAST_PAIRS)("%s / %s は 4.5:1 以上", (fg, bg) => {
+      it.each(CONTRAST_PAIRS)("%s / %sは4.5:1以上", (fg, bg) => {
         expect(contrast(tokens[fg], tokens[bg])).toBeGreaterThanOrEqual(4.5);
       });
       it("状態色は要素色と同じ値を使わない", () => {

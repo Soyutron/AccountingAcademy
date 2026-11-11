@@ -3,7 +3,7 @@
 @import "shadcn/tailwind.css";
 @plugin "@tailwindcss/typography";
 
-/* テーマ(docs/design-system.md)。色・書体・形は各テーマの CSS が <html data-theme data-mode> に対して決める */
+/* テーマ(docs/design-system.md)。色・書体・形は各テーマのCSSが <html data-theme data-mode> に対して決める */
 @import "../themes/town-shop.css";
 @import "../themes/ai-shu.css";
 @import "../themes/ledger-paper.css";
@@ -12,7 +12,7 @@
 @custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));
 
 @theme inline {
-  /* 正解した直後に「次へ →」を 1 回だけ目立たせる(リングのパルス) */
+  /* 正解した直後に「次へ →」を1回だけ目立たせる(リングのパルス) */
   --animate-next-pulse: next-pulse 900ms ease-out;
 
   --font-sans: var(--type-body), ui-sans-serif, system-ui, sans-serif;
@@ -44,7 +44,7 @@
   --color-surface-work: var(--surface-work);
   --color-surface-result: var(--surface-result);
 
-  /* 要素(5 要素 × 文字 / 面 / 線 / 棒) */
+  /* 要素(5要素 × 文字 / 面 / 線 / 棒) */
   --color-asset-fg: var(--el-asset-fg);
   --color-asset-bg: var(--el-asset-bg);
   --color-asset-border: var(--el-asset-border);
@@ -126,7 +126,7 @@
   animation: highlight 900ms ease-out;
 }
 
-/* 拡大は使わない: 位置やサイズが動くと E2E(Playwright)がクリック前に静止を待ち、全ステップで遅くなる */
+/* 拡大は使わない: 位置やサイズが動くとE2E(Playwright)がクリック前に静止を待ち、全ステップで遅くなる */
 @keyframes next-pulse {
   0% {
     box-shadow: 0 0 0 0 color-mix(in oklch, var(--primary), transparent 40%);
@@ -139,7 +139,7 @@
   }
 }
 
-/* 説明文(@tailwindcss/typography)の色をテーマのトークンに合わせる。既定の prose-neutral はグレー固定でダークに追従しない */
+/* 説明文(@tailwindcss/typography)の色をテーマのトークンに合わせる。既定のprose-neutralはグレー固定でダークに追従しない */
 .prose {
   --tw-prose-body: var(--foreground);
   --tw-prose-headings: var(--foreground);

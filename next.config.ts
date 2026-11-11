@@ -1,7 +1,7 @@
 import { execSync } from "node:child_process";
 import type { NextConfig } from "next";
 
-// 回答ログに残すコンテンツの版。CI ではホストが与える SHA、ローカルでは git から取る
+// 回答ログに残すコンテンツの版。CIではホストが与えるSHA、ローカルではgitから取る
 function contentVersion(): string {
   if (process.env.CONTENT_VERSION) return process.env.CONTENT_VERSION;
   try {
@@ -12,7 +12,7 @@ function contentVersion(): string {
 }
 
 const nextConfig: NextConfig = {
-  // ホスティング未決のため、どこでも動く standalone 出力にする(docs/architecture.md 7 章)
+  // ホスティング未決のため、どこでも動くstandalone出力にする(docs/architecture.md 7章)
   output: "standalone",
   env: { NEXT_PUBLIC_CONTENT_VERSION: contentVersion() },
   turbopack: {

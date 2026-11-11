@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-// Issue #79: 読みや送り仮名の違いでも候補へたどり着ける。IME の変換中は赤字を出さない
+// Issue #79: 読みや送り仮名の違いでも候補へたどり着ける。IMEの変換中は赤字を出さない
 const NOT_FOUND = /この名前の科目はありません|候補から選ぶか/;
 
 const work = (page: import("@playwright/test").Page) => page.getByRole("region", { name: "ワークスペース" });
@@ -8,7 +8,7 @@ const work = (page: import("@playwright/test").Page) => page.getByRole("region",
 async function openFirstJournal(page: import("@playwright/test").Page) {
   await page.goto("/units/bookkeeping-basics/five-elements");
   await page.getByRole("button", { name: "次へ →" }).click();
-  const input = work(page).getByLabel("借方の科目 1");
+  const input = work(page).getByLabel("借方の科目1");
   await input.click();
   return input;
 }
@@ -29,7 +29,7 @@ test("送り仮名違いの「買い掛け金」は買掛金として認識さ�
   await expect(work(page).getByText(NOT_FOUND)).toHaveCount(0);
 });
 
-test("IME の変換中は科目が見つからないという赤字を出さない", async ({ page }) => {
+test("IMEの変換中は科目が見つからないという赤字を出さない", async ({ page }) => {
   const input = await openFirstJournal(page);
   const cdp = await page.context().newCDPSession(page);
   await cdp.send("Input.imeSetComposition", { text: "ぞぞ", selectionStart: 2, selectionEnd: 2 });
@@ -37,7 +37,7 @@ test("IME の変換中は科目が見つからないという赤字を出さな�
   await expect(work(page).getByText(NOT_FOUND)).toHaveCount(0);
 });
 
-test("IME の変換中の Enter は変換の確定に使い、候補を選ばない", async ({ page }) => {
+test("IMEの変換中のEnterは変換の確定に使い、候補を選ばない", async ({ page }) => {
   const input = await openFirstJournal(page);
   const cdp = await page.context().newCDPSession(page);
   await cdp.send("Input.imeSetComposition", { text: "しい", selectionStart: 2, selectionEnd: 2 });

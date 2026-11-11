@@ -11,7 +11,7 @@ describe("勘定科目の説明文(#112)", () => {
     expect(raw.filter((a) => !a.example?.trim()).map((a) => a.id)).toEqual([]);
   });
 
-  it("why が文として閉じている", () => {
+  it("whyが文として閉じている", () => {
     expect(raw.filter((a) => !a.why.endsWith("。")).map((a) => a.id)).toEqual([]);
   });
 

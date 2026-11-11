@@ -14,10 +14,10 @@ async function openWorkspace(page: Page) {
 
 async function post(page: Page, debit: string, credit: string, amount = "1000000") {
   const work = await openWorkspace(page);
-  await work.getByLabel("借方の科目 1").fill(debit);
-  await work.getByLabel("借方の金額 1").fill(amount);
-  await work.getByLabel("貸方の科目 1").fill(credit);
-  await work.getByLabel("貸方の金額 1").fill(amount);
+  await work.getByLabel("借方の科目1").fill(debit);
+  await work.getByLabel("借方の金額1").fill(amount);
+  await work.getByLabel("貸方の科目1").fill(credit);
+  await work.getByLabel("貸方の金額1").fill(amount);
   await work.getByRole("button", { name: "記帳する" }).click();
 }
 
@@ -33,7 +33,7 @@ async function wrongTwice(page: Page) {
   await page.waitForTimeout(400);
 }
 
-test("390px で 2 回間違えた後の「答えを見る」「次へ →」が画面内に見える", async ({ page }) => {
+test("390pxで2回間違えた後の「答えを見る」「次へ →」が画面内に見える", async ({ page }) => {
   await wrongTwice(page);
   await expect(page.getByRole("button", { name: "答えを見る" })).toBeInViewport();
   await expect(page.getByRole("button", { name: "次へ →" })).toBeInViewport();
@@ -42,14 +42,14 @@ test("390px で 2 回間違えた後の「答えを見る」「次へ →」が�
 test.describe("横向き", () => {
   test.use({ viewport: { width: 844, height: 390 } });
 
-  test("844×390 で 2 回間違えた後の「答えを見る」「次へ →」が画面内に見える", async ({ page }) => {
+  test("844×390で2回間違えた後の「答えを見る」「次へ →」が画面内に見える", async ({ page }) => {
     await wrongTwice(page);
     await expect(page.getByRole("button", { name: "答えを見る" })).toBeInViewport();
     await expect(page.getByRole("button", { name: "次へ →" })).toBeInViewport();
   });
 });
 
-test("390px の仕分けボードで間違えた後も「次へ →」が画面内に見え、説明は内側でスクロールできる", async ({ page }) => {
+test("390pxの仕分けボードで間違えた後も「次へ →」が画面内に見え、説明は内側でスクロールできる", async ({ page }) => {
   await page.goto("/units/bookkeeping-basics/five-elements");
   const next = page.getByRole("button", { name: "次へ →" });
   const solved = async () => {

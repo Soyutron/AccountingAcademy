@@ -13,19 +13,19 @@ test("全角数字の金額でも記帳・確認でき、読めない金額に�
   await next.click();
 
   // 片側だけ: 無効のまま、足りない側を伝える
-  await work.getByLabel("借方の科目 1").fill("車両運搬具");
-  await work.getByLabel("借方の金額 1").fill("1200000");
+  await work.getByLabel("借方の科目1").fill("車両運搬具");
+  await work.getByLabel("借方の金額1").fill("1200000");
   await expect(postButton).toBeDisabled();
   await expect(work.getByText("貸方にも科目と金額を入れると記帳できます。")).toBeVisible();
 
   // 読めない金額: 欄に理由を出す
-  await work.getByLabel("借方の金額 1").fill("120万");
-  await expect(work.getByLabel("借方の金額 1")).toHaveAttribute("aria-invalid", "true");
+  await work.getByLabel("借方の金額1").fill("120万");
+  await expect(work.getByLabel("借方の金額1")).toHaveAttribute("aria-invalid", "true");
   await expect(work.getByText("半角の数字だけで入力してください(例: 100000)")).toBeVisible();
 
-  await work.getByLabel("借方の金額 1").fill("１２０００００");
-  await work.getByLabel("貸方の科目 1").fill("現金");
-  await work.getByLabel("貸方の金額 1").fill("１，２００，０００円");
+  await work.getByLabel("借方の金額1").fill("１２０００００");
+  await work.getByLabel("貸方の科目1").fill("現金");
+  await work.getByLabel("貸方の金額1").fill("１，２００，０００円");
   await postButton.click({ timeout: 3000 });
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
 
@@ -40,7 +40,7 @@ test("全角数字の金額でも記帳・確認でき、読めない金額に�
   await next.click();
   await slide(1, 6);
   await next.click();
-  await expect(page.getByText("ステップ 5 / 9")).toBeVisible();
+  await expect(page.getByText("ステップ5 / 9")).toBeVisible();
 
   const calc = work.getByPlaceholder("金額(円)");
   const confirm = work.getByRole("button", { name: "確認する" });

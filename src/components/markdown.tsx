@@ -10,7 +10,7 @@ import { Term } from "./term";
 import { JournalEditor } from "./journal-editor";
 import { fromJournalEntry } from "@/lib/journal-editable";
 
-// 単元本文の描画。[[id|表示語]] は用語ポップオーバー、```journal は仕訳エディタ(読み取り専用)になる
+// 単元本文の描画。[[id|表示語]]は用語ポップオーバー、```journalは仕訳エディタ(読み取り専用)になる
 
 const TERM_HREF = /^\/glossary#(.+)$/;
 
@@ -19,14 +19,14 @@ const components: Components = {
     const m = href ? TERM_HREF.exec(href) : null;
     if (m && typeof className === "string" && className.includes("term")) {
       const entry = glossaryMap.get(m[1]);
-      if (!entry) throw new Error(`用語 ${m[1]} が用語集にありません`);
-      // [[id]] と書かれた(表示語が無い)ときは用語の名前を出す
+      if (!entry) throw new Error(`用語${m[1]}が用語集にありません`);
+      // [[id]]と書かれた(表示語が無い)ときは用語の名前を出す
       const label = String(children) === entry.id ? entry.name : children;
       return <Term entry={entry}>{label}</Term>;
     }
     return <a href={href}>{children}</a>;
   },
-  // 仕訳ブロックを div で描画するため、pre は素通しにする
+  // 仕訳ブロックをdivで描画するため、preは素通しにする
   pre: ({ children }) => <>{children}</>,
   code: ({ className, children }) => {
     if (className === "language-journal") {
@@ -39,7 +39,7 @@ const components: Components = {
       );
     }
     if (className === "language-figure") {
-      // ビルド時に velite が検査済みなので、ここでは解釈するだけ
+      // ビルド時にveliteが検査済みなので、ここでは解釈するだけ
       return <Figure spec={parseYaml(String(children)) as FigureSpec} />;
     }
     return className ? (

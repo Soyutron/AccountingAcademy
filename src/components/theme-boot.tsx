@@ -3,8 +3,8 @@
 import { useLayoutEffect } from "react";
 import { restoreSavedTheme, themeBootScript } from "@/themes";
 
-// 動的ルートの notFound() では root layout がクライアントで描画され、インラインスクリプトは実行されない(#135)。
-// そこで layout effect でも同じ反映を行い、クライアントでは type を JS 以外にして React の script 警告を避ける
+// 動的ルートのnotFound()ではroot layoutがクライアントで描画され、インラインスクリプトは実行されない(#135)。
+// そこでlayout effectでも同じ反映を行い、クライアントではtypeをJS以外にしてReactのscript警告を避ける
 export function ThemeBoot() {
   useLayoutEffect(restoreSavedTheme, []);
   return (

@@ -1,11 +1,11 @@
-# 環境変数・認証情報(.env.example は雛形なので除外しない)
+# 環境変数・認証情報(.env.exampleは雛形なので除外しない)
 .env
 .env.*
 !.env.example
 *.pem
 *.key
 
-# 個人用の Claude Code 設定と worktree
+# 個人用のClaude Code設定とworktree
 .claude/settings.local.json
 .claude/worktrees/
 
@@ -28,11 +28,11 @@ __pycache__/
 next-env.d.ts
 .DS_Store
 
-# Supabase ローカルスタック
+# Supabaseローカルスタック
 supabase/.branches
 supabase/.temp
 
-# Velite が本文から参照された画像などを書き出す先
+# Veliteが本文から参照された画像などを書き出す先
 /public/static/
 
 # 無人ループ(Monkey / issue-agent)のログ

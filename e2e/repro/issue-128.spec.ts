@@ -3,12 +3,12 @@ import { expect, test } from "@playwright/test";
 test("post: 答えを見た後に直前の誤答を打ち直すと、説明がもう一度出る", async ({ page }) => {
   const work = page.getByRole("region", { name: "ワークスペース" });
   const post = async (debit: string) => {
-    await work.getByLabel("借方の科目 1").fill(debit);
+    await work.getByLabel("借方の科目1").fill(debit);
     await page.keyboard.press("Escape");
-    await work.getByLabel("借方の金額 1").fill("200000");
-    await work.getByLabel("貸方の科目 1").fill("売上");
+    await work.getByLabel("借方の金額1").fill("200000");
+    await work.getByLabel("貸方の科目1").fill("売上");
     await page.keyboard.press("Escape");
-    await work.getByLabel("貸方の金額 1").fill("200000");
+    await work.getByLabel("貸方の金額1").fill("200000");
     await work.getByRole("button", { name: "記帳する" }).click();
   };
   const wrong = page.getByRole("status").filter({ hasText: "もう一歩" });
@@ -28,7 +28,7 @@ test("calc: 答えを見た後に直前の誤答を打ち直すと、説明が�
   const work = page.getByRole("region", { name: "ワークスペース" });
   const wrong = page.getByRole("status").filter({ hasText: "もう一歩" });
   const next = page.getByRole("button", { name: "次へ →" });
-  // ステップ 2 が predict(答えれば進める)、ステップ 3 が calc
+  // ステップ2がpredict(答えれば進める)、ステップ3がcalc
   await page.goto("/units/depreciation/what-is-depreciation");
   await next.click();
   for (const el of ["資産", "負債", "純資産", "収益", "費用"]) {

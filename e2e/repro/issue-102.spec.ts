@@ -26,7 +26,7 @@ test("読みが完全に一致する用語は「一致する用語」に先に�
   await expect(page.locator("dl").first().locator('[id="cash"]')).toBeVisible();
 });
 
-test("0 件のときは次に試すことを案内する", async ({ page }) => {
+test("0件のときは次に試すことを案内する", async ({ page }) => {
   await page.goto("/glossary");
   await page.getByLabel("用語を検索").fill("ぬぬぬ");
   await expect(page.getByText("該当する用語がありません。")).toBeVisible();

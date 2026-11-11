@@ -1,11 +1,11 @@
 import { type Page, expect, test } from "@playwright/test";
 
-// Issue #234: 定額法 ステップ 5・6 の誤答に汎用文だけが返っていた
+// Issue #234: 定額法 ステップ5・6の誤答に汎用文だけが返っていた
 const GENERIC = /計算の式と、使う数字をもう一度|予想と実際の動きが違いました/;
 const work = (page: Page) => page.getByRole("region", { name: "ワークスペース" });
 const next = async (page: Page, to: number) => {
   await page.getByRole("button", { name: "次へ →" }).click();
-  await expect(page.getByText(`ステップ ${to} / 9`)).toBeVisible();
+  await expect(page.getByText(`ステップ${to} / 9`)).toBeVisible();
 };
 const slide = async (page: Page, index: number, presses: number) => {
   const slider = work(page).getByRole("slider").nth(index);
@@ -16,10 +16,10 @@ const slide = async (page: Page, index: number, presses: number) => {
 const toStep5 = async (page: Page) => {
   await page.goto("/units/depreciation/straight-line");
   await next(page, 2);
-  await work(page).getByLabel("借方の科目 1").fill("車両運搬具");
-  await work(page).getByLabel("借方の金額 1").fill("1200000");
-  await work(page).getByLabel("貸方の科目 1").fill("現金");
-  await work(page).getByLabel("貸方の金額 1").fill("1200000");
+  await work(page).getByLabel("借方の科目1").fill("車両運搬具");
+  await work(page).getByLabel("借方の金額1").fill("1200000");
+  await work(page).getByLabel("貸方の科目1").fill("現金");
+  await work(page).getByLabel("貸方の金額1").fill("1200000");
   await work(page).getByRole("button", { name: "記帳する" }).click();
   await next(page, 3);
   await slide(page, 2, 5);
@@ -34,7 +34,7 @@ const expectExplained = async (page: Page) => {
 };
 
 for (const amount of ["83333", "116666", "116667", "1100000"]) {
-  test(`初年度の減価償却費に ${amount} と答えると、汎用文でない説明が返る`, async ({ page }) => {
+  test(`初年度の減価償却費に${amount}と答えると、汎用文でない説明が返る`, async ({ page }) => {
     await toStep5(page);
     await page.getByPlaceholder("金額(円)").fill(amount);
     await page.getByRole("button", { name: "確認する" }).click();

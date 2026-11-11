@@ -4,10 +4,10 @@ function panes(page: Page) {
   const work = page.getByRole("region", { name: "ワークスペース" });
   const result = page.getByRole("region", { name: "結果" });
   const post = async (debit: string, credit: string, amount: string) => {
-    await work.getByLabel("借方の科目 1").fill(debit);
-    await work.getByLabel("借方の金額 1").fill(amount);
-    await work.getByLabel("貸方の科目 1").fill(credit);
-    await work.getByLabel("貸方の金額 1").fill(amount);
+    await work.getByLabel("借方の科目1").fill(debit);
+    await work.getByLabel("借方の金額1").fill(amount);
+    await work.getByLabel("貸方の科目1").fill(credit);
+    await work.getByLabel("貸方の金額1").fill(amount);
     await work.getByRole("button", { name: "記帳する", exact: true }).click();
   };
   const rewind = async () => {
@@ -18,7 +18,7 @@ function panes(page: Page) {
 }
 
 // 帳簿をさかのぼったまま記帳すると、「できました」の文が指す変化が結果ペインに出ない
-test("post 課題: さかのぼったまま記帳すると、結果ペインが最新に戻る", async ({ page }) => {
+test("post課題: さかのぼったまま記帳すると、結果ペインが最新に戻る", async ({ page }) => {
   const { work, result, post, rewind } = panes(page);
   const next = page.getByRole("button", { name: "次へ →" });
   await page.goto("/units/merchandise/credit-transactions");
@@ -26,7 +26,7 @@ test("post 課題: さかのぼったまま記帳すると、結果ペインが�
   await post("仕入", "買掛金", "40000");
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   await next.click();
-  await expect(page.getByText("ステップ 3 / 8")).toBeVisible();
+  await expect(page.getByText("ステップ3 / 8")).toBeVisible();
   const prediction = { 資産: "増える", 負債: "変わらない", 純資産: "増える", 収益: "増える", 費用: "変わらない" };
   for (const [element, label] of Object.entries(prediction)) {
     await work.getByLabel(`${element}の予想`, { exact: true }).selectOption({ label });
@@ -34,7 +34,7 @@ test("post 課題: さかのぼったまま記帳すると、結果ペインが�
   await work.getByRole("button", { name: "予想して記帳する" }).click();
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   await next.click();
-  await expect(page.getByText("ステップ 4 / 8")).toBeVisible();
+  await expect(page.getByText("ステップ4 / 8")).toBeVisible();
 
   await rewind();
   await post("普通預金", "売掛金", "60000");
@@ -44,7 +44,7 @@ test("post 課題: さかのぼったまま記帳すると、結果ペインが�
   await expect(result.locator("section[aria-label='貸借対照表']").getByText("普通預金")).toBeVisible();
 });
 
-test("predict 課題: さかのぼったまま予想して記帳すると、結果ペインが最新に戻る", async ({ page }) => {
+test("predict課題: さかのぼったまま予想して記帳すると、結果ペインが最新に戻る", async ({ page }) => {
   const { work, result, post, rewind } = panes(page);
   const next = page.getByRole("button", { name: "次へ →" });
   await page.goto("/units/cash-and-deposits/petty-cash");
@@ -55,14 +55,14 @@ test("predict 課題: さかのぼったまま予想して記帳すると、結�
   await next.click();
   await work.getByRole("button", { name: "行を追加" }).first().click();
   await work.getByRole("button", { name: "行を追加" }).first().click();
-  await work.getByLabel("借方の科目 1").fill("通信費");
-  await work.getByLabel("借方の金額 1").fill("4000");
-  await work.getByLabel("借方の科目 2").fill("消耗品費");
-  await work.getByLabel("借方の金額 2").fill("6500");
-  await work.getByLabel("借方の科目 3").fill("旅費交通費");
-  await work.getByLabel("借方の金額 3").fill("2000");
-  await work.getByLabel("貸方の科目 1").fill("小口現金");
-  await work.getByLabel("貸方の金額 1").fill("12500");
+  await work.getByLabel("借方の科目1").fill("通信費");
+  await work.getByLabel("借方の金額1").fill("4000");
+  await work.getByLabel("借方の科目2").fill("消耗品費");
+  await work.getByLabel("借方の金額2").fill("6500");
+  await work.getByLabel("借方の科目3").fill("旅費交通費");
+  await work.getByLabel("借方の金額3").fill("2000");
+  await work.getByLabel("貸方の科目1").fill("小口現金");
+  await work.getByLabel("貸方の金額1").fill("12500");
   await work.getByRole("button", { name: "記帳する", exact: true }).click();
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   await next.click();
@@ -88,7 +88,7 @@ test("自由に記帳: さかのぼったまま記帳すると、結果ペイン
   await expect(page.getByRole("status")).toContainText("できました");
   await next.click();
   await next.click();
-  await expect(page.getByText("ステップ 4 / 4")).toBeVisible();
+  await expect(page.getByText("ステップ4 / 4")).toBeVisible();
   await post("現金", "資本金", "50000");
 
   await rewind();

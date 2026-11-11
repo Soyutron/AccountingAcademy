@@ -15,7 +15,7 @@ accounts:
     short: 日々の細かい支払いのために担当者へ前もって渡してある現金
     element: asset
     why: 担当者の手元に移っただけで、まだ使っていない会社のお金だからです。使った分だけが費用になります。
-    example: 文房具代やお茶代に使うために、総務の担当者へ前もって渡しておいた 3 万円。
+    example: 文房具代やお茶代に使うために、総務の担当者へ前もって渡しておいた3万円。
     concepts: [asset, petty_cash]
   - id: cash_over_and_short
     name: 現金過不足
@@ -23,7 +23,7 @@ accounts:
     short: 帳簿の現金と実際の現金が合わないとき、原因が分かるまで差額を置いておく科目
     element: asset
     why: 現金の差額を一時的に置いておく「仮の置き場」で、現金の仲間として資産の側で扱うからです。原因が分かれば本来の科目へ移し、決算まで分からなければ雑損か雑益に振り替えて、財務諸表には残しません。
-    example: 帳簿では 5 万円あるはずの現金を数えたら 4 万 9,000 円しかなかったときの、原因不明の差額 1,000 円。
+    example: 帳簿では5万円あるはずの現金を数えたら4万9,000円しかなかったときの、原因不明の差額1,000円。
     concepts: [cash_over_and_short]
   - id: checking_account
     name: 当座預金
@@ -31,7 +31,7 @@ accounts:
     short: 小切手で支払うための預金。利息は付かない
     element: asset
     why: 銀行に預けてある会社の財産で、小切手を振り出して支払いに使えるからです。
-    example: 仕入先への支払いに小切手を使うために、銀行の当座口座へ入れておいた 100 万円。
+    example: 仕入先への支払いに小切手を使うために、銀行の当座口座へ入れておいた100万円。
     concepts: [asset, checking_account]
   - id: bank_deposit
     name: 普通預金
@@ -40,7 +40,7 @@ accounts:
     short: 銀行に預けてあるお金
     element: asset
     why: 銀行に預けてある会社の財産で、いつでも引き出して使えるからです。
-    example: 売上金を銀行の普通口座に入れておいた 50 万円。
+    example: 売上金を銀行の普通口座に入れておいた50万円。
     concepts: [asset]
   - id: accounts_receivable
     name: 売掛金
@@ -49,7 +49,7 @@ accounts:
     short: 商品を売ったが、まだ受け取っていない代金
     element: asset
     why: 後で現金を受け取る権利であり、将来お金に変わる財産だからです。
-    example: 商品を 3 万円で売り、代金は来月末に受け取ると約束したときの 3 万円。
+    example: 商品を3万円で売り、代金は来月末に受け取ると約束したときの3万円。
     concepts: [asset]
   - id: merchandise_inventory
     name: 繰越商品
@@ -58,7 +58,7 @@ accounts:
     short: 決算の日に売れ残っていた商品の仕入値
     element: asset
     why: まだ売れていない商品は、これから売ってお金に変わる会社の財産だからです。売れた分だけが費用(売上原価)になります。
-    example: 決算の日に棚に残っていた、仕入値 8 万円分の商品。
+    example: 決算の日に棚に残っていた、仕入値8万円分の商品。
     concepts: [asset, ending_inventory, cost_of_goods_sold]
   - id: loans_receivable
     name: 貸付金
@@ -67,7 +67,7 @@ accounts:
     short: 他の人や会社に貸していて、後で返してもらうお金
     element: asset
     why: 後で返してもらう権利で、将来お金に変わる財産だからです。
-    example: 取引先に貸して、1 年後に返してもらう 50 万円。
+    example: 取引先に貸して、1年後に返してもらう50万円。
     concepts: [asset, loan]
   - id: accounts_receivable_other
     name: 未収入金
@@ -75,7 +75,7 @@ accounts:
     short: 商品以外の物(備品など)を売って、まだ受け取っていない代金
     element: asset
     why: 後で現金を受け取る権利で、将来お金に変わる財産だからです。商品の売上代金なら売掛金、それ以外なら未収入金です。
-    example: 使わなくなった棚を 2 万円で売り、代金は来月受け取ると約束したときの 2 万円。
+    example: 使わなくなった棚を2万円で売り、代金は来月受け取ると約束したときの2万円。
     concepts: [asset, non_trade_receivable_payable]
   - id: advance_payment
     name: 前払金
@@ -84,7 +84,7 @@ accounts:
     short: 商品を受け取る前に払った手付金
     element: asset
     why: 商品を受け取る権利を先に買ってある状態で、将来商品に変わる財産だからです。まだ仕入ではありません。
-    example: 来月届く商品 10 万円を注文して、手付金として先に払った 2 万円。
+    example: 来月届く商品10万円を注文して、手付金として先に払った2万円。
     concepts: [asset, advance_payment_receipt]
   - id: advances_paid
     name: 立替金
@@ -93,7 +93,7 @@ accounts:
     short: 従業員や取引先の代わりに一時的に払ってあげたお金
     element: asset
     why: 後で本人から返してもらう権利で、将来お金に変わる財産だからです。会社の費用ではありません。
-    example: 従業員が個人で負担すべき保険料を、会社が代わりに払っておいた 1 万円。
+    example: 従業員が個人で負担すべき保険料を、会社が代わりに払っておいた1万円。
     concepts: [asset, advances_and_deposits]
   - id: suspense_payment
     name: 仮払金
@@ -102,7 +102,7 @@ accounts:
     short: 出張の旅費など、いくら何に使うかが確定する前に渡しておいたお金
     element: asset
     why: 使い道と金額が決まるまでは、まだ会社のお金が手元を離れただけの状態だからです。精算して初めて費用になります。
-    example: 出張に行く従業員へ、旅費の概算として渡しておいた 5 万円。
+    example: 出張に行く従業員へ、旅費の概算として渡しておいた5万円。
     concepts: [asset, suspense_accounts]
   - id: building
     name: 建物
@@ -117,8 +117,8 @@ accounts:
     reading: [びひん]
     short: 机、パソコン、棚など、長く使う物品
     element: asset
-    why: 1 年を超えて事業に使える会社の財産だからです。
-    example: 事務所に置くために買った 20 万円のパソコンや応接セット。
+    why: 1年を超えて事業に使える会社の財産だからです。
+    example: 事務所に置くために買った20万円のパソコンや応接セット。
     concepts: [asset, tangible_fixed_assets]
   - id: vehicle
     name: 車両運搬具
@@ -137,7 +137,7 @@ accounts:
     element: asset
     contra: true
     why: 固定資産の勘定の金額(取得原価)を直接減らさず、取得原価と減価の累計を別々に見せるための「資産のマイナス」項目だからです。支払う義務ではないので負債ではありません。
-    example: 100 万円のトラックを毎年 20 万円ずつ償却して 2 年たったときの 40 万円。トラックの帳簿価額は 60 万円になる。
+    example: 100万円のトラックを毎年20万円ずつ償却して2年たったときの40万円。トラックの帳簿価額は60万円になる。
     concepts: [contra_account, depreciation, indirect_method]
   - id: accounts_payable
     name: 買掛金
@@ -146,7 +146,7 @@ accounts:
     short: 商品を仕入れたが、まだ支払っていない代金
     element: liability
     why: 後で現金を支払わなければならない義務だからです。
-    example: 商品を 2 万円で仕入れ、代金は来月末に払うと約束したときの 2 万円。
+    example: 商品を2万円で仕入れ、代金は来月末に払うと約束したときの2万円。
     concepts: [liability]
   - id: accounts_payable_other
     name: 未払金
@@ -155,7 +155,7 @@ accounts:
     short: 商品以外の物(備品など)を買って、まだ支払っていない代金
     element: liability
     why: 後で現金を支払う義務だからです。商品の仕入代金なら買掛金、それ以外なら未払金です。
-    example: 事務所のパソコンを 15 万円で買い、代金は来月払うと約束したときの 15 万円。
+    example: 事務所のパソコンを15万円で買い、代金は来月払うと約束したときの15万円。
     concepts: [liability, non_trade_receivable_payable]
   - id: advance_received
     name: 前受金
@@ -164,7 +164,7 @@ accounts:
     short: 商品を渡す前に受け取った手付金
     element: liability
     why: 商品を渡す義務(渡せなければ返す義務)を負っている状態だからです。まだ売上ではありません。
-    example: 来月渡す商品 10 万円の注文を受けて、手付金として先に受け取った 2 万円。
+    example: 来月渡す商品10万円の注文を受けて、手付金として先に受け取った2万円。
     concepts: [liability, advance_payment_receipt]
   - id: deposits_received
     name: 預り金
@@ -173,7 +173,7 @@ accounts:
     short: 従業員の給料から差し引いた税金など、後で代わりに納めるために一時的に預かっているお金
     element: liability
     why: 本人の代わりに納める義務を負っている他人のお金だからです。会社のもうけではありません。
-    example: 給料から差し引いて、後で会社が代わりに税務署へ納める所得税 1 万円。
+    example: 給料から差し引いて、後で会社が代わりに税務署へ納める所得税1万円。
     concepts: [liability, advances_and_deposits]
   - id: suspense_receipt
     name: 仮受金
@@ -182,7 +182,7 @@ accounts:
     short: 正体の分からない入金を、理由が分かるまで置いておく科目
     element: liability
     why: 何のお金か分からないうちは、返す必要があるかもしれないお金として扱うからです。理由が分かれば本来の科目へ移します。
-    example: 銀行口座に振り込まれたものの、何の入金か分からない 3 万円。
+    example: 銀行口座に振り込まれたものの、何の入金か分からない3万円。
     concepts: [liability, suspense_accounts]
   - id: bank_overdraft
     name: 当座借越
@@ -190,7 +190,7 @@ accounts:
     short: 当座預金の残高を超えて小切手を振り出し、銀行に立て替えてもらっている金額
     element: liability
     why: 銀行が一時的に立て替えたお金で、返さなければならない義務だからです。名前に「当座」と付いていても負債です。
-    example: 当座預金の残高が 10 万円のときに 15 万円の小切手を振り出して、銀行に立て替えてもらった 5 万円。
+    example: 当座預金の残高が10万円のときに15万円の小切手を振り出して、銀行に立て替えてもらった5万円。
     concepts: [liability, bank_overdraft]
   - id: loans_payable
     name: 借入金
@@ -199,7 +199,7 @@ accounts:
     short: 銀行などから借りていて、返さなければならないお金
     element: liability
     why: 将来返済しなければならない義務だからです。受け取った現金は資産ですが、返す義務は負債として別に記録します。
-    example: 銀行から借りて、3 年かけて返す 100 万円。
+    example: 銀行から借りて、3年かけて返す100万円。
     concepts: [liability, loan]
   - id: capital_stock
     name: 資本金
@@ -207,7 +207,7 @@ accounts:
     short: 会社の持ち主(株主)が出したお金
     element: equity
     why: 返す義務のない元手であり、資産から負債を引いた残りである純資産を構成するからです。
-    example: 会社を作るときに、株主が出資した 300 万円。
+    example: 会社を作るときに、株主が出資した300万円。
     concepts: [equity]
   - id: retained_earnings
     name: 繰越利益剰余金
@@ -215,7 +215,7 @@ accounts:
     short: これまでに会社が稼いで、会社の中に残してある利益
     element: equity
     why: 過去の利益の積み上がりで、株主のものとして会社に残っている純資産だからです。
-    example: 1 年目に 50 万円、2 年目に 30 万円もうけて、どちらも配当せずに残した合計 80 万円。
+    example: 1年目に50万円、2年目に30万円もうけて、どちらも配当せずに残した合計80万円。
     concepts: [equity, net_income]
   - id: sales
     name: 売上
@@ -224,7 +224,7 @@ accounts:
     short: 商品やサービスを売って得た金額
     element: revenue
     why: 事業によって会社の純資産を増やす原因だからです。現金を受け取ったかどうかとは関係ありません。
-    example: 雑貨店がお客さんに 1 万円の商品を売ったときの 1 万円。
+    example: 雑貨店がお客さんに1万円の商品を売ったときの1万円。
     concepts: [revenue]
   - id: purchases
     name: 仕入
@@ -233,7 +233,7 @@ accounts:
     short: 売るための商品を買った金額
     element: expense
     why: 売上を得るために使った犠牲であり、純資産を減らす原因だからです。
-    example: 雑貨店が売るためのマグカップを問屋から 6,000 円で買ったときの 6,000 円。
+    example: 雑貨店が売るためのマグカップを問屋から6,000円で買ったときの6,000円。
     concepts: [expense]
   - id: rent_expense
     name: 支払家賃
@@ -242,7 +242,7 @@ accounts:
     short: 事務所や店舗を借りるために支払う家賃
     element: expense
     why: 事業を行うために使った犠牲で、純資産を減らす原因だからです。
-    example: 借りている店舗の家賃として、大家さんに毎月払う 10 万円。
+    example: 借りている店舗の家賃として、大家さんに毎月払う10万円。
     concepts: [expense]
   - id: salaries_expense
     name: 給料
@@ -250,7 +250,7 @@ accounts:
     short: 従業員に支払う給料
     element: expense
     why: 事業を行うために使った犠牲で、純資産を減らす原因だからです。
-    example: 従業員に今月分として払う 25 万円。
+    example: 従業員に今月分として払う25万円。
     concepts: [expense]
   - id: supplies_expense
     name: 消耗品費
@@ -258,7 +258,7 @@ accounts:
     short: 文房具やコピー用紙など、すぐに使い切る物の代金
     element: expense
     why: 短期間で使い切ってしまい財産として残らないので、買った時点で費用とするからです。
-    example: 事務所で使うボールペンとコピー用紙を買った 3,000 円。
+    example: 事務所で使うボールペンとコピー用紙を買った3,000円。
     concepts: [expense]
   - id: utilities_expense
     name: 水道光熱費
@@ -267,7 +267,7 @@ accounts:
     short: お店で使った電気・ガス・水道の代金
     element: expense
     why: 使ってしまえば財産として残らず、もうけを得るために使った犠牲だからです。
-    example: お店の今月の電気代 1 万 2,000 円。
+    example: お店の今月の電気代1万2,000円。
     concepts: [expense]
   - id: interest_expense
     name: 支払利息
@@ -276,7 +276,7 @@ accounts:
     short: 借りたお金に対して支払う利息
     element: expense
     why: お金を借りるために使った犠牲で、純資産を減らす原因だからです。
-    example: 銀行から借りた 100 万円に対して、1 年分として払う 2 万円。
+    example: 銀行から借りた100万円に対して、1年分として払う2万円。
     concepts: [expense, interest]
   - id: depreciation_expense
     name: 減価償却費
@@ -284,7 +284,7 @@ accounts:
     short: 建物や備品などの購入代金のうち、今年の分として費用にした金額
     element: expense
     why: 固定資産の取得原価のうち、当期の使用によって消費された部分を費用として認識するためです。
-    example: 100 万円のトラックを 5 年使うなら、1 年目の減価償却費は 20 万円。
+    example: 100万円のトラックを5年使うなら、1年目の減価償却費は20万円。
     concepts: [expense, depreciation, cost_allocation]
   - id: gain_on_sale_of_fixed_assets
     name: 固定資産売却益
@@ -292,7 +292,7 @@ accounts:
     short: 固定資産を帳簿価額より高く売ったときの差額
     element: revenue
     why: 売却によって純資産が増えた分だからです。
-    example: 帳簿価額 30 万円の備品を 35 万円で売ったときの差額 5 万円。
+    example: 帳簿価額30万円の備品を35万円で売ったときの差額5万円。
     concepts: [revenue, book_value]
   - id: loss_on_sale_of_fixed_assets
     name: 固定資産売却損
@@ -300,7 +300,7 @@ accounts:
     short: 固定資産を帳簿価額より安く売ったときの差額
     element: expense
     why: 売却によって純資産が減った分だからです。
-    example: 帳簿価額 30 万円の備品を 25 万円で売ったときの差額 5 万円。
+    example: 帳簿価額30万円の備品を25万円で売ったときの差額5万円。
     concepts: [expense, book_value]
   - id: shipping_expense
     name: 発送費
@@ -308,7 +308,7 @@ accounts:
     short: 売った商品をお客さんに送るためにかかった運賃
     element: expense
     why: 売上を得るために使った犠牲で、純資産を減らす原因だからです。仕入れるときの運賃(仕入諸掛)とは違い、仕入には含めません。
-    example: 売った商品をお客さんへ宅配便で送った送料 800 円。
+    example: 売った商品をお客さんへ宅配便で送った送料800円。
     concepts: [expense, incidental_costs]
   - id: miscellaneous_loss
     name: 雑損
@@ -317,7 +317,7 @@ accounts:
     short: 原因が分からないまま決算を迎えた、現金の不足分などの小さな損
     element: expense
     why: 会社の財産が理由の分からないまま減った分で、純資産を減らす原因だからです。
-    example: 決算の日まで原因が分からなかった、現金の不足分 1,000 円。
+    example: 決算の日まで原因が分からなかった、現金の不足分1,000円。
     concepts: [expense, miscellaneous_loss_gain]
   - id: miscellaneous_gain
     name: 雑益
@@ -325,7 +325,7 @@ accounts:
     short: 原因が分からないまま決算を迎えた、現金の超過分などの小さな得
     element: revenue
     why: 会社の財産が理由の分からないまま増えた分で、純資産を増やす原因だからです。
-    example: 決算の日まで原因が分からなかった、現金の超過分 500 円。
+    example: 決算の日まで原因が分からなかった、現金の超過分500円。
     concepts: [revenue, miscellaneous_loss_gain]
   - id: communication_expense
     name: 通信費
@@ -334,7 +334,7 @@ accounts:
     short: 切手、はがき、電話やインターネットの代金
     element: expense
     why: 使ってしまえば財産として残らず、事業のために使った犠牲だからです。
-    example: お店のインターネット回線の今月の料金 5,000 円。
+    example: お店のインターネット回線の今月の料金5,000円。
     concepts: [expense]
   - id: travel_expense
     name: 旅費交通費
@@ -343,7 +343,7 @@ accounts:
     short: 電車代やタクシー代、出張の宿泊費
     element: expense
     why: 移動や出張のために使った犠牲で、財産として残らないからです。
-    example: 取引先へ行くために使った往復の電車代 1,200 円。
+    example: 取引先へ行くために使った往復の電車代1,200円。
     concepts: [expense]
   - id: interest_income
     name: 受取利息
@@ -352,5 +352,5 @@ accounts:
     short: 貸したお金や預金に対して受け取る利息
     element: revenue
     why: お金を貸したことで得られたもうけで、純資産を増やす原因だからです。返してもらう元本とは別です。
-    example: 取引先に貸した 50 万円に対して、1 年分として受け取る 1 万円。
+    example: 取引先に貸した50万円に対して、1年分として受け取る1万円。
     concepts: [revenue, interest]

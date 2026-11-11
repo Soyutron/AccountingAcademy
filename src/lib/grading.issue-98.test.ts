@@ -6,17 +6,17 @@ import { gradeCalc, type TaskOf } from "./grading";
 const GENERIC = "結果の表で何が動くはずか";
 
 const calcSteps = [...unitMap.values()].flatMap((unit) =>
-  unit.steps.flatMap((step, index) => (step.task.type === "calc" ? [{ name: `${unit.id} ステップ ${index + 1}`, task: step.task }] : [])),
+  unit.steps.flatMap((step, index) => (step.task.type === "calc" ? [{ name: `${unit.id}ステップ${index + 1}`, task: step.task }] : [])),
 );
 
-// 桁違い・符号違い・±1・0 のうち、誤答パターンが定義されていないもの
+// 桁違い・符号違い・±1・0のうち、誤答パターンが定義されていないもの
 function undefinedWrongValues(task: TaskOf<"calc">): number[] {
   const values = [task.answer * 10, task.answer / 10, -task.answer, task.answer + 1, task.answer - 1, 0];
   return values.filter((v) => v !== task.answer && !task.wrong_patterns.some((p) => p.match === v));
 }
 
 describe("計算問題の定義外の誤答", () => {
-  it("calc ステップが走査できている", () => {
+  it("calcステップが走査できている", () => {
     expect(calcSteps.length).toBeGreaterThan(0);
   });
 
@@ -30,7 +30,7 @@ describe("計算問題の定義外の誤答", () => {
     }
   });
 
-  it.each(calcSteps)("$name: 定義済みの誤答には個別の説明と誤解 ID を返す", ({ task }) => {
+  it.each(calcSteps)("$name: 定義済みの誤答には個別の説明と誤解IDを返す", ({ task }) => {
     for (const pattern of task.wrong_patterns) {
       const result = gradeCalc(task, pattern.match);
       expect(result.correct).toBe(false);

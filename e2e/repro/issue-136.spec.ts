@@ -1,7 +1,7 @@
 import { expect, test, type BrowserContext, type Page } from "@playwright/test";
 
-// Issue #136: Cookie のセッションが無効でも getSession() はそのまま返すので、読み込みと保存が 401 や例外になり続け、
-// 再読み込みしても「保存エラー」が直らなかった。refresh できるなら同じユーザーで、できないなら新しいゲストとして続けられること
+// Issue #136: Cookieのセッションが無効でもgetSession()はそのまま返すので、読み込みと保存が401や例外になり続け、
+// 再読み込みしても「保存エラー」が直らなかった。refreshできるなら同じユーザーで、できないなら新しいゲストとして続けられること
 
 const unit = "/units/bookkeeping-basics/five-elements";
 const next = (page: Page) => page.getByRole("button", { name: "次へ →" });
@@ -24,7 +24,7 @@ async function replaceSession(context: BrowserContext, build: (session: Session)
 
 const breakSignature = (session: Session) => ({ ...session, access_token: `${session.access_token.slice(0, -6)}AAAAAA` });
 
-// 新しいゲストで 1 回保存し、そのユーザー ID を返す
+// 新しいゲストで1回保存し、そのユーザーIDを返す
 async function startGuest(page: Page, context: BrowserContext) {
   await page.goto(unit);
   await page.waitForLoadState("networkidle");
@@ -49,7 +49,7 @@ async function clickNextAndExpectSaved(page: Page) {
   await expect(page.getByText(/保存エラー/)).toHaveCount(0);
 }
 
-test("access_token の署名が無効でも、refresh_token が有効なら同じユーザーで進捗を読み直して続けられる", async ({ page, context }) => {
+test("access_tokenの署名が無効でも、refresh_tokenが有効なら同じユーザーで進捗を読み直して続けられる", async ({ page, context }) => {
   const userId = await startGuest(page, context);
   await replaceSession(context, breakSignature);
   await page.reload();
@@ -62,7 +62,7 @@ test("access_token の署名が無効でも、refresh_token が有効なら同�
   expect(decode((await authCookie(context))!.value).user.id).toBe(userId);
 });
 
-test("refresh_token も無効なら、閲覧ではユーザーを作らず、次の保存で新しいゲストになる", async ({ page, context }) => {
+test("refresh_tokenも無効なら、閲覧ではユーザーを作らず、次の保存で新しいゲストになる", async ({ page, context }) => {
   const userId = await startGuest(page, context);
   await replaceSession(context, (s) => ({ ...breakSignature(s), refresh_token: "invalid-refresh-token" }));
   let signups = 0;
@@ -80,16 +80,16 @@ test("refresh_token も無効なら、閲覧ではユーザーを作らず、次
   expect(decode((await authCookie(context))!.value).user.id).not.toBe(userId);
 });
 
-test("開いたままセッションが無効になっても、保存を 1 回やり直して成功する", async ({ page, context }) => {
-  // five-elements の次のステップは答えるまで進めないので、仕訳を済ませれば進める単元を使う
+test("開いたままセッションが無効になっても、保存を1回やり直して成功する", async ({ page, context }) => {
+  // five-elementsの次のステップは答えるまで進めないので、仕訳を済ませれば進める単元を使う
   await page.goto("/units/cash-and-deposits/petty-cash");
   await page.waitForLoadState("networkidle");
   const work = page.getByRole("region", { name: "ワークスペース" });
   await next(page).click();
-  await work.getByLabel("借方の科目 1").fill("小口現金");
-  await work.getByLabel("借方の金額 1").fill("30000");
-  await work.getByLabel("貸方の科目 1").fill("当座預金");
-  await work.getByLabel("貸方の金額 1").fill("30000");
+  await work.getByLabel("借方の科目1").fill("小口現金");
+  await work.getByLabel("借方の金額1").fill("30000");
+  await work.getByLabel("貸方の科目1").fill("当座預金");
+  await work.getByLabel("貸方の金額1").fill("30000");
   const posted = page.waitForResponse((r) => r.url().includes("/rest/v1/attempts") && r.request().method() === "POST");
   await work.getByRole("button", { name: "記帳する" }).click();
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
@@ -99,18 +99,18 @@ test("開いたままセッションが無効になっても、保存を 1 回�
   await replaceSession(context, breakSignature);
   const denied = watchDenied(page);
   await clickNextAndExpectSaved(page);
-  // 回復の前に出る 1 回だけ
+  // 回復の前に出る1回だけ
   expect(denied).toHaveLength(1);
   expect(decode((await authCookie(context))!.value).user.id).toBe(userId);
 });
 
 const malformed: [string, unknown][] = [
-  ["user が無い", { access_token: "a.b.c", refresh_token: "x", expires_at: 9999999999 }],
-  ["refresh_token が空で期限切れ", { access_token: "a.b.c", refresh_token: "", expires_at: 1, user: { id: "x" } }],
+  ["userが無い", { access_token: "a.b.c", refresh_token: "x", expires_at: 9999999999 }],
+  ["refresh_tokenが空で期限切れ", { access_token: "a.b.c", refresh_token: "", expires_at: 1, user: { id: "x" } }],
 ];
 
 for (const [label, session] of malformed) {
-  test(`Cookie が壊れた形(${label})でも、新しいゲストとして保存できる`, async ({ page, context }) => {
+  test(`Cookieが壊れた形(${label})でも、新しいゲストとして保存できる`, async ({ page, context }) => {
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(e.stack ?? e.message));
     await startGuest(page, context);
@@ -120,7 +120,7 @@ for (const [label, session] of malformed) {
 
     await clickNextAndExpectSaved(page);
     expect(decode((await authCookie(context))!.value).user.id).toMatch(/^[0-9a-f-]{36}$/);
-    // refresh_token が空だと auth-js の起動時処理(_emitInitialSession)が catch なしで投げるが、アプリからは捕まえられず保存にも影響しない
+    // refresh_tokenが空だとauth-jsの起動時処理(_emitInitialSession)がcatchなしで投げるが、アプリからは捕まえられず保存にも影響しない
     expect(errors.filter((e) => !e.includes("_emitInitialSession"))).toEqual([]);
   });
 }

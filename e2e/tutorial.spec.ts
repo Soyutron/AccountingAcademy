@@ -12,11 +12,11 @@ test("チュートリアルを操作しながら最後まで進められる", as
   await expect(tour.getByRole("button", { name: "次へ" })).toBeDisabled();
   await page.getByRole("button", { name: "次へ →" }).click();
   const work = page.getByRole("region", { name: "ワークスペース" });
-  await work.getByLabel("借方の科目 1").fill("現金");
-  await work.getByLabel("借方の金額 1").fill("100000");
+  await work.getByLabel("借方の科目1").fill("現金");
+  await work.getByLabel("借方の金額1").fill("100000");
   await tour.getByRole("button", { name: "次へ" }).click();
-  await work.getByLabel("貸方の科目 1").fill("資本金");
-  await work.getByLabel("貸方の金額 1").fill("100000");
+  await work.getByLabel("貸方の科目1").fill("資本金");
+  await work.getByLabel("貸方の金額1").fill("100000");
   await tour.getByRole("button", { name: "次へ" }).click(); // 影響の説明
   await tour.getByRole("button", { name: "次へ" }).click(); // 記帳する待ち
   await expect(tour.getByRole("button", { name: "次へ" })).toBeDisabled();

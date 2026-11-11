@@ -15,7 +15,7 @@ export default function GlossaryPage() {
         <h1 className="text-2xl font-bold">用語集</h1>
         <p className="text-muted-foreground">概念と勘定科目。暗記するためではなく、「なぜ必要か」「何とつながるか」を確かめるために使ってください。</p>
       </div>
-      {/* 全件の一覧を初期 HTML に残す。#用語 へのアンカーが読み込み直後に効くように */}
+      {/* 全件の一覧を初期HTMLに残す。#用語 へのアンカーが読み込み直後に効くように */}
       <Suspense fallback={<GlossarySearch {...searchProps} />}>
         <GlossarySearchFromUrl {...searchProps} />
       </Suspense>

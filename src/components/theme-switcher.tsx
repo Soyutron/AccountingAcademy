@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DEFAULT_THEME, MODE_LABELS, MODE_STORAGE_KEY, MODES, type Mode, THEME_STORAGE_KEY, THEMES, isMode, isThemeId, restoreSavedTheme } from "@/themes";
 
-// テーマとライト・ダークの切り替え。選択は localStorage に置き、<html> の data-theme / data-mode に反映する(docs/design-system.md 3.2)。
-// 初期描画の反映は layout の ThemeBoot が済ませているので、ここは表示と変更だけを受け持つ。
-// 現在の選択は <html> と localStorage を正として useSyncExternalStore で読む(サーバー描画では既定値)
+// テーマとライト・ダークの切り替え。選択はlocalStorageに置き、<html> のdata-theme / data-modeに反映する(docs/design-system.md 3.2)。
+// 初期描画の反映はlayoutのThemeBootが済ませているので、ここは表示と変更だけを受け持つ。
+// 現在の選択は <html> とlocalStorageを正としてuseSyncExternalStoreで読む(サーバー描画では既定値)
 
 function readStorage<T>(key: string, guard: (v: unknown) => v is T, fallback: T): T {
   try {
@@ -27,10 +27,10 @@ function writeStorage(key: string, value: string) {
   }
 }
 
-// 別タブの変更を <html> に反映する。key が null になるのは別タブの localStorage.clear()
+// 別タブの変更を <html> に反映する。keyがnullになるのは別タブのlocalStorage.clear()
 function onStorage(e: StorageEvent) {
   if (e.key !== THEME_STORAGE_KEY && e.key !== MODE_STORAGE_KEY && e.key !== null) return;
-  // 保存値が消えたり不正だったりすると restoreSavedTheme はテーマに触らないので、再読み込みと同じ既定に戻しておく
+  // 保存値が消えたり不正だったりするとrestoreSavedThemeはテーマに触らないので、再読み込みと同じ既定に戻しておく
   document.documentElement.dataset.theme = DEFAULT_THEME;
   restoreSavedTheme();
   emit();
@@ -40,7 +40,7 @@ const listeners = new Set<() => void>();
 function subscribe(listener: () => void) {
   if (listeners.size === 0) window.addEventListener("storage", onStorage);
   listeners.add(listener);
-  // 「自動」のときは OS の設定変更に追従する
+  // 「自動」のときはOSの設定変更に追従する
   const mq = matchMedia("(prefers-color-scheme: dark)");
   const onChange = () => {
     if (getMode() === "auto") applyMode("auto");

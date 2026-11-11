@@ -1,6 +1,6 @@
 import { type Page, expect, test } from "@playwright/test";
 
-// 売れ残りと売上原価のステップ 7(仕分けボード)まで正解で進める
+// 売れ残りと売上原価のステップ7(仕分けボード)まで正解で進める
 async function openBoard(page: Page) {
   await page.goto("/units/merchandise/cost-of-goods-sold");
   const next = () => page.getByRole("button", { name: "次へ →" }).click();
@@ -25,10 +25,10 @@ async function openBoard(page: Page) {
   await next();
   const work = page.getByRole("region", { name: "ワークスペース" });
   for (const [cr, amount] of [["繰越商品", "22000"], ["買掛金", "20000"]]) {
-    await work.getByLabel("借方の科目 1").fill("仕入");
-    await work.getByLabel("借方の金額 1").fill(amount);
-    await work.getByLabel("貸方の科目 1").fill(cr);
-    await work.getByLabel("貸方の金額 1").fill(amount);
+    await work.getByLabel("借方の科目1").fill("仕入");
+    await work.getByLabel("借方の金額1").fill(amount);
+    await work.getByLabel("貸方の科目1").fill(cr);
+    await work.getByLabel("貸方の金額1").fill(amount);
     await page.getByRole("button", { name: "記帳する" }).click();
     await ok();
     await next();
@@ -74,16 +74,16 @@ test("間違えた科目が複数なら、移した科目の分だけ印と説�
   await place("売掛金", "資産");
   await page.getByRole("button", { name: "確認する" }).click();
   const status = page.getByRole("status");
-  await expect(status.getByText("2 個の科目")).toBeVisible();
+  await expect(status.getByText("2個の科目")).toBeVisible();
 
   await move("仕入", "費用");
   await expect(board.getByText("(間違い)")).toHaveCount(1);
   await expect(board.getByRole("button", { name: "売上 (間違い)" })).toBeVisible();
-  await expect(status.getByText("1 個の科目")).toBeVisible();
+  await expect(status.getByText("1個の科目")).toBeVisible();
   await expect(status.getByText(/^仕入は費用です/)).toHaveCount(0);
   await expect(status.getByText(/^売上は収益です/)).toBeVisible();
 
   await move("仕入", "資産");
   await expect(board.getByRole("button", { name: "仕入 (間違い)" })).toBeVisible();
-  await expect(status.getByText("2 個の科目")).toBeVisible();
+  await expect(status.getByText("2個の科目")).toBeVisible();
 });

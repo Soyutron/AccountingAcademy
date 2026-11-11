@@ -3,7 +3,7 @@ import { test, expect, type Page } from "@playwright/test";
 const UNIT = "/units/bookkeeping-basics/five-elements";
 
 async function expectNavLinksOnOneLine(page: Page) {
-  for (const name of ["3 級合格パス", "用語集"]) {
+  for (const name of ["3級合格パス", "用語集"]) {
     const link = page.getByRole("banner").getByRole("link", { name, exact: true });
     await expect(link).toBeVisible({ timeout: 15000 });
     const lines = await link.evaluate((e) => {
@@ -30,7 +30,7 @@ test.describe("390px", () => {
   });
 });
 
-// nowrap にした分の不足は、ブランド名の省略で吸収する(ヘッダーがページ幅を押し広げない)
+// nowrapにした分の不足は、ブランド名の省略で吸収する(ヘッダーがページ幅を押し広げない)
 for (const width of [360, 320]) {
   test.describe(`${width}px`, () => {
     test.use({ viewport: { width, height: 800 } });

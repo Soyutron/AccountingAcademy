@@ -1,15 +1,15 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// Issue #182: 計算課題の 1 回目の誤答の説明に正解の金額が書かれていて、「答えを見る」の前に答えが分かっていた
+// Issue #182: 計算課題の1回目の誤答の説明に正解の金額が書かれていて、「答えを見る」の前に答えが分かっていた
 
 const work = (page: Page) => page.getByRole("region", { name: "ワークスペース" });
 const next = (page: Page) => page.getByRole("button", { name: "次へ →" }).click();
 async function post(page: Page, debit: [string, string], credit: [string, string]) {
   const w = work(page);
-  await w.getByLabel("借方の科目 1").fill(debit[0]);
-  await w.getByLabel("借方の金額 1").fill(debit[1]);
-  await w.getByLabel("貸方の科目 1").fill(credit[0]);
-  await w.getByLabel("貸方の金額 1").fill(credit[1]);
+  await w.getByLabel("借方の科目1").fill(debit[0]);
+  await w.getByLabel("借方の金額1").fill(debit[1]);
+  await w.getByLabel("貸方の科目1").fill(credit[0]);
+  await w.getByLabel("貸方の金額1").fill(credit[1]);
   await w.getByRole("button", { name: "記帳する" }).click();
   await expect(page.getByRole("status").filter({ hasText: "できました" })).toBeVisible();
 }
@@ -33,5 +33,5 @@ test("計算課題の誤答の説明に正解の金額が出ない", async ({ pa
   await next(page);
   await calc(page, "1500");
   await expect(page.getByRole("status").filter({ hasText: "もう一歩" })).toBeVisible();
-  await expect(page.getByRole("status").filter({ hasText: "3,000 円になります" })).toHaveCount(0);
+  await expect(page.getByRole("status").filter({ hasText: "3,000円になります" })).toHaveCount(0);
 });

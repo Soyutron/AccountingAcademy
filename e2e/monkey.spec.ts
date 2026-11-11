@@ -2,15 +2,15 @@ import { appendFileSync, mkdirSync, readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import { attachOracle, db, domFindings, domState } from "../scripts/monkey/session.mjs";
 
-// スクリプト型 Monkey(docs/quality-loop.md §4.1 B)。seed 付きの PRNG で画面状態に応じた操作をランダムに選び、
-// オラクル(不変条件)の違反を探す。LLM を使わないので夜間に大量の seed を回せる。
-// 通常の E2E では走らない。MONKEY=1 pnpm exec playwright test e2e/monkey.spec.ts [--repeat-each N]
-//   MONKEY_SEED=<n>    seed を固定して再現する
-//   MONKEY_STEPS=<n>   1 seed の操作数(既定 40)
-//   MONKEY_SEEDS=<n>   seed の本数(既定 3。MONKEY_SEED があれば 1 本)
-// 失敗時は seed と操作列を出力し、logs/monkey-scripted/<seed>.log に残す。
+// スクリプト型Monkey(docs/quality-loop.md §4.1 B)。seed付きのPRNGで画面状態に応じた操作をランダムに選び、
+// オラクル(不変条件)の違反を探す。LLMを使わないので夜間に大量のseedを回せる。
+// 通常のE2Eでは走らない。MONKEY=1 pnpm exec playwright test e2e/monkey.spec.ts [--repeat-each N]
+//   MONKEY_SEED=<n>    seedを固定して再現する
+//   MONKEY_STEPS=<n>   1 seedの操作数(既定40)
+//   MONKEY_SEEDS=<n>   seedの本数(既定3。MONKEY_SEEDがあれば1本)
+// 失敗時はseedと操作列を出力し、logs/monkey-scripted/<seed>.logに残す。
 
-test.skip(!process.env.MONKEY, "MONKEY=1 で実行する");
+test.skip(!process.env.MONKEY, "MONKEY=1で実行する");
 
 type Line = { account: string; amount: number };
 type Task =
@@ -30,7 +30,7 @@ const CHANGES = ["increase", "decrease", "none"];
 // 境界値を混ぜた金額の候補
 const AMOUNTS = [0, 1, 100, 1000, 100000, 1000000, 999999999, -500, 1.5, NaN];
 
-// mulberry32。seed から決定的な乱数列を作る
+// mulberry32。seedから決定的な乱数列を作る
 function prng(seed: number) {
   let a = seed >>> 0;
   return () => {
@@ -54,7 +54,7 @@ async function observe(page: Page): Promise<State> {
   const unit = m ? units.find((u) => u.id === m[1]) : undefined;
   if (!unit) return { nextEnabled: false, posted: 0 };
   const text = (await page.locator("body").innerText().catch(() => "")) ?? "";
-  const s = text.match(/ステップ (\d+) \/ (\d+)/);
+  const s = text.match(/ステップ(\d+) \/ (\d+)/);
   const stepIndex = s ? Number(s[1]) - 1 : undefined;
   const next = page.getByRole("button", { name: "次へ →" });
   const nextEnabled = (await next.count()) > 0 && (await next.getAttribute("aria-disabled")) !== "true";
@@ -168,18 +168,18 @@ async function dismiss(page: Page) {
 }
 async function fill(page: Page, debit: Line[], credit: Line[]) {
   const w = work(page);
-  // 1 行だけのときの「行を削除」は disabled なので、押せるものだけを消す
+  // 1行だけのときの「行を削除」はdisabledなので、押せるものだけを消す
   const del = w.locator("button[aria-label='行を削除']:not([disabled])");
   for (let g = 0; g < 10 && (await del.count()) > 0; g++) await del.first().click({ timeout: 3000 });
   for (const [side, lines] of [["借方", debit], ["貸方", credit]] as const) {
     for (let i = 0; i < lines.length; i++) {
       if (i > 0) await w.getByRole("button", { name: "行を追加" }).nth(side === "借方" ? 0 : 1).click({ timeout: 3000 });
-      await w.getByLabel(`${side}の科目 ${i + 1}`).fill(lines[i].account, { timeout: 3000 });
-      await w.getByLabel(`${side}の金額 ${i + 1}`).fill(Number.isNaN(lines[i].amount) ? "abc" : String(lines[i].amount), { timeout: 3000 });
+      await w.getByLabel(`${side}の科目${i + 1}`).fill(lines[i].account, { timeout: 3000 });
+      await w.getByLabel(`${side}の金額${i + 1}`).fill(Number.isNaN(lines[i].amount) ? "abc" : String(lines[i].amount), { timeout: 3000 });
     }
   }
 }
-// このゲスト(匿名ユーザー)の attempts の行数。他のセッションが同じ DB を使っていても混ざらないように user_id で絞る
+// このゲスト(匿名ユーザー)のattemptsの行数。他のセッションが同じDBを使っていても混ざらないようにuser_idで絞る
 async function attemptsCount(page: Page): Promise<number | null> {
   try {
     const uid = await page.evaluate(() => {
@@ -224,20 +224,20 @@ for (const seed of seeds) {
       }
       await page.waitForTimeout(300);
       const dom = await domState(page);
-      // 同じ所見の繰り返し(同じ警告が要素ごとに出る等)は 1 件にまとめる
+      // 同じ所見の繰り返し(同じ警告が要素ごとに出る等)は1件にまとめる
       const raw = [...oracle.drain(), ...domFindings(dom, { expectError })];
       const key = (f: { kind: string; detail: string }) => `${f.kind}\n${f.detail.slice(0, 80)}`;
       const found = [...new Map(raw.map((f) => [key(f), f])).values()].map((f) => {
         const n = raw.filter((g) => key(g) === key(f)).length;
         return n > 1 ? { ...f, detail: `${f.detail} (×${n})` } : f;
       });
-      // 1 回の回答操作で attempts が 2 行以上増えるのは二重送信
+      // 1回の回答操作でattemptsが2行以上増えるのは二重送信
       if (before !== null && !/連打/.test(action.name)) {
         const after = await attemptsCount(page);
-        if (after !== null && after - before > 1) found.push({ kind: "attempts-multiplied", detail: `attempts が ${after - before} 行増えた` });
+        if (after !== null && after - before > 1) found.push({ kind: "attempts-multiplied", detail: `attemptsが${after - before}行増えた` });
       } else if (before !== null) {
         const after = await attemptsCount(page);
-        if (after !== null && after - before > 1) found.push({ kind: "double-submit", detail: `連打で attempts が ${after - before} 行増えた` });
+        if (after !== null && after - before > 1) found.push({ kind: "double-submit", detail: `連打でattemptsが${after - before}行増えた` });
       }
       log(`${step}\t${action.name}\t${dom.url}\tstep=${state.stepIndex ?? "-"}\t${actionError ? "action-error: " + actionError : ""}\t${found.map((f) => `${f.kind}: ${f.detail}`).join(" | ")}`);
       for (const f of found) findings.push({ step, action: action.name, kind: f.kind, detail: f.detail });
@@ -246,7 +246,7 @@ for (const seed of seeds) {
       await page.screenshot({ path: `logs/monkey-scripted/${seed}-last.png` }).catch(() => {});
       const summary = findings.map((f) => `step ${f.step} [${f.action}] ${f.kind}: ${f.detail}`).join("\n");
       log(`\n## findings\n${summary}`);
-      expect(findings, `seed ${seed} で ${findings.length} 件の所見(再現: MONKEY=1 MONKEY_SEED=${seed} MONKEY_STEPS=${STEPS} pnpm exec playwright test e2e/monkey.spec.ts)\n${summary}`).toHaveLength(0);
+      expect(findings, `seed ${seed}で${findings.length}件の所見(再現: MONKEY=1 MONKEY_SEED=${seed} MONKEY_STEPS=${STEPS} pnpm exec playwright test e2e/monkey.spec.ts)\n${summary}`).toHaveLength(0);
     }
   });
 }

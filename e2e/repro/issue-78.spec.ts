@@ -7,9 +7,9 @@ const work = (page: Page) => page.getByRole("region", { name: "ワークスペ�
 const wrong = (page: Page) => page.getByRole("status").filter({ hasText: "もう一歩" });
 
 async function setLine(page: Page, side: "借方" | "貸方", n: number, [account, amount]: Line) {
-  await work(page).getByLabel(`${side}の科目 ${n}`).fill(account);
-  await work(page).getByLabel(`${side}の科目 ${n}`).press("Escape");
-  await work(page).getByLabel(`${side}の金額 ${n}`).fill(String(amount));
+  await work(page).getByLabel(`${side}の科目${n}`).fill(account);
+  await work(page).getByLabel(`${side}の科目${n}`).press("Escape");
+  await work(page).getByLabel(`${side}の金額${n}`).fill(String(amount));
 }
 
 const submit = (page: Page) => work(page).getByRole("button", { name: "記帳する" }).click();
@@ -40,7 +40,7 @@ test("仮払金の精算で、仮払金の消し残しと現金の取り違え�
   await next(page);
   await postAndNext(page, [["立替金", 2000]], [["現金", 2000]]);
   await postAndNext(page, [["仮払金", 20000]], [["現金", 20000]]);
-  await expect(page.getByText("ステップ 6 / 10")).toBeVisible();
+  await expect(page.getByText("ステップ6 / 10")).toBeVisible();
 
   await setLine(page, "借方", 1, ["旅費交通費", 18000]);
   await setLine(page, "貸方", 1, ["仮払金", 18000]);
@@ -58,18 +58,18 @@ test("仮払金の精算で、仮払金の消し残しと現金の取り違え�
   await expect(page.getByText("よくある思い込み: 精算で現金を減らす")).toBeVisible();
 });
 
-test("小口現金の週末の報告で、3 つの費用を通信費に寄せると専用の説明が出る", async ({ page }) => {
+test("小口現金の週末の報告で、3つの費用を通信費に寄せると専用の説明が出る", async ({ page }) => {
   await page.goto("/units/cash-and-deposits/petty-cash");
   await page.getByRole("button", { name: "今はしない" }).click();
   await next(page);
   await postAndNext(page, [["小口現金", 30000]], [["当座預金", 30000]]);
   await next(page);
-  await expect(page.getByText("ステップ 4 / 9")).toBeVisible();
+  await expect(page.getByText("ステップ4 / 9")).toBeVisible();
 
   await setLine(page, "借方", 1, ["通信費", 12500]);
   await setLine(page, "貸方", 1, ["小口現金", 12500]);
   await submit(page);
   await expect(wrong(page)).toContainText("使い道");
   await expect(wrong(page)).not.toContainText(GENERIC);
-  await expect(page.getByText("よくある思い込み: 使い道が違っても 1 つの費用にまとめてよい")).toBeVisible();
+  await expect(page.getByText("よくある思い込み: 使い道が違っても1つの費用にまとめてよい")).toBeVisible();
 });

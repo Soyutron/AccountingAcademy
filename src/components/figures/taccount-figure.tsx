@@ -1,7 +1,7 @@
 import { type AccountInfo, accountIncreaseSide, formatAmount } from "@/lib/accounting";
 import { ELEMENT_STYLE } from "@/lib/elements";
 
-// T 勘定。左が借方、右が貸方。その科目が増える側に印を付ける
+// T勘定。左が借方、右が貸方。その科目が増える側に印を付ける
 
 interface Line {
   label: string;
@@ -40,8 +40,8 @@ export function TAccountFigure({ account, debit, credit }: { account: AccountInf
         {side("貸方", credit, inc === "credit")}
       </div>
       <div className="mt-1 text-right text-xs text-muted-foreground">
-        {/* 0 にはどちらの側もない */}
-        残高 {formatAmount(Math.abs(balance))}
+        {/* 0にはどちらの側もない */}
+        残高{formatAmount(Math.abs(balance))}
         {balance !== 0 && `(${balance > 0 ? "借方" : "貸方"})`}
       </div>
     </div>

@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
-// Issue #119: 全単元の最後のステップは observe で正解の瞬間が無く、単元完了の札が一度も出なかった
-test("単元の最後のステップに着くと、単元完了の札が 1 枚だけ出る", async ({ page }) => {
+// Issue #119: 全単元の最後のステップはobserveで正解の瞬間が無く、単元完了の札が一度も出なかった
+test("単元の最後のステップに着くと、単元完了の札が1枚だけ出る", async ({ page }) => {
   test.setTimeout(60_000);
   await page.goto("/units/bookkeeping-basics/five-elements");
   const work = page.getByRole("region", { name: "ワークスペース" });
@@ -9,10 +9,10 @@ test("単元の最後のステップに着くと、単元完了の札が 1 枚�
   const next = () => nextButton.click({ timeout: 15000 });
   const ok = () => expect(page.getByRole("status").getByText("できました", { exact: true })).toBeVisible();
   const post = async (dr: string, cr: string, amount: string) => {
-    await work.getByLabel("借方の科目 1").fill(dr);
-    await work.getByLabel("借方の金額 1").fill(amount);
-    await work.getByLabel("貸方の科目 1").fill(cr);
-    await work.getByLabel("貸方の金額 1").fill(amount);
+    await work.getByLabel("借方の科目1").fill(dr);
+    await work.getByLabel("借方の金額1").fill(amount);
+    await work.getByLabel("貸方の科目1").fill(cr);
+    await work.getByLabel("貸方の金額1").fill(amount);
     await page.getByRole("button", { name: "記帳する" }).click();
     await ok();
     await next();
@@ -44,7 +44,7 @@ test("単元の最後のステップに着くと、単元完了の札が 1 枚�
     await next();
   }
 
-  await expect(page.getByText("ステップ 10 / 10")).toBeVisible();
+  await expect(page.getByText("ステップ10 / 10")).toBeVisible();
   const burst = page.locator("[data-celebration]");
   await expect(burst.getByText("この単元を最後までやりきりました")).toHaveCount(1, { timeout: 4000 });
   await expect(burst.getByText("次のステップへ進めます")).toHaveCount(0);
@@ -53,7 +53,7 @@ test("単元の最後のステップに着くと、単元完了の札が 1 枚�
   await expect(burst).toHaveCount(0, { timeout: 5000 });
   await page.getByRole("button", { name: "← 前へ" }).click();
   await nextButton.click();
-  await expect(page.getByText("ステップ 10 / 10")).toBeVisible();
+  await expect(page.getByText("ステップ10 / 10")).toBeVisible();
   await page.waitForTimeout(300);
   await expect(burst).toHaveCount(0);
 });

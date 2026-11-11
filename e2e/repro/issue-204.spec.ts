@@ -6,9 +6,9 @@ const work = (page: Page) => page.getByRole("region", { name: "ワークスペ�
 const next = (page: Page) => page.getByRole("button", { name: "次へ →" }).click();
 
 async function setLine(page: Page, side: "借方" | "貸方", n: number, [account, amount]: Line) {
-  await work(page).getByLabel(`${side}の科目 ${n}`).fill(account);
-  await work(page).getByLabel(`${side}の科目 ${n}`).press("Escape");
-  await work(page).getByLabel(`${side}の金額 ${n}`).fill(String(amount));
+  await work(page).getByLabel(`${side}の科目${n}`).fill(account);
+  await work(page).getByLabel(`${side}の科目${n}`).press("Escape");
+  await work(page).getByLabel(`${side}の金額${n}`).fill(String(amount));
 }
 
 async function postAndNext(page: Page, debit: Line[], credit: Line[]) {
@@ -32,7 +32,7 @@ async function predictAndNext(page: Page) {
 }
 
 // Issue #204: 未収入金を売掛金と取り違えても比較表に差が出ず、汎用文だけが出ていた
-test("ステップ 8: 仮受金 50,000 / 売掛金 50,000 に、未収入金との違いを説明する", async ({ page }) => {
+test("ステップ8: 仮受金50,000 / 売掛金50,000に、未収入金との違いを説明する", async ({ page }) => {
   await page.goto("/units/receivables-and-payables/temporary-and-deposits");
   await page.getByRole("button", { name: "今はしない" }).click();
   await next(page);

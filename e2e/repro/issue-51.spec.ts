@@ -13,7 +13,7 @@ test("チュートリアルのツアーを開くとフォーカスが吹き出�
   await tour.getByRole("button", { name: "はじめる" }).click();
   await tour.getByRole("button", { name: "次へ" }).click();
   await expect(tour).toContainText("3 / 12");
-  // 3/12 は IDE の「次へ →」を押す段。ツアー内か指している「次へ →」にフォーカスがある
+  // 3/12はIDEの「次へ →」を押す段。ツアー内か指している「次へ →」にフォーカスがある
   await expect
     .poll(() =>
       page.evaluate(() => {

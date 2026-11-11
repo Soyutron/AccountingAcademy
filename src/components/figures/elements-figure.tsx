@@ -1,7 +1,7 @@
 import type { AccountInfo, Element } from "@/lib/accounting";
 import { ELEMENT_STYLE } from "@/lib/elements";
 
-// 5 つの箱。左に資産、右に負債と純資産(貸借対照表の形)、下に収益と費用(損益計算書)
+// 5つの箱。左に資産、右に負債と純資産(貸借対照表の形)、下に収益と費用(損益計算書)
 
 interface Item {
   account: string;

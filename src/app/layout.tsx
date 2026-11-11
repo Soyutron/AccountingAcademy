@@ -14,8 +14,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    // サーバーは既定テーマ・ライトで描き、<head> のスクリプトが描画前に localStorage の設定で属性を置き換える。
-    // その差分は意図したものなので suppressHydrationWarning
+    // サーバーは既定テーマ・ライトで描き、<head> のスクリプトが描画前にlocalStorageの設定で属性を置き換える。
+    // その差分は意図したものなのでsuppressHydrationWarning
     <html lang="ja" className={fontVariables} data-theme={DEFAULT_THEME} data-mode="light" suppressHydrationWarning>
       <head>
         <ThemeBoot />
@@ -32,7 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               AccountingAcademy
             </Link>
             <Link href="/paths/boki-3" className="whitespace-nowrap text-muted-foreground hover:text-foreground">
-              3 級合格パス
+              3級合格パス
             </Link>
             <Link href="/glossary" className="whitespace-nowrap text-muted-foreground hover:text-foreground">
               用語集

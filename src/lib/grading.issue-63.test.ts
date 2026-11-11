@@ -8,7 +8,7 @@ describe("金庫のお金が合わない", () => {
 
   it("原因不明の不足を「現金過不足 / 雑益」にすると、不足と過剰の取り違えだと説明する", () => {
     const t = task("決算で片づける");
-    if (t.type !== "post") throw new Error("post ではない");
+    if (t.type !== "post") throw new Error("postではない");
     const r = gradePost(t, {
       debit: [{ account: "cash_over_and_short", amount: 1000 }],
       credit: [{ account: "miscellaneous_gain", amount: 1000 }],
@@ -20,8 +20,8 @@ describe("金庫のお金が合わない", () => {
   });
 
   it("振り替えで費用を「減る」と予想すると、通信費が増えると説明する", () => {
-    const t = task("原因が 1 つ分かった");
-    if (t.type !== "predict") throw new Error("predict ではない");
+    const t = task("原因が1つ分かった");
+    if (t.type !== "predict") throw new Error("predictではない");
     const r = gradePredict(t, { asset: "decrease", liability: "decrease", equity: "decrease", revenue: "decrease", expense: "decrease" });
     expect(r.correct).toBe(false);
     expect(r.feedback).not.toContain("まだ合っていません");

@@ -9,13 +9,13 @@ import { helpTopic } from "@/lib/help-topics";
 // 機能の見出し横の「?」。押すとその機能だけの短い説明を出す(docs/help-design.md 5.1)
 
 export interface HelpControls {
-  // 「使い方」をその話題を開いた状態で表示する。閉じたらフォーカスを returnTo へ戻す
+  // 「使い方」をその話題を開いた状態で表示する。閉じたらフォーカスをreturnToへ戻す
   openTopic: (id: string, returnTo: HTMLElement | null) => void;
   // ツアー中はスポットライトと説明が重なるので出さない
   hidden: boolean;
 }
 
-// IDE の外(説明文中の仕訳エディタなど)では「使い方」が無いので、リンク無しで説明だけ出す
+// IDEの外(説明文中の仕訳エディタなど)では「使い方」が無いので、リンク無しで説明だけ出す
 export const HelpControlsContext = createContext<HelpControls | null>(null);
 
 export function HelpIcon({ topic: id }: { topic: string }) {

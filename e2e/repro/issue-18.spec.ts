@@ -1,22 +1,22 @@
 import { expect, test } from "@playwright/test";
 
-// Issue #18: 正解した瞬間に紙吹雪(いまは画面全体の祝福)を 1 回出し、「次へ →」を一度だけ強調する。復元時と reduced-motion では出さない
+// Issue #18: 正解した瞬間に紙吹雪(いまは画面全体の祝福)を1回出し、「次へ →」を一度だけ強調する。復元時とreduced-motionでは出さない
 
 const solve = async (page: import("@playwright/test").Page) => {
   await page.goto("/units/tutorial/first-entry");
   await page.getByRole("dialog", { name: "チュートリアル" }).getByRole("button", { name: "スキップ" }).click();
   await page.getByRole("button", { name: "次へ →" }).click();
   const work = page.getByRole("region", { name: "ワークスペース" });
-  await work.getByLabel("借方の科目 1").fill("現金");
-  await work.getByLabel("借方の金額 1").fill("100000");
-  await work.getByLabel("貸方の科目 1").fill("資本金");
-  await work.getByLabel("貸方の金額 1").fill("100000");
+  await work.getByLabel("借方の科目1").fill("現金");
+  await work.getByLabel("借方の金額1").fill("100000");
+  await work.getByLabel("貸方の科目1").fill("資本金");
+  await work.getByLabel("貸方の金額1").fill("100000");
   const posted = page.waitForResponse((r) => r.request().method() === "POST" && r.url().includes("/rest/v1/attempts"));
   await work.getByRole("button", { name: "記帳する" }).click();
   await posted;
 };
 
-test("正解すると紙吹雪が 1 回出て消え、「次へ →」が一度だけ強調される。復元では出ない", async ({ page }) => {
+test("正解すると紙吹雪が1回出て消え、「次へ →」が一度だけ強調される。復元では出ない", async ({ page }) => {
   await solve(page);
   const confetti = page.locator("[data-celebration]");
   const next = page.getByRole("button", { name: "次へ →" });
@@ -34,10 +34,10 @@ test("正解すると紙吹雪が 1 回出て消え、「次へ →」が一度�
   await page.waitForTimeout(300);
   await expect(confetti).toHaveCount(0);
 
-  // 「← 前へ」→「次へ →」で戻っても出ない(達成状態の復元そのものは Issue #16 で別に直す)
+  // 「← 前へ」→「次へ →」で戻っても出ない(達成状態の復元そのものはIssue #16で別に直す)
   await page.getByRole("button", { name: "← 前へ" }).click();
   await page.getByRole("button", { name: "次へ →" }).click();
-  await expect(page.getByText("ステップ 2 / 4")).toBeVisible();
+  await expect(page.getByText("ステップ2 / 4")).toBeVisible();
   await page.waitForTimeout(300);
   await expect(confetti).toHaveCount(0);
 });

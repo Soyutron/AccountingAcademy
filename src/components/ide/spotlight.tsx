@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 // 対象を明るく残して周りを暗くする。ツアーと「使い方」の「場所を示す」で共用(docs/help-design.md 5.3)
 
-/** 対象要素の位置を追いかける。レイアウトの変化に追従するため短い間隔で測り直す。reveal なら、最初に見えた時に隠れていれば画面内へ出す */
+/** 対象要素の位置を追いかける。レイアウトの変化に追従するため短い間隔で測り直す。revealなら、最初に見えた時に隠れていれば画面内へ出す */
 export function useTargetRect(target?: string, { reveal = false }: { reveal?: boolean } = {}) {
   const [rect, setRect] = useState<DOMRect | null>(null);
   useEffect(() => {
@@ -15,7 +15,7 @@ export function useTargetRect(target?: string, { reveal = false }: { reveal?: bo
     let pendingReveal = reveal;
     const measure = () => {
       const el = document.querySelector<HTMLElement>(`[data-tour="${target}"]`);
-      // 閉じる途中の Dialog の暗幕が残っている間は、対象が見えていても隠れと判定されるので待つ
+      // 閉じる途中のDialogの暗幕が残っている間は、対象が見えていても隠れと判定されるので待つ
       if (el && pendingReveal && el.getBoundingClientRect().width > 0 && !document.querySelector('[data-slot="dialog-overlay"]')) {
         pendingReveal = false;
         revealIfCovered(el);
@@ -53,10 +53,10 @@ export function SpotlightRing({ rect }: { rect: DOMRect }) {
   );
 }
 
-/** 「場所を示す」: 対象を数秒光らせる。何か操作するか Esc で消える */
+/** 「場所を示す」: 対象を数秒光らせる。何か操作するかEscで消える */
 export function Spotlight({ target, onDone }: { target: string; onDone: () => void }) {
   const rect = useTargetRect(target, { reveal: true });
-  // onDone は描画ごとに作り直されるが、位置の計測で再描画するたびに 3 秒を数え直さないよう ref で参照する
+  // onDoneは描画ごとに作り直されるが、位置の計測で再描画するたびに3秒を数え直さないようrefで参照する
   const done = useRef(onDone);
   useEffect(() => {
     done.current = onDone;

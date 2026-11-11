@@ -1,16 +1,16 @@
 import { expect, test } from "@playwright/test";
 
-// Issue #199: 課題の post は不一致でも押せて採点されるのに、「使い方」は「合計がそろうまで押せません」と説明していた
-test("不一致のまま「記帳する」を押せる post ステップで、「使い方」が押せないと説明しない", async ({ page }) => {
+// Issue #199: 課題のpostは不一致でも押せて採点されるのに、「使い方」は「合計がそろうまで押せません」と説明していた
+test("不一致のまま「記帳する」を押せるpostステップで、「使い方」が押せないと説明しない", async ({ page }) => {
   const work = page.getByRole("region", { name: "ワークスペース" });
   await page.goto("/units/bookkeeping-basics/five-elements");
   await page.getByRole("dialog", { name: "チュートリアル" }).getByRole("button", { name: "スキップ" }).click({ timeout: 5000 }).catch(() => {});
   await page.getByRole("button", { name: "次へ →" }).click();
-  await expect(page.getByText("ステップ 2 / 10")).toBeVisible();
-  await work.getByLabel("借方の科目 1").fill("現金");
-  await work.getByLabel("借方の金額 1").fill("1000000");
-  await work.getByLabel("貸方の科目 1").fill("資本金");
-  await work.getByLabel("貸方の金額 1").fill("900000");
+  await expect(page.getByText("ステップ2 / 10")).toBeVisible();
+  await work.getByLabel("借方の科目1").fill("現金");
+  await work.getByLabel("借方の金額1").fill("1000000");
+  await work.getByLabel("貸方の科目1").fill("資本金");
+  await work.getByLabel("貸方の金額1").fill("900000");
   await page.keyboard.press("Escape");
   await expect(work.getByText("不一致")).toBeVisible();
   const post = work.getByRole("button", { name: "記帳する" });

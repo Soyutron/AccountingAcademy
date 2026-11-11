@@ -11,12 +11,12 @@ test("post: 同じ誤答を押し直すと数えずに案内を出し、答え�
   await page.goto("/units/bookkeeping-basics/five-elements");
   await page.getByRole("button", { name: "次へ →" }).click();
   const work = page.getByRole("region", { name: "ワークスペース" });
-  await work.getByLabel("借方の科目 1").fill("資本金");
+  await work.getByLabel("借方の科目1").fill("資本金");
   await page.keyboard.press("Escape");
-  await work.getByLabel("借方の金額 1").fill("1000000");
-  await work.getByLabel("貸方の科目 1").fill("現金");
+  await work.getByLabel("借方の金額1").fill("1000000");
+  await work.getByLabel("貸方の科目1").fill("現金");
   await page.keyboard.press("Escape");
-  await work.getByLabel("貸方の金額 1").fill("1000000");
+  await work.getByLabel("貸方の金額1").fill("1000000");
   const post = work.getByRole("button", { name: "記帳する" });
   const status = page.getByRole("status").filter({ hasText: "もう一歩" });
   const reveal = page.getByRole("button", { name: "答えを見る" });
@@ -32,7 +32,7 @@ test("post: 同じ誤答を押し直すと数えずに案内を出し、答え�
   expect(inserts.length).toBe(1);
   await expect(reveal).toHaveCount(0);
 
-  await work.getByLabel("貸方の科目 1").fill("売上");
+  await work.getByLabel("貸方の科目1").fill("売上");
   await page.keyboard.press("Escape");
   await post.click();
   await expect.poll(() => inserts.length).toBe(2);
@@ -47,7 +47,7 @@ test("calc: 同じ誤答を押し直すと数えずに案内を出す", async ({
   });
   const work = page.getByRole("region", { name: "ワークスペース" });
   const next = page.getByRole("button", { name: "次へ →" });
-  // ステップ 2 が predict(答えれば進める)、ステップ 3 が calc
+  // ステップ2がpredict(答えれば進める)、ステップ3がcalc
   await page.goto("/units/depreciation/what-is-depreciation");
   await next.click();
   for (const el of ["資産", "負債", "純資産", "収益", "費用"]) {

@@ -6,11 +6,11 @@ import { gradePost } from "./grading";
 const GENERIC = "結果の表で何が動くはずか";
 const AMOUNT_WRONG = "科目は合っています。金額をもう一度確かめましょう。";
 
-describe("返品と運賃 ステップ 4(焼き菓子を送る)", () => {
+describe("返品と運賃 ステップ4(焼き菓子を送る)", () => {
   const task = unitMap.get("merchandise/returns-and-costs")!.steps[3].task;
-  if (task.type !== "post") throw new Error("post ではない");
+  if (task.type !== "post") throw new Error("postではない");
 
-  it("運賃を丸ごと書き忘れると、誤解 ID なしで運賃の行を促す", () => {
+  it("運賃を丸ごと書き忘れると、誤解IDなしで運賃の行を促す", () => {
     const result = gradePost(task, {
       debit: [{ account: "accounts_receivable", amount: 30000 }],
       credit: [{ account: "sales", amount: 30000 }],
@@ -21,7 +21,7 @@ describe("返品と運賃 ステップ 4(焼き菓子を送る)", () => {
     expect(result.feedback).not.toContain(GENERIC);
   });
 
-  it("運賃を売掛金に上乗せすると shipping_mixed_into_sale", () => {
+  it("運賃を売掛金に上乗せするとshipping_mixed_into_sale", () => {
     const result = gradePost(task, {
       debit: [{ account: "accounts_receivable", amount: 31500 }],
       credit: [
@@ -35,7 +35,7 @@ describe("返品と運賃 ステップ 4(焼き菓子を送る)", () => {
     expect(result.feedback).not.toContain(GENERIC);
   });
 
-  it("運賃を売上に足すと shipping_mixed_into_sale", () => {
+  it("運賃を売上に足すとshipping_mixed_into_sale", () => {
     const result = gradePost(task, {
       debit: [
         { account: "accounts_receivable", amount: 30000 },
@@ -49,7 +49,7 @@ describe("返品と運賃 ステップ 4(焼き菓子を送る)", () => {
     expect(result.feedback).not.toContain(GENERIC);
   });
 
-  it("発送費を右に書くと debit_means_increase", () => {
+  it("発送費を右に書くとdebit_means_increase", () => {
     const result = gradePost(task, {
       debit: [
         { account: "accounts_receivable", amount: 30000 },

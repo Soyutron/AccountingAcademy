@@ -34,7 +34,7 @@ import { type HelpContext, type HelpTopic, firstTimeTopic } from "@/lib/help-top
 import { FIRST_UNIT_AFTER_TUTORIAL, TUTORIAL_UNIT_ID, markSeen, updateTutorial, useTutorialState } from "@/lib/tutorial-store";
 import { REPO_URL } from "@/lib/repo";
 
-// 会計 IDE の本体。ステップの進行、帳簿(記帳済みの仕訳)、課題の確認と記録をまとめて持つ(docs/ide-design.md)
+// 会計IDEの本体。ステップの進行、帳簿(記帳済みの仕訳)、課題の確認と記録をまとめて持つ(docs/ide-design.md)
 
 export interface IdeStep {
   title: string;
@@ -44,7 +44,7 @@ export interface IdeStep {
 export interface IdeUnit {
   id: string;
   title: string;
-  // リポジトリのルートからの Markdown のパス
+  // リポジトリのルートからのMarkdownのパス
   sourcePath: string;
   company: string;
   opening: OpeningLine[];
@@ -65,7 +65,7 @@ interface Props {
   unit: IdeUnit;
   accounts: GlossaryAccount[];
   misconceptions: Record<string, MisconceptionInfo>;
-  // ステップごとの説明文(サーバーで Markdown を描画済み)
+  // ステップごとの説明文(サーバーでMarkdownを描画済み)
   narratives: ReactNode[];
 }
 
@@ -82,7 +82,7 @@ const PANES: Pane[] = ["guide", "work", "result"];
 const PANE_LABELS: Record<Pane, string> = { guide: "ガイド", work: "ワークスペース", result: "結果" };
 const FOCUS_TARGET_CLASS = "focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring";
 
-// URL の ?tour=1 でチュートリアルを強制的に始める(「使い方」からのやり直し)
+// URLの ?tour=1でチュートリアルを強制的に始める(「使い方」からのやり直し)
 const noop = () => () => {};
 function readForceTour(): boolean {
   return new URLSearchParams(window.location.search).get("tour") === "1";
@@ -100,8 +100,8 @@ function replayEntries(steps: IdeStep[], upto: number): Posted[] {
   return posted;
 }
 
-// ダブルクリックの 2 回目は、1 回目で描画された次のステップや同じ位置の最終ステップのリンクに当たる(Issue #198)。
-// ブラウザの数えるクリック回数で見分けるので、キーボード(detail 0)と普通の 1 回押しは妨げない
+// ダブルクリックの2回目は、1回目で描画された次のステップや同じ位置の最終ステップのリンクに当たる(Issue #198)。
+// ブラウザの数えるクリック回数で見分けるので、キーボード(detail 0)と普通の1回押しは妨げない
 function isRepeatedClick(e: MouseEvent<HTMLElement>) {
   return e.detail > 1;
 }
@@ -111,53 +111,53 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [stepIndex, setStepIndex] = useState(0);
   const [posted, setPosted] = useState<Posted[]>(() => replayEntries(unit.steps, 0));
   const [draft, setDraft] = useState<EditableEntry>(emptyEntry);
-  // post を最後に採点したときの仕訳。比較表を採点した答えに固定する(Issue #129)
+  // postを最後に採点したときの仕訳。比較表を採点した答えに固定する(Issue #129)
   const [gradedEntry, setGradedEntry] = useState<JournalEntry | null>(null);
   // 問題文の金額を挿入したあと、描画後にその金額欄へフォーカスとカーソルを戻す
   const amountCaret = useRef<{ field: string; pos: number } | null>(null);
   const [effect, setEffect] = useState<Partial<EffectAnswer>>({});
   const [params, setParams] = useState<Record<string, number>>({});
   const [placed, setPlaced] = useState<Partial<Record<string, Element>>>({});
-  // classify を最後に採点したときの配置。採点後に移した科目を見分ける(Issue #66)
+  // classifyを最後に採点したときの配置。採点後に移した科目を見分ける(Issue #66)
   const [gradedPlaced, setGradedPlaced] = useState<Partial<Record<string, Element>>>({});
   const [calcValue, setCalcValue] = useState("");
-  // calc の入力が金額として読めないときの理由。採点も記録もしない(Issue #43)
+  // calcの入力が金額として読めないときの理由。採点も記録もしない(Issue #43)
   const [calcError, setCalcError] = useState<string | null>(null);
-  // 直近の採点結果そのもの。画面に出すのは、これから導出する result
+  // 直近の採点結果そのもの。画面に出すのは、これから導出するresult
   const [gradedResult, setResult] = useState<GradeResult | ClassifyResult | PredictResult | null>(null);
   const [attempts, setAttempts] = useState(0);
   const [showHint, setShowHint] = useState(false);
   const [pane, setPane] = useState<Pane>("guide");
-  // 初回バナーの判定。進捗を読み終えるまでは false にして、記録のある学習者にバナーが一瞬出ないようにする
+  // 初回バナーの判定。進捗を読み終えるまではfalseにして、記録のある学習者にバナーが一瞬出ないようにする
   const [noRecord, setNoRecord] = useState(false);
   const [resumeStep, setResumeStep] = useState<number | null>(null);
   const [resumeSolved, setResumeSolved] = useState(false);
-  // 再開するステップの最後の回答。predict は誤答でも進めるので、その予想を復元する(Issue #10)
+  // 再開するステップの最後の回答。predictは誤答でも進めるので、その予想を復元する(Issue #10)
   const [resumeAnswer, setResumeAnswer] = useState<unknown>(undefined);
   // 再開するステップの保存済みの誤答回数。未正解なら引き継いで「答えを見る」を離脱前と揃える(Issue #21)
   const [resumeWrong, setResumeWrong] = useState(0);
-  // 再開地点より前の、達成済みのステップとその保存済みの答え。「続きから」で answered に渡す(Issue #175)
+  // 再開地点より前の、達成済みのステップとその保存済みの答え。「続きから」でansweredに渡す(Issue #175)
   const resumeAnswered = useRef(new Map<number, unknown>());
   const [saveError, setSaveError] = useState<string | null>(null);
   const [tweakDone, setTweakDone] = useState(false);
-  // 回答を確定したステップ。同一ティックの連打では state が更新前なので、ref で同期的に弾く
+  // 回答を確定したステップ。同一ティックの連打ではstateが更新前なので、refで同期的に弾く
   const answeredStep = useRef<number | null>(null);
   // このセッションで最も先まで進んだステップ。これより前は達成済みなので、見直しから「次へ」で戻れる
   const [reached, setReached] = useState(0);
-  // このセッションで正解(predict は回答)したステップとその答え。「← 前へ」で戻ってから戻ってきたときに達成状態を復元する(Issue #16)
+  // このセッションで正解(predictは回答)したステップとその答え。「← 前へ」で戻ってから戻ってきたときに達成状態を復元する(Issue #16)
   const answered = useRef(new Map<number, unknown>());
-  // このステップで最後に採点した答え。同じ答えの連打(ダブルクリック)は 1 回の回答として扱う(Issue #15)
+  // このステップで最後に採点した答え。同じ答えの連打(ダブルクリック)は1回の回答として扱う(Issue #15)
   const gradedAnswer = useRef<string | null>(null);
   const gradedAt = useRef(0);
   // 同じ答えで押し直した回数。無反応に見えないよう案内を出し、押すたびに出し直す(Issue #178)
   const [repeated, setRepeated] = useState(0);
   // 自由記帳で最後に記帳した下書き。同じ仕訳を入れ直して記帳するのは正当なので、内容ではなくインスタンスで同一ティックの連打を弾く(Issue #158)
   const freePostedDraft = useRef<EditableEntry | null>(null);
-  // 保存済みの step。見直しや案内前の「次へ」で保存する step を下げないために持つ
+  // 保存済みのstep。見直しや案内前の「次へ」で保存するstepを下げないために持つ
   const savedStep = useRef(0);
-  // 失敗した回答は最新の 1 件だけ持ち、次の保存の前に再送する。進捗は次の upsert が最新で上書きするので持たない
+  // 失敗した回答は最新の1件だけ持ち、次の保存の前に再送する。進捗は次のupsertが最新で上書きするので持たない
   const failedAttempt = useRef<(() => Promise<void>) | null>(null);
-  // 帳簿をさかのぼる: 何件目までの記帳で財務諸表を見るか(null は最新)。記帳したら結果が見えるよう最新に戻す
+  // 帳簿をさかのぼる: 何件目までの記帳で財務諸表を見るか(nullは最新)。記帳したら結果が見えるよう最新に戻す
   const [viewUpto, setViewUpto] = useState<number | null>(null);
   // 取引の流れのアニメーション。記帳が成功した仕訳を次の描画で測って飛ばす
   const [pendingFlight, setPendingFlight] = useState<JournalEntry | null>(null);
@@ -166,7 +166,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [bursts, setBursts] = useState<Burst[]>([]);
   const [pulseNext, setPulseNext] = useState(false);
   const celebratedSteps = useRef(new Set<number>());
-  // 採点で押したボタンが消えるときは、フォーカスが body に落ちないよう結果へ移す(復元や誤答では動かさない)
+  // 採点で押したボタンが消えるときは、フォーカスがbodyに落ちないよう結果へ移す(復元や誤答では動かさない)
   const statusBox = useRef<HTMLDivElement>(null);
   const focusStatus = useRef(false);
   // 誤答のとき、直す対象を下部パネルの上へ出す(Issue #180)
@@ -184,9 +184,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [helpOpen, setHelpOpen] = useState(false);
   // 「?」の「もっと詳しく」から開いたときに見せる話題
   const [helpFocus, setHelpFocus] = useState<string | null>(null);
-  // 「?」や note の「くわしく」から開いたときの、閉じたあとのフォーカスの戻り先(Issue #101)
+  // 「?」やnoteの「くわしく」から開いたときの、閉じたあとのフォーカスの戻り先(Issue #101)
   const helpReturnTo = useRef<HTMLElement | null>(null);
-  // 「場所を示す」で光らせている対象(data-tour の値)
+  // 「場所を示す」で光らせている対象(data-tourの値)
   const [spotlight, setSpotlight] = useState<string | null>(null);
   const forceTour = useSyncExternalStore(noop, readForceTour, () => false);
   const isTutorialUnit = unit.id === TUTORIAL_UNIT_ID;
@@ -196,7 +196,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const exitTour = () => {
     setTourExited(true);
     if (!forceTour) return;
-    // ?tour=1 は一度きりの指示。URL に残すと reload のたびにツアーが始まり直す(Issue #81)
+    // ?tour=1は一度きりの指示。URLに残すとreloadのたびにツアーが始まり直す(Issue #81)
     const url = new URL(window.location.href);
     url.searchParams.delete("tour");
     window.history.replaceState(null, "", url);
@@ -248,7 +248,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       .then((p) => {
         setNoRecord(!p || (Object.keys(p.units).length === 0 && Object.keys(p.answers).length === 0));
         const saved = p?.units[unit.id];
-        // ステップを減らした単元では保存値が範囲外になる。そのまま持つと最後に着いても完了にならないので無視し、DB の値も戻す(再開できるように)
+        // ステップを減らした単元では保存値が範囲外になる。そのまま持つと最後に着いても完了にならないので無視し、DBの値も戻す(再開できるように)
         if (saved && saved.step < unit.steps.length) savedStep.current = saved.step;
         else if (saved) resetOutOfRangeStep(unit.id, unit.steps.length).catch((e: Error) => console.error(e));
         if (saved && saved.step > 0 && saved.step < unit.steps.length) {
@@ -267,7 +267,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       .catch((e: Error) => console.error(e));
   }, [unit.id, unit.steps.length]);
 
-  // 「← 前へ」で戻っても posted には後のステップの仕訳が残るので、画面の帳簿と残高は表示中のステップまでで出す
+  // 「← 前へ」で戻ってもpostedには後のステップの仕訳が残るので、画面の帳簿と残高は表示中のステップまでで出す
   const visiblePosted = useMemo(() => posted.filter((p) => p.step <= stepIndex), [posted, stepIndex]);
   const balancesBefore = useMemo(
     () => computeBalances(unit.opening, posted.filter((p) => p.step < stepIndex).map((p) => p.entry), accountMap),
@@ -275,7 +275,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   );
   const balancesNow = useMemo(() => computeBalances(unit.opening, visiblePosted.map((p) => p.entry), accountMap), [unit.opening, visiblePosted, accountMap]);
   const diff = useMemo(() => diffBalances(balancesBefore, balancesNow), [balancesBefore, balancesNow]);
-  // さかのぼり表示中は、その時点の残高と、その 1 件で動いた差分を見せる
+  // さかのぼり表示中は、その時点の残高と、その1件で動いた差分を見せる
   const view = useMemo(() => {
     if (viewUpto === null || viewUpto >= visiblePosted.length) return { balances: balancesNow, diff };
     const upto = computeBalances(unit.opening, visiblePosted.slice(0, viewUpto).map((p) => p.entry), accountMap);
@@ -283,14 +283,14 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     return { balances: upto, diff: viewUpto === 0 ? new Map<string, number>() : diffBalances(prev, upto) };
   }, [viewUpto, visiblePosted, balancesNow, diff, unit.opening, accountMap]);
 
-  // 失敗の詳細(RLS の英文など)は console に出し、学習者には取るべき行動だけ見せる
+  // 失敗の詳細(RLSの英文など)はconsoleに出し、学習者には取るべき行動だけ見せる
   const trySave = async (fn: () => Promise<void>, isAttempt: boolean) => {
     try {
       await fn();
       return null;
     } catch (e) {
       console.error(e);
-      // Cookie が書けない間は再送しても失敗するだけなので持ち越さない
+      // Cookieが書けない間は再送しても失敗するだけなので持ち越さない
       if (isAttempt && !(e instanceof CookieBlockedError)) failedAttempt.current = fn;
       return e;
     }
@@ -304,7 +304,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     if (failure) {
       setSaveError(
         failure instanceof CookieBlockedError
-          ? "このブラウザは Cookie を保存できないため、進捗を残せません。Cookie を許可すると保存されるようになります。"
+          ? "このブラウザはCookieを保存できないため、進捗を残せません。Cookieを許可すると保存されるようになります。"
           : "保存できませんでした。ページを再読み込みしてから、もう一度お試しください。",
       );
     } else if (!failedAttempt.current) setSaveError(null);
@@ -322,7 +322,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const record = (r: GradeResult, answer: unknown) =>
     save(() => recordAttempt({ unitId: unit.id, exerciseId: `${unit.id}#${stepIndex}`, correct: r.correct, misconceptionId: r.misconception, answer }), true);
 
-  // 条件を動かすたびに式を評価し、目標に届いた瞬間に 1 回だけ記録する
+  // 条件を動かすたびに式を評価し、目標に届いた瞬間に1回だけ記録する
   const onTweakChange = (values: Record<string, number>) => {
     setParams(values);
     if (task.type !== "tweak") return;
@@ -343,8 +343,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     }
   };
 
-  // 正解済み(predict は回答済み)のステップを、その答えで達成状態まで戻す。answer が無いか、正解のあとに重ねた誤答なら模範解答を使う。
-  // 使った答えを answered に登録し、続きからで戻したステップも「← 前へ」→「次へ →」で達成状態に戻せるようにする(Issue #48)
+  // 正解済み(predictは回答済み)のステップを、その答えで達成状態まで戻す。answerが無いか、正解のあとに重ねた誤答なら模範解答を使う。
+  // 使った答えをansweredに登録し、続きからで戻したステップも「← 前へ」→「次へ →」で達成状態に戻せるようにする(Issue #48)
   const restoreStep = (index: number, answer?: unknown) => {
     const t = unit.steps[index].task;
     answeredStep.current = index;
@@ -408,7 +408,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     setRepeated(0);
     setViewUpto(null);
     setPane("guide");
-    // observe の仕訳はステップに入った時点で自動的に記帳する
+    // observeの仕訳はステップに入った時点で自動的に記帳する
     if (target.task.type === "observe" && target.task.entries.length > 0) {
       const entries = target.task.entries;
       setPosted((prev) => (prev.some((p) => p.step === index) ? prev : [...prev, ...entries.map((e) => ({ step: index, memo: e.memo ?? target.title, entry: e }))]));
@@ -422,10 +422,10 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     save(() => setUnitProgress(unit.id, last ? "completed" : "started", top));
   };
 
-  // 「次へ」「前へ」の後は Tab が新しいステップから続くよう、見出しへ移す。ツアー中は続きの操作が吹き出しにあるので動かさない
+  // 「次へ」「前へ」の後はTabが新しいステップから続くよう、見出しへ移す。ツアー中は続きの操作が吹き出しにあるので動かさない
   const stepTo = (index: number) => {
     flushSync(() => goTo(index));
-    // observe には正解の瞬間が無いので、最後のステップが observe の単元は着いた時点を完了の祝福にする(続きからの復元では出さない)
+    // observeには正解の瞬間が無いので、最後のステップがobserveの単元は着いた時点を完了の祝福にする(続きからの復元では出さない)
     if (index === unit.steps.length - 1 && unit.steps[index].task.type === "observe") celebrate(index);
     if (!tourActive) stepHeading.current?.focus();
   };
@@ -434,20 +434,20 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const resume = () => {
     if (resumeStep === null) return;
     const replayed = replayEntries(unit.steps, resumeSolved ? resumeStep + 1 : resumeStep);
-    // 案内はステップ 1 にいる間は残るので、先に解いた答えがあればそちらを優先する。読み込み時点の保存に無い仕訳も帳簿に残す(Issue #185)
+    // 案内はステップ1にいる間は残るので、先に解いた答えがあればそちらを優先する。読み込み時点の保存に無い仕訳も帳簿に残す(Issue #185)
     setPosted((prev) => [...replayed, ...prev.filter((p) => !replayed.some((r) => r.step === p.step))].sort((a, b) => a.step - b.step));
     answered.current = new Map([...resumeAnswered.current, ...answered.current]);
     const solvedInSession = answered.current.has(resumeStep);
     goTo(resumeStep);
     setReached(resumeStep);
     setResumeStep(null);
-    // goTo がセッション中の答えで達成状態まで戻している。読み込み時点の誤答回数や答えで上書きしない
+    // goToがセッション中の答えで達成状態まで戻している。読み込み時点の誤答回数や答えで上書きしない
     if (solvedInSession) return;
     if (!resumeSolved) {
       setAttempts(resumeWrong);
       return;
     }
-    // post / calc / classify は模範解答で戻せる。predict は保存した予想(誤答でも)、tweak は模範解答が無いので達成時の値で戻す
+    // post / calc / classifyは模範解答で戻せる。predictは保存した予想(誤答でも)、tweakは模範解答が無いので達成時の値で戻す
     const type = unit.steps[resumeStep].task.type;
     restoreStep(resumeStep, type === "predict" || type === "tweak" ? resumeAnswer : undefined);
   };
@@ -494,7 +494,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   // 何か入れたのに記帳できないとき、足りない側か途中の行を伝える(ボタンが無言で無効のままにならないように。Issue #43, #71)
   const missingSides = [entryDraft.debit.length === 0 && "借方", entryDraft.credit.length === 0 && "貸方"].filter(Boolean);
   const touched = [...draft.debit, ...draft.credit].some((l) => l.accountName.trim() || l.amount.trim());
-  // 未確定の行は entryDraft から落ちるので、先に見ないと入力済みの側を「足りない側」と案内してしまう(Issue #97)
+  // 未確定の行はentryDraftから落ちるので、先に見ないと入力済みの側を「足りない側」と案内してしまう(Issue #97)
   const sideHint = draftReady || !touched ? null : draftIncomplete ? "入力が途中の行があります。科目と金額をそろえるか、その行を削除すると記帳できます。" : `${missingSides.join("と")}にも科目と金額を入れると記帳できます。`;
   const predictReady = ELEMENTS.every((el) => effect[el]);
 
@@ -505,7 +505,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   }, [gradedResult]);
 
   // スマホ幅では誤答の説明でパネルが画面の半分まで伸び、「(間違い)」の科目や「記帳する」がその裏に残る(Issue #180)。
-  // lg 以上はタブ列が display: none(offsetParent が null)で、ペインごとにスクロールするので動かさない
+  // lg以上はタブ列がdisplay: none(offsetParentがnull)で、ペインごとにスクロールするので動かさない
   useEffect(() => {
     if (!gradedResult || !revealWrong.current) return;
     revealWrong.current = false;
@@ -517,7 +517,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   }, [gradedResult, task.type]);
 
   // スマホ幅ではペインがページごとスクロールするので、押したボタンの位置のままだと結果の先頭とタブ列が画面の上に隠れる(Issue #169)。
-  // lg 以上はタブ列が display: none で、scrollIntoView は何もしない
+  // lg以上はタブ列がdisplay: noneで、scrollIntoViewは何もしない
   const showResultPane = () => {
     flushSync(() => setPane("result"));
     paneTabs.current?.scrollIntoView({ block: "nearest" });
@@ -529,7 +529,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     const alreadyGraded = (answer: unknown) => {
       const key = JSON.stringify(answer);
       if (gradedAnswer.current === key) {
-        // ダブルクリックの 2 回目まで案内すると、1 回しか答えていないのに「同じ答え」と言われる
+        // ダブルクリックの2回目まで案内すると、1回しか答えていないのに「同じ答え」と言われる
         if (Date.now() - gradedAt.current > 500) setRepeated((n) => n + 1);
         return true;
       }
@@ -552,7 +552,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         setAttempts((n) => n + 1);
         record(r, entryDraft);
         if (r.correct) {
-          // 「← 前へ」で戻って再記帳しても、そのステップの仕訳は 1 件のまま
+          // 「← 前へ」で戻って再記帳しても、そのステップの仕訳は1件のまま
           setPosted((prev) => (prev.some((p) => p.step === stepIndex) ? prev : [...prev, { step: stepIndex, memo: task.transaction, entry: entryDraft }]));
           setViewUpto(null);
           setPendingFlight(entryDraft);
@@ -635,7 +635,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     setRepeated(0);
   };
 
-  // 課題の post ステップは採点が不一致を誤解として返すが、自由記帳には採点が無いのでここで止める(Issue #42)
+  // 課題のpostステップは採点が不一致を誤解として返すが、自由記帳には採点が無いのでここで止める(Issue #42)
   const freeBalanced = computeImpact(entryDraft, accountMap).balanced;
   const canPostFreely = freeBalanced && !draftIncomplete;
   const postFreely = () => {
@@ -687,7 +687,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
 
   const onTaskAmount = task.type === "post" && !result?.correct ? insertAmount : undefined;
 
-  // min-w-0: スマホ幅(1 列の grid)で、ペインの中身の min-content 幅が列を押し広げないようにする(Issue #28)
+  // min-w-0: スマホ幅(1列のgrid)で、ペインの中身のmin-content幅が列を押し広げないようにする(Issue #28)
   const paneClass = (p: Pane) => `${pane === p ? "block" : "hidden"} lg:block min-h-0 min-w-0 lg:overflow-y-auto p-4`;
 
   return (
@@ -695,7 +695,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     <div className="flex flex-col lg:h-[calc(100dvh-49px)]">
       <div className="flex items-center gap-3 border-b px-4 py-2 text-sm">
         <span className="font-semibold truncate">{unit.title}</span>
-        {/* 点は縮まないので、スマホ幅ではタイトルを潰し行も溢れさせる。進み具合は隣の「ステップ n / N」で分かる(Issue #89) */}
+        {/* 点は縮まないので、スマホ幅ではタイトルを潰し行も溢れさせる。進み具合は隣の「ステップn / N」で分かる(Issue #89) */}
         <ol className="hidden sm:flex gap-1" aria-label="ステップの進み具合" data-tour="steps">
           {unit.steps.map((s, i) => (
             <li key={i} aria-current={i === stepIndex ? "step" : undefined} className={`h-2 w-2 rounded-full ${i < stepIndex ? "bg-primary" : i === stepIndex ? "bg-primary/60 ring-2 ring-primary/30" : "bg-muted"}`}>
@@ -704,7 +704,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           ))}
         </ol>
         <span className="text-muted-foreground whitespace-nowrap">
-          ステップ {stepIndex + 1} / {unit.steps.length}
+          ステップ{stepIndex + 1} / {unit.steps.length}
         </span>
         <span className="flex-1" />
         <HelpDialog
@@ -716,7 +716,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           focusTopic={helpFocus}
           returnToRef={helpReturnTo}
           ctx={helpCtx}
-          stepLabel={`ステップ ${stepIndex + 1}「${step.title}」`}
+          stepLabel={`ステップ${stepIndex + 1}「${step.title}」`}
           onRestartTour={isTutorialUnit ? restartTour : undefined}
           onShowTarget={showTarget}
         />
@@ -749,9 +749,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           <h2 ref={stepHeading} tabIndex={-1} className={`text-lg font-semibold mb-2 ${FOCUS_TARGET_CLASS}`}>{step.title}</h2>
           {!isTutorialUnit && noRecord && tutorial.status !== "done" && tutorial.enabled && (
             <div className="mb-3 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm flex flex-wrap items-center gap-2" role="note">
-              <span className="flex-1">初めてですか? 2 分のチュートリアルで、実際に 1 件記帳しながら使い方を覚えられます。</span>
+              <span className="flex-1">初めてですか? 2分のチュートリアルで、実際に1件記帳しながら使い方を覚えられます。</span>
               <Button size="sm" asChild>
-                {/* skipped でもバナーは出るので、status に頼らずツアーを始める(Issue #165) */}
+                {/* skippedでもバナーは出るので、statusに頼らずツアーを始める(Issue #165) */}
                 <Link href={`/units/${TUTORIAL_UNIT_ID}?tour=1`}>はじめる</Link>
               </Button>
               <Button
@@ -766,11 +766,11 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               </Button>
             </div>
           )}
-          {/* ツアーはステップ 0 からの台本なので、ツアー中に再開させるとツアーと画面がずれる。
+          {/* ツアーはステップ0からの台本なので、ツアー中に再開させるとツアーと画面がずれる。
               案内は開いた直後(最初のステップ)だけ出す。自分で進み始めたら学習に集中できるよう消す */}
           {!tourActive && resumeStep !== null && stepIndex === 0 && (
             <div className="mb-3 rounded-md bg-muted/60 p-2 text-sm flex items-center justify-between gap-2">
-              <span>前回はステップ {resumeStep + 1} まで進みました。</span>
+              <span>前回はステップ{resumeStep + 1}まで進みました。</span>
               <Button
                 size="sm"
                 variant="outline"
@@ -867,7 +867,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               )}
               {result === null && !predictReady && (
                 <p id="predict-hint" className="text-xs text-muted-foreground">
-                  5 つすべて選ぶと記帳できます。動かないと思う要素は「変わらない」を選びます。
+                  5つすべて選ぶと記帳できます。動かないと思う要素は「変わらない」を選びます。
                 </p>
               )}
             </div>
@@ -950,7 +950,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           <Tabs defaultValue="journal">
             <TabsList data-tour="ledger">
               <TabsTrigger value="journal">仕訳帳(記帳済み)</TabsTrigger>
-              <TabsTrigger value="ledger">総勘定元帳(T 勘定)</TabsTrigger>
+              <TabsTrigger value="ledger">総勘定元帳(T勘定)</TabsTrigger>
             </TabsList>
             <TabsContent value="ledger" className="pt-2">
               <LedgerTab opening={unit.opening} posted={visiblePosted} accounts={accountMap} />
@@ -1000,7 +1000,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               <label className="flex flex-1 items-center justify-between gap-2">
                 <span className="font-medium">帳簿をさかのぼる</span>
                 <span className="text-muted-foreground font-mono tabular-nums">
-                  {viewUpto === null || viewUpto >= visiblePosted.length ? "最新" : viewUpto === 0 ? "記帳前" : `${viewUpto} 件目まで`}
+                  {viewUpto === null || viewUpto >= visiblePosted.length ? "最新" : viewUpto === 0 ? "記帳前" : `${viewUpto}件目まで`}
                 </span>
                 <input
                   ref={rewindSlider}
@@ -1010,7 +1010,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
                   value={viewUpto ?? visiblePosted.length}
                   onChange={(e) => setViewUpto(Number(e.target.value) >= visiblePosted.length ? null : Number(e.target.value))}
                   className="flex-1"
-                  aria-valuetext={viewUpto === null || viewUpto >= visiblePosted.length ? "最新" : `${viewUpto} 件目まで`}
+                  aria-valuetext={viewUpto === null || viewUpto >= visiblePosted.length ? "最新" : `${viewUpto}件目まで`}
                 />
               </label>
               <HelpIcon topic="rewind" />
@@ -1147,7 +1147,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
             </Button>
           ) : isTutorialUnit ? (
             <Button asChild>
-              {/* ツアーの途中で進むと pending のまま残り、次の単元で「初めてですか?」と勧めてしまう */}
+              {/* ツアーの途中で進むとpendingのまま残り、次の単元で「初めてですか?」と勧めてしまう */}
               <Link
                 href={`/units/${FIRST_UNIT_AFTER_TUTORIAL}`}
                 onClick={(e) => {
@@ -1155,7 +1155,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
                   if (tutorial.status === "pending") updateTutorial({ status: "done" });
                 }}
               >
-                3 級パスの最初の単元へ →
+                3級パスの最初の単元へ →
               </Link>
             </Button>
           ) : (
@@ -1171,11 +1171,11 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
 }
 
 function ContributeLinks({ unit, stepNumber }: { unit: IdeUnit; stepNumber: number }) {
-  // unit はテンプレートの入力欄の id。GitHub が URL の値を初期値として埋める
-  const reportHref = `${REPO_URL}/issues/new?template=content-error.yml&unit=${encodeURIComponent(`/units/${unit.id} ステップ ${stepNumber}`)}`;
+  // unitはテンプレートの入力欄のid。GitHubがURLの値を初期値として埋める
+  const reportHref = `${REPO_URL}/issues/new?template=content-error.yml&unit=${encodeURIComponent(`/units/${unit.id} ステップ${stepNumber}`)}`;
   const links = [
-    { href: reportHref, label: "誤りを報告", purpose: "GitHub の Issue 作成画面" },
-    { href: `${REPO_URL}/edit/main/${unit.sourcePath}`, label: "この単元を改善", purpose: "GitHub の編集画面" },
+    { href: reportHref, label: "誤りを報告", purpose: "GitHubのIssue作成画面" },
+    { href: `${REPO_URL}/edit/main/${unit.sourcePath}`, label: "この単元を改善", purpose: "GitHubの編集画面" },
   ];
   return (
     <div className="mt-6 flex flex-wrap gap-x-4 text-xs text-muted-foreground">
@@ -1219,9 +1219,9 @@ function TaskBox({ task, onAmount }: { task: Task; onAmount?: (digits: string) =
       case "predict":
         return { title: "記帳の前に、どう動くか予想しましょう", body: task.transaction };
       case "tweak":
-        return { title: "条件を動かして目標に合わせましょう", body: `${task.goal.label}を ${task.goal.equals.toLocaleString("ja-JP")} 円にする` };
+        return { title: "条件を動かして目標に合わせましょう", body: `${task.goal.label}を${task.goal.equals.toLocaleString("ja-JP")}円にする` };
       case "classify":
-        return { title: "科目を 5 つの箱に分けましょう", body: null };
+        return { title: "科目を5つの箱に分けましょう", body: null };
       case "calc":
         return { title: "金額を答えましょう", body: task.question };
       case "observe":
@@ -1242,7 +1242,7 @@ function TaskBox({ task, onAmount }: { task: Task; onAmount?: (digits: string) =
 }
 
 // タブ表示の幅ではガイドが隠れるので、入力しながら取引文を読めるようにする(Issue #149)。
-// calc と tweak はワークスペースに同じ文が既にあるので対象にしない
+// calcとtweakはワークスペースに同じ文が既にあるので対象にしない
 function TaskReminder({ task, onAmount }: { task: Task; onAmount?: (digits: string) => void }) {
   if (task.type !== "post" && task.type !== "predict") return null;
   return (

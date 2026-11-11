@@ -10,11 +10,11 @@ async function load(raw: string) {
   return import("./tutorial-store");
 }
 
-describe("tutorial-store の保存値の検査", () => {
+describe("tutorial-storeの保存値の検査", () => {
   beforeEach(() => localStorage.clear());
 
   it.each(['{"seen":null}', '{"seen":1}', '{"seen":"predict"}', '{"seen":[1,"calc"]}'])(
-    "seen が文字列の配列でない %s は空配列として扱い、markSeen で積める",
+    "seenが文字列の配列でない%sは空配列として扱い、markSeenで積める",
     async (raw) => {
       const { markSeen, useTutorialState } = await load(raw);
       const { result } = renderHook(() => useTutorialState());
@@ -24,13 +24,13 @@ describe("tutorial-store の保存値の検査", () => {
     },
   );
 
-  it.each(["null", "1", '"abc"', "[]"])("保存値がオブジェクトでない %s は既定の状態にする", async (raw) => {
+  it.each(["null", "1", '"abc"', "[]"])("保存値がオブジェクトでない%sは既定の状態にする", async (raw) => {
     const { useTutorialState } = await load(raw);
     const { result } = renderHook(() => useTutorialState());
     expect(result.current).toEqual({ status: "pending", enabled: true, seen: [] });
   });
 
-  it("status と enabled が想定外なら既定に戻し、正しい値は残す", async () => {
+  it("statusとenabledが想定外なら既定に戻し、正しい値は残す", async () => {
     const { useTutorialState } = await load(JSON.stringify({ status: "weird", enabled: "yes", seen: ["calc"] }));
     const { result } = renderHook(() => useTutorialState());
     expect(result.current).toEqual({ status: "pending", enabled: true, seen: ["calc"] });

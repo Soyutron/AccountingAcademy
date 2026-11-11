@@ -1,5 +1,5 @@
-// 流れ図。左から右へ(入れ物が狭いときは上から下へ)。highlight のノードを強調する
-// 3 ペインではビューポートが広くてもガイドは狭いので、向きは入れ物の幅で決める
+// 流れ図。左から右へ(入れ物が狭いときは上から下へ)。highlightのノードを強調する
+// 3ペインではビューポートが広くてもガイドは狭いので、向きは入れ物の幅で決める
 
 export function FlowFigure({ nodes, highlight }: { nodes: string[]; highlight?: number }) {
   return (

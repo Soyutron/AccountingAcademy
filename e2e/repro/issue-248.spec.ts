@@ -8,13 +8,13 @@ test("運賃をお店が負担する取引だと本文に書かれ、誤答の�
   const post = work.getByRole("button", { name: "記帳する" });
   const done = page.getByText("できました", { exact: true });
   const line = async (side: "借方" | "貸方", n: number, account: string, amount: string) => {
-    await work.getByLabel(`${side}の科目 ${n}`).fill(account);
-    await work.getByLabel(`${side}の金額 ${n}`).fill(amount);
+    await work.getByLabel(`${side}の科目${n}`).fill(account);
+    await work.getByLabel(`${side}の金額${n}`).fill(amount);
   };
 
   await page.goto("/units/merchandise/returns-and-costs");
   await next.click();
-  await expect(page.getByText("ステップ 2 / 8")).toBeVisible();
+  await expect(page.getByText("ステップ2 / 8")).toBeVisible();
   await expect(guide).toContainText("負担");
   await line("借方", 1, "仕入", "52000");
   await line("貸方", 1, "買掛金", "50000");
@@ -29,7 +29,7 @@ test("運賃をお店が負担する取引だと本文に書かれ、誤答の�
   await expect(done).toBeVisible();
   await next.click();
 
-  await expect(page.getByText("ステップ 4 / 8")).toBeVisible();
+  await expect(page.getByText("ステップ4 / 8")).toBeVisible();
   await expect(guide).toContainText("負担");
   await line("借方", 1, "売掛金", "31500");
   await line("貸方", 1, "売上", "30000");

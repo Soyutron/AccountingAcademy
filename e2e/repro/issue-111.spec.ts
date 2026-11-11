@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-// Issue #111: 用語集の検索語を URL に持たせ、単元から戻っても絞り込みが残るようにする
+// Issue #111: 用語集の検索語をURLに持たせ、単元から戻っても絞り込みが残るようにする
 
 test("用語集で検索して単元へ行き、戻ると検索語と絞り込みが残っている", async ({ page }) => {
   await page.goto("/glossary");
@@ -29,7 +29,7 @@ test("/glossary?q=減価 を直接開くと検索欄と一覧が絞られてい�
   await expect.poll(() => page.locator("dl > div").count()).toBeLessThan(total);
 });
 
-test("続けて打鍵しても入力が巻き戻らず、URL も最後の検索語になる", async ({ page }) => {
+test("続けて打鍵しても入力が巻き戻らず、URLも最後の検索語になる", async ({ page }) => {
   await page.goto("/glossary");
   const search = page.getByLabel("用語を検索");
   await search.pressSequentially("減価償却費");
@@ -37,7 +37,7 @@ test("続けて打鍵しても入力が巻き戻らず、URL も最後の検索�
   await expect(page).toHaveURL(`/glossary?q=${encodeURIComponent("減価償却費")}`);
 });
 
-test("検索語を消すと URL のクエリも消える", async ({ page }) => {
+test("検索語を消すとURLのクエリも消える", async ({ page }) => {
   await page.goto(`/glossary?q=${encodeURIComponent("減価")}`);
   const search = page.getByLabel("用語を検索");
   await expect(search).toHaveValue("減価");
@@ -45,7 +45,7 @@ test("検索語を消すと URL のクエリも消える", async ({ page }) => {
   await expect(page).toHaveURL(/\/glossary$/);
 });
 
-test("絞り込み中に「関連」を押すと検索が解けて、URL は関連先のアンカーだけになる", async ({ page }) => {
+test("絞り込み中に「関連」を押すと検索が解けて、URLは関連先のアンカーだけになる", async ({ page }) => {
   await page.goto(`/glossary?q=${encodeURIComponent("減価")}`);
   const search = page.getByLabel("用語を検索");
   await expect(search).toHaveValue("減価");

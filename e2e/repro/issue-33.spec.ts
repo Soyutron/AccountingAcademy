@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test";
 
-// Issue #33: 3 ペイン表示(1024〜1280px)で仕訳帳の行の「×」が貸方の科目欄に重なり、貸方の「×」や金額欄がカードの外へはみ出していた
+// Issue #33: 3ペイン表示(1024〜1280px)で仕訳帳の行の「×」が貸方の科目欄に重なり、貸方の「×」や金額欄がカードの外へはみ出していた
 for (const width of [1024, 1280, 1920]) {
-  test(`${width}px で仕訳帳の行の「×」と金額欄が行の中に収まり、貸方に重ならない`, async ({ page }) => {
+  test(`${width}pxで仕訳帳の行の「×」と金額欄が行の中に収まり、貸方に重ならない`, async ({ page }) => {
     await page.setViewportSize({ width, height: 800 });
     await page.goto("/units/bookkeeping-basics/five-elements");
     await page.getByRole("button", { name: "次へ →" }).click();

@@ -9,7 +9,7 @@ import type { GlossaryEntry } from "@/lib/content";
 import { ElementBadge } from "@/components/element-badge";
 import { Input } from "@/components/ui/input";
 
-// 用語集の検索。名前・別名・読み・short の部分一致。規模が小さいので配列のフィルタで足りる
+// 用語集の検索。名前・別名・読み・shortの部分一致。規模が小さいので配列のフィルタで足りる
 
 type GlossarySearchProps = {
   entries: GlossaryEntry[];
@@ -17,22 +17,22 @@ type GlossarySearchProps = {
   domainOf: Record<string, string>;
 };
 
-// useSearchParams は静的生成では Suspense の中でしか読めないので、URL を読む部分だけを分ける
+// useSearchParamsは静的生成ではSuspenseの中でしか読めないので、URLを読む部分だけを分ける
 export function GlossarySearchFromUrl(props: GlossarySearchProps) {
   const searchParams = useSearchParams();
   return <GlossarySearch {...props} urlQuery={searchParams.get("q") ?? ""} />;
 }
 
 export function GlossarySearch({ entries, domainTitles, domainOf, urlQuery = "" }: GlossarySearchProps & { urlQuery?: string }) {
-  // 入力値は URL から毎回導かず state に持つ。URL の同期は遅れて届くので、制御入力に使うと IME の変換が崩れる
+  // 入力値はURLから毎回導かずstateに持つ。URLの同期は遅れて届くので、制御入力に使うとIMEの変換が崩れる
   const [query, setQuery] = useState(urlQuery);
-  // ヘッダーの「用語集」など入力以外で URL が変わったとき。遅れて届く urlQuery ではなく現在の URL を見て、打鍵中の入力を巻き戻さない
-  // 遷移の URL はコミットまで window.location に反映されないので、レンダー中の調整では読めず、エフェクトにする
+  // ヘッダーの「用語集」など入力以外でURLが変わったとき。遅れて届くurlQueryではなく現在のURLを見て、打鍵中の入力を巻き戻さない
+  // 遷移のURLはコミットまでwindow.locationに反映されないので、レンダー中の調整では読めず、エフェクトにする
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 外部(URL)との同期で、上記の理由でレンダー中にできない
     setQuery(new URLSearchParams(window.location.search).get("q") ?? "");
   }, [urlQuery]);
-  // 単元から戻ったときに検索語を復元するため URL に持たせる(Issue #111)。打鍵ごとに履歴を増やさないよう replace にする
+  // 単元から戻ったときに検索語を復元するためURLに持たせる(Issue #111)。打鍵ごとに履歴を増やさないようreplaceにする
   const updateQuery = (next: string) => {
     setQuery(next);
     window.history.replaceState(null, "", next ? `?q=${encodeURIComponent(next)}` : window.location.pathname);
@@ -78,9 +78,9 @@ export function GlossarySearch({ entries, domainTitles, domainOf, urlQuery = "" 
                           <a
                             href={`#${r.id}`}
                             className="underline"
-                            // 絞り込み中は関連先が描画されていないので、検索を解いて DOM に戻してからブラウザのアンカー移動に任せる
-                            // アンカーも URL に含める。pushState の同期を Next.js が後から反映するとき、含めていない URL で上書きされるため
-                            // replace だと検索結果の履歴が消え、「戻る」で用語集から出てしまう(Issue #235)
+                            // 絞り込み中は関連先が描画されていないので、検索を解いてDOMに戻してからブラウザのアンカー移動に任せる
+                            // アンカーもURLに含める。pushStateの同期をNext.jsが後から反映するとき、含めていないURLで上書きされるため
+                            // replaceだと検索結果の履歴が消え、「戻る」で用語集から出てしまう(Issue #235)
                             onClick={() =>
                               query &&
                               flushSync(() => {

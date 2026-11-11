@@ -3,9 +3,9 @@ import { type Change, ELEMENTS } from "./accounting";
 import { unitMap } from "./content";
 import { type EffectAnswer, gradePredict, type TaskOf } from "./grading";
 
-// Issue #126: predict は 1 回限りなのに、定義外の誤答に「もう一度試して」と案内していた
+// Issue #126: predictは1回限りなのに、定義外の誤答に「もう一度試して」と案内していた
 const predictSteps = [...unitMap.values()].flatMap((unit) =>
-  unit.steps.flatMap((step, index) => (step.task.type === "predict" ? [{ name: `${unit.id} ステップ ${index + 1}`, task: step.task }] : [])),
+  unit.steps.flatMap((step, index) => (step.task.type === "predict" ? [{ name: `${unit.id}ステップ${index + 1}`, task: step.task }] : [])),
 );
 
 const allAnswers = ELEMENTS.reduce<EffectAnswer[]>(
@@ -21,8 +21,8 @@ function wrongAnswers(task: TaskOf<"predict">): EffectAnswer[] {
   return allAnswers.filter((a) => !ELEMENTS.every((el) => a[el] === task.answer[el]));
 }
 
-describe("predict の誤答の案内", () => {
-  it("predict ステップが走査できている", () => {
+describe("predictの誤答の案内", () => {
+  it("predictステップが走査できている", () => {
     expect(predictSteps.length).toBeGreaterThan(0);
   });
 

@@ -9,7 +9,7 @@ const concepts: RawConcept[] = readdirSync("content/concepts").flatMap(
 
 // Issue #94: 試験固有の情報は学習パスにだけ持つ(ADR 0002)
 describe("content/concepts(Issue #94)", () => {
-  it.each(concepts.map((c) => [c.id, c] as const))("%s の説明に試験の級を書かない", (_id, concept) => {
-    expect(`${concept.short}${concept.summary}${concept.example ?? ""}`).not.toMatch(/日商簿記|[1-3] 級/);
+  it.each(concepts.map((c) => [c.id, c] as const))("%sの説明に試験の級を書かない", (_id, concept) => {
+    expect(`${concept.short}${concept.summary}${concept.example ?? ""}`).not.toMatch(/日商簿記|[1-3]級/);
   });
 });

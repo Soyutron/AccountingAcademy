@@ -1,13 +1,13 @@
 import { expect, test } from "@playwright/test";
 
-// Issue #137: Cookie を保存できない環境では、書き込みのたびに匿名ユーザーが作られ、保存は RLS 違反で失敗し続けていた。
-// 匿名ユーザーを作らず、再読み込みではなく Cookie の許可を案内すること
+// Issue #137: Cookieを保存できない環境では、書き込みのたびに匿名ユーザーが作られ、保存はRLS違反で失敗し続けていた。
+// 匿名ユーザーを作らず、再読み込みではなくCookieの許可を案内すること
 
 const unit = "/units/bookkeeping-basics/five-elements";
 
-// 実際の Chromium で Cookie をすべてブロックすると、Web Locks も SecurityError で拒否される
+// 実際のChromiumでCookieをすべてブロックすると、Web LocksもSecurityErrorで拒否される
 for (const locksDenied of [false, true]) {
-  test(`Cookie を保存できないとき、匿名ユーザーを作らず Cookie の許可を案内する(Web Locks ${locksDenied ? "拒否" : "利用可"})`, async ({ page }) => {
+  test(`Cookieを保存できないとき、匿名ユーザーを作らずCookieの許可を案内する(Web Locks ${locksDenied ? "拒否" : "利用可"})`, async ({ page }) => {
     await page.addInitScript((denyLocks) => {
       Object.defineProperty(document, "cookie", { get: () => "", set: () => {}, configurable: true });
       if (denyLocks) navigator.locks.request = () => Promise.reject(new DOMException("The request was denied.", "SecurityError"));
@@ -26,19 +26,19 @@ for (const locksDenied of [false, true]) {
     const saveError = page.getByRole("alert").filter({ hasText: "保存エラー" });
 
     await page.getByRole("button", { name: "次へ →" }).click();
-    await expect(saveError).toContainText("Cookie を許可すると");
+    await expect(saveError).toContainText("Cookieを許可すると");
     await expect(saveError).not.toContainText("再読み込み");
 
-    await work.getByLabel("借方の科目 1").fill("現金");
-    await work.getByLabel("借方の金額 1").fill("1000000");
-    await work.getByLabel("貸方の科目 1").fill("資本金");
-    await work.getByLabel("貸方の金額 1").fill("1000000");
+    await work.getByLabel("借方の科目1").fill("現金");
+    await work.getByLabel("借方の金額1").fill("1000000");
+    await work.getByLabel("貸方の科目1").fill("資本金");
+    await work.getByLabel("貸方の金額1").fill("1000000");
     await work.getByRole("button", { name: "記帳する", exact: true }).click();
     await expect(page.getByText("できました", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "次へ →" }).click();
     await page.waitForTimeout(1000);
 
-    await expect(saveError).toContainText("Cookie を許可すると");
+    await expect(saveError).toContainText("Cookieを許可すると");
     await expect(saveError).not.toContainText("再読み込み");
     expect(signups).toBe(0);
     expect(writes).toEqual([]);

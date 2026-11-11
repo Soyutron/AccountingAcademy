@@ -10,10 +10,10 @@ test("比較表の「期待される動き」は、全行を同じ表記の期�
     await work.getByLabel(label).fill(value);
     await page.keyboard.press("Escape");
   };
-  await field("借方の科目 1", "現金");
-  await field("借方の金額 1", "1000000");
-  await field("貸方の科目 1", "借入金");
-  await field("貸方の金額 1", "1000000");
+  await field("借方の科目1", "現金");
+  await field("借方の金額1", "1000000");
+  await field("貸方の科目1", "借入金");
+  await field("貸方の金額1", "1000000");
   await work.getByRole("button", { name: "記帳する" }).click();
   const box = page.getByRole("status").filter({ hasText: "もう一歩" });
   // 資産・負債・純資産・収益・費用の順

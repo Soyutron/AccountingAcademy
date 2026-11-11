@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// Issue #81: 閉じたツアーが reload で始まり直し、完了の記録が skipped に上書きされていた
+// Issue #81: 閉じたツアーがreloadで始まり直し、完了の記録がskippedに上書きされていた
 
 const tutorial = "/units/tutorial/first-entry";
 const tourOf = (page: Page) => page.getByRole("dialog", { name: "チュートリアル" });
@@ -12,11 +12,11 @@ async function advanceToLastCard(page: Page) {
   await tour.getByRole("button", { name: "次へ" }).click();
   await page.getByRole("button", { name: "次へ →" }).click();
   const work = page.getByRole("region", { name: "ワークスペース" });
-  await work.getByLabel("借方の科目 1").fill("現金");
-  await work.getByLabel("借方の金額 1").fill("100000");
+  await work.getByLabel("借方の科目1").fill("現金");
+  await work.getByLabel("借方の金額1").fill("100000");
   await tour.getByRole("button", { name: "次へ" }).click();
-  await work.getByLabel("貸方の科目 1").fill("資本金");
-  await work.getByLabel("貸方の金額 1").fill("100000");
+  await work.getByLabel("貸方の科目1").fill("資本金");
+  await work.getByLabel("貸方の金額1").fill("100000");
   await tour.getByRole("button", { name: "次へ" }).click();
   await tour.getByRole("button", { name: "次へ" }).click();
   await work.getByRole("button", { name: "記帳する" }).click();
@@ -28,11 +28,11 @@ async function advanceToLastCard(page: Page) {
 async function expectNoTourAfterReload(page: Page) {
   await page.reload();
   await page.waitForLoadState("networkidle");
-  await expect(page.getByText(/ステップ 1 \/ 4/).first()).toBeVisible();
+  await expect(page.getByText(/ステップ1 \/ 4/).first()).toBeVisible();
   await expect(tourOf(page)).toHaveCount(0);
 }
 
-test("?tour=1 で始めたツアーをスキップすると URL から消え、reload しても始まり直さない", async ({ page }) => {
+test("?tour=1で始めたツアーをスキップするとURLから消え、reloadしても始まり直さない", async ({ page }) => {
   await page.goto(`${tutorial}?tour=1`);
   const tour = tourOf(page);
   await tour.getByRole("button", { name: "スキップ" }).click();
@@ -41,7 +41,7 @@ test("?tour=1 で始めたツアーをスキップすると URL から消え、r
   await expectNoTourAfterReload(page);
 });
 
-test("自動で始まったツアーをスキップして reload しても、始まり直さない", async ({ page }) => {
+test("自動で始まったツアーをスキップしてreloadしても、始まり直さない", async ({ page }) => {
   await page.goto(tutorial);
   const tour = tourOf(page);
   await tour.getByRole("button", { name: "スキップ" }).click();
@@ -79,10 +79,10 @@ test("スキップ済みでも、通常の単元の「使い方」からやり�
   await expectNoTourAfterReload(page);
 });
 
-test("?tour=1 のツアーの最後から、次の単元へ移動できる", async ({ page }) => {
+test("?tour=1のツアーの最後から、次の単元へ移動できる", async ({ page }) => {
   await page.goto(`${tutorial}?tour=1`);
   await advanceToLastCard(page);
-  await tourOf(page).getByRole("link", { name: "3 級パスの最初の単元へ" }).click();
+  await tourOf(page).getByRole("link", { name: "3級パスの最初の単元へ" }).click();
   await expect(page).toHaveURL(/\/units\/bookkeeping-basics\/five-elements$/);
   await expect(page.getByRole("heading", { level: 2 }).first()).toBeVisible();
 });

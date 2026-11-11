@@ -6,7 +6,7 @@ import { ELEMENT_STYLE } from "@/lib/elements";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 
-// 仕訳帳の科目入力。候補を 5 要素ごとにまとめ、要素色の見出しで科目名と分類を見分けられるようにする(docs/ide-design.md 8 章)。
+// 仕訳帳の科目入力。候補を5要素ごとにまとめ、要素色の見出しで科目名と分類を見分けられるようにする(docs/ide-design.md 8章)。
 // ブラウザの <datalist> は描画を制御できず、科目名と要素名が同じ見た目で並んで紛らわしかった(Issue #17)
 
 interface Props {
@@ -25,7 +25,7 @@ export function AccountCombobox({ accounts, value, onChange, onCompositionChange
   const optionId = (accountId: string) => `${id}-${accountId}`;
   const inputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
-  // null は候補を指していない状態。開いただけで先頭を指すと、Enter で選んでいない科目が入る(Issue #159)
+  // nullは候補を指していない状態。開いただけで先頭を指すと、Enterで選んでいない科目が入る(Issue #159)
   const [active, setActive] = useState<number | null>(null);
 
   const query = value.trim();
@@ -34,7 +34,7 @@ export function AccountCombobox({ accounts, value, onChange, onCompositionChange
     return ELEMENTS.map((element) => ({ element, items: matched.filter((a) => a.element === element) })).filter((g) => g.items.length > 0);
   }, [accounts, query]);
   const options = useMemo(() => groups.flatMap((g) => g.items), [groups]);
-  // 候補が 1 件だけで、それが正式名と完全に一致したら選び終えたとみなして閉じる。別名では閉じず、正式名を見せる
+  // 候補が1件だけで、それが正式名と完全に一致したら選び終えたとみなして閉じる。別名では閉じず、正式名を見せる
   const shown = open && options.length > 0 && !(options.length === 1 && options[0].name === query);
   const activeIndex = active === null ? null : Math.min(active, options.length - 1);
   const activeOption = shown && activeIndex !== null ? options[activeIndex] : undefined;
@@ -50,7 +50,7 @@ export function AccountCombobox({ accounts, value, onChange, onCompositionChange
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    // 変換中の Enter や矢印は IME のもの。読みで候補が出ていても奪わない
+    // 変換中のEnterや矢印はIMEのもの。読みで候補が出ていても奪わない
     if (e.nativeEvent.isComposing) return;
     switch (e.key) {
       case "ArrowDown":
@@ -71,7 +71,7 @@ export function AccountCombobox({ accounts, value, onChange, onCompositionChange
           e.preventDefault();
           if (activeOption) select(activeOption);
         } else {
-          // 完全一致で一覧だけ隠れた open を残すと、記帳で空に戻った欄に一覧が開き直し、先頭が指された状態になる
+          // 完全一致で一覧だけ隠れたopenを残すと、記帳で空に戻った欄に一覧が開き直し、先頭が指された状態になる
           setOpen(false);
         }
         break;
@@ -109,14 +109,14 @@ export function AccountCombobox({ accounts, value, onChange, onCompositionChange
           }}
           onCompositionStart={() => onCompositionChange?.(true)}
           onCompositionEnd={() => onCompositionChange?.(false)}
-          // onFocus で開くと「行を追加」からのフォーカス移動でも開き、リストが「行を追加」を覆って次の押下が候補に当たる(Issue #104)
+          // onFocusで開くと「行を追加」からのフォーカス移動でも開き、リストが「行を追加」を覆って次の押下が候補に当たる(Issue #104)
           onClick={() => {
             if (!open) setActive(null);
             setOpen(true);
           }}
           onBlur={() => {
             setOpen(false);
-            // 読みや漢字の一部のままだと科目として数えられず、金額が合計に入らない(Issue #236)。select() はフォーカスを戻すので使わない
+            // 読みや漢字の一部のままだと科目として数えられず、金額が合計に入らない(Issue #236)。select()はフォーカスを戻すので使わない
             if (query && options.length === 1 && options[0].name !== value) onChange(options[0].name);
           }}
           onKeyDown={onKeyDown}
@@ -124,11 +124,11 @@ export function AccountCombobox({ accounts, value, onChange, onCompositionChange
       </PopoverAnchor>
       <PopoverContent
         align="start"
-        // 横向きのスマホでは上下どちらにも 18rem が無い。固定の高さのままだと画面外にはみ出し、先頭の候補に届かない(Issue #125)
+        // 横向きのスマホでは上下どちらにも18remが無い。固定の高さのままだと画面外にはみ出し、先頭の候補に届かない(Issue #125)
         className="block w-[min(20rem,calc(100vw-2rem))] max-h-[min(18rem,var(--radix-popover-content-available-height))] overflow-y-auto overscroll-contain p-1"
         onOpenAutoFocus={(e) => e.preventDefault()}
         onCloseAutoFocus={(e) => e.preventDefault()}
-        // 候補行・余白・スクロールバーを押しても入力欄を blur させない(blur すると一覧が閉じる)。スクロールバーの操作自体は止まらない
+        // 候補行・余白・スクロールバーを押しても入力欄をblurさせない(blurすると一覧が閉じる)。スクロールバーの操作自体は止まらない
         onMouseDown={(e) => e.preventDefault()}
         onInteractOutside={(e) => {
           if (e.target === inputRef.current) e.preventDefault();

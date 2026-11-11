@@ -7,9 +7,9 @@ test("問題文の金額を押すと、フォーカス中の金額欄か最初�
   await tour.getByRole("button", { name: "スキップ" }).click();
   await page.getByRole("button", { name: "次へ →" }).click();
   const work = page.getByRole("region", { name: "ワークスペース" });
-  const debit = work.getByLabel("借方の金額 1");
-  const credit = work.getByLabel("貸方の金額 1");
-  const amount = page.getByRole("button", { name: "100,000 円を仕訳帳に入れる" });
+  const debit = work.getByLabel("借方の金額1");
+  const credit = work.getByLabel("貸方の金額1");
+  const amount = page.getByRole("button", { name: "100,000円を仕訳帳に入れる" });
   await expect(amount).toBeVisible();
 
   // フォーカスが無いときは最初の空の金額欄へ(キーボードでも動く)
@@ -26,7 +26,7 @@ test("問題文の金額を押すと、フォーカス中の金額欄か最初�
   await expect(credit).toHaveValue("1000005");
   await expect(credit).toBeFocused();
 
-  // 空の欄が無ければ何も起きない(blur 時の整形はそのまま効く)
+  // 空の欄が無ければ何も起きない(blur時の整形はそのまま効く)
   await work.getByText("仕訳帳に書く").click();
   await expect(credit).toHaveValue("1,000,005");
   await amount.click();

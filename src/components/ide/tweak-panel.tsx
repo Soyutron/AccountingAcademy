@@ -54,12 +54,12 @@ export function TweakPanel({ formula, params, values, onChange, goal }: Props) {
         {Object.entries(result.outputs).map(([k, v]) => (
           <div key={k} className={`contents ${k === goal.output ? "font-semibold" : ""}`}>
             <dt>{result.labels[k]}</dt>
-            <dd className="text-right font-mono tabular-nums">{formatAmount(v)} 円</dd>
+            <dd className="text-right font-mono tabular-nums">{formatAmount(v)}円</dd>
           </div>
         ))}
       </dl>
       <p role="status" className={`text-sm ${reached ? "text-ok-fg" : "text-muted-foreground"}`}>
-        目標: {goal.label}を {formatAmount(goal.equals)} 円にする{reached ? " — 達成" : ""}
+        目標: {goal.label}を{formatAmount(goal.equals)}円にする{reached ? " — 達成" : ""}
       </p>
     </div>
   );

@@ -1,10 +1,10 @@
 import { expect, test } from "@playwright/test";
 
-// 新規ゲストが 2 タブでほぼ同時に最初の書き込みをしても、匿名ユーザーは 1 人だけ作る
+// 新規ゲストが2タブでほぼ同時に最初の書き込みをしても、匿名ユーザーは1人だけ作る
 
 const unit = "/units/bookkeeping-basics/five-elements";
 
-test("2 タブ同時の最初の書き込みで匿名ユーザーが 2 人できない", async ({ context }) => {
+test("2タブ同時の最初の書き込みで匿名ユーザーが2人できない", async ({ context }) => {
   const a = await context.newPage();
   const b = await context.newPage();
   let signups = 0;

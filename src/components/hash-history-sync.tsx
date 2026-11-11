@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-// 素の <a href="#…"> が積む履歴は history.state が null で、「戻る」で来ても Next.js は画面を更新しない(Issue #255)。
-// ルーターに同じ URL を知らせて、そのエントリに Next.js の state を持たせる
+// 素の <a href="#…"> が積む履歴はhistory.stateがnullで、「戻る」で来てもNext.jsは画面を更新しない(Issue #255)。
+// ルーターに同じURLを知らせて、そのエントリにNext.jsのstateを持たせる
 export function HashHistorySync() {
   const router = useRouter();
   useEffect(() => {

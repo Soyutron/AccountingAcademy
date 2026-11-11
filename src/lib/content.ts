@@ -32,7 +32,7 @@ export function nextUnit(unit: Unit): Unit | undefined {
   return undefined;
 }
 
-/** unit が targetId の単元を(前提の前提も含めて)前提にしているか。循環は velite の検査で弾いている */
+/** unitがtargetIdの単元を(前提の前提も含めて)前提にしているか。循環はveliteの検査で弾いている */
 export function dependsOnUnit(unit: Unit, targetId: string): boolean {
   return unit.requires.some((id) => id === targetId || dependsOnUnit(unitMap.get(id)!, targetId));
 }
@@ -70,7 +70,7 @@ function nameOf(id: string): string {
   return conceptMap.get(id)?.name ?? accountMap.get(id)?.name ?? id;
 }
 
-// 概念と勘定科目が同じ ID を持つもの(小口現金など)は同じ用語なので、用語集では 1 項目にまとめる。
+// 概念と勘定科目が同じIDを持つもの(小口現金など)は同じ用語なので、用語集では1項目にまとめる。
 // 概念の説明(summary / example / 単元)を採り、勘定科目の要素を足す。関連に自分自身は並べない(Issue #24)
 const accountById = new Map(accountList.map((a) => [a.id, a]));
 export const glossary: GlossaryEntry[] = [
@@ -88,7 +88,7 @@ export const glossary: GlossaryEntry[] = [
       example: c.example,
       element: account?.element,
       contra: account?.contra,
-      // related と contrasts の両方に挙げる概念があるので、先に出た方だけ残す
+      // relatedとcontrastsの両方に挙げる概念があるので、先に出た方だけ残す
       related: related.map((id) => ({ id, name: nameOf(id) })),
       unit: (() => {
         const u = introducingUnit(c.id);

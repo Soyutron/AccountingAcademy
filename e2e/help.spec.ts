@@ -8,9 +8,9 @@ test("「使い方」はいまの画面の機能を先に出し、残りは分�
   await page.reload();
   await page.getByRole("button", { name: "次へ →" }).click(); // 記帳するステップへ
   await page.getByRole("button", { name: "使い方" }).click();
-  const help = page.getByRole("dialog", { name: "会計 IDE の使い方" });
+  const help = page.getByRole("dialog", { name: "会計IDEの使い方" });
   const now = help.getByRole("region", { name: "いまの画面でできること" });
-  await expect(now).toContainText("ステップ 2");
+  await expect(now).toContainText("ステップ2");
   await expect(now.locator("dt")).toHaveText(["ヒントと答え", "仕訳帳に書く", "影響の表示"]);
   // 分類は畳まれていて、開くと中身が見える
   const result = help.locator("details").filter({ hasText: "結果(見る)" });
@@ -31,13 +31,13 @@ test("見出し横の「?」でその機能だけの説明が読め、「もっ�
   await work.getByRole("button", { name: "「仕訳帳に書く」の説明" }).click();
   const pop = page.getByRole("dialog", { name: "仕訳帳に書く" });
   await expect(pop).toContainText("科目と金額を入れて");
-  // Esc で閉じてフォーカスが「?」に戻る
+  // Escで閉じてフォーカスが「?」に戻る
   await page.keyboard.press("Escape");
   await expect(pop).toBeHidden();
   await expect(work.getByRole("button", { name: "「仕訳帳に書く」の説明" })).toBeFocused();
   await work.getByRole("button", { name: "「影響の表示」の説明" }).click();
   await page.getByRole("button", { name: "もっと詳しく" }).click();
-  const help = page.getByRole("dialog", { name: "会計 IDE の使い方" });
+  const help = page.getByRole("dialog", { name: "会計IDEの使い方" });
   await expect(help).toBeVisible();
   await expect(help.locator("#help-impact")).toBeFocused();
   await expect(help.locator("#help-impact")).toBeInViewport();

@@ -10,15 +10,15 @@ async function fillBalancedWithSecondLine(page: Page) {
   await page.goto("/units/bookkeeping-basics/five-elements");
   await page.getByRole("button", { name: "次へ →" }).click();
   await work(page).getByRole("button", { name: "行を追加" }).first().click();
-  await work(page).getByLabel("借方の科目 1").fill("現金");
-  await work(page).getByLabel("借方の金額 1").fill("1000000");
-  await work(page).getByLabel("貸方の科目 1").fill("資本金");
-  await work(page).getByLabel("貸方の金額 1").fill("1000000");
+  await work(page).getByLabel("借方の科目1").fill("現金");
+  await work(page).getByLabel("借方の金額1").fill("1000000");
+  await work(page).getByLabel("貸方の科目1").fill("資本金");
+  await work(page).getByLabel("貸方の金額1").fill("1000000");
 }
 
 test("科目が空で金額だけの行があると記帳できず、行を消せば正解になる", async ({ page }) => {
   await fillBalancedWithSecondLine(page);
-  await work(page).getByLabel("借方の金額 2").fill("500000");
+  await work(page).getByLabel("借方の金額2").fill("500000");
   await expect(postButton(page)).toBeDisabled();
   await expect(secondDebit(page).getByText("科目を選んでください")).toBeVisible();
   await expect(postButton(page)).toHaveAccessibleDescription(INCOMPLETE_HINT);
@@ -31,7 +31,7 @@ test("科目が空で金額だけの行があると記帳できず、行を消�
 
 test("科目だけで金額が空の行があると記帳できない", async ({ page }) => {
   await fillBalancedWithSecondLine(page);
-  await work(page).getByLabel("借方の科目 2").fill("現金");
+  await work(page).getByLabel("借方の科目2").fill("現金");
   await expect(postButton(page)).toBeDisabled();
   await expect(secondDebit(page).getByText("金額を入れてください")).toBeVisible();
 });
@@ -42,19 +42,19 @@ for (const [name, reason] of [
 ]) {
   test(`確定していない科目「${name}」と金額の行があると記帳できない`, async ({ page }) => {
     await fillBalancedWithSecondLine(page);
-    await work(page).getByLabel("借方の科目 2").fill(name);
-    await work(page).getByLabel("借方の金額 2").fill("500000");
+    await work(page).getByLabel("借方の科目2").fill(name);
+    await work(page).getByLabel("借方の金額2").fill("500000");
     await expect(postButton(page)).toBeDisabled();
     await expect(secondDebit(page).getByText(reason)).toBeVisible();
   });
 }
 
-test("0 円の行があると記帳できない", async ({ page }) => {
+test("0円の行があると記帳できない", async ({ page }) => {
   await fillBalancedWithSecondLine(page);
-  await work(page).getByLabel("借方の科目 2").fill("現金");
-  await work(page).getByLabel("借方の金額 2").fill("0");
+  await work(page).getByLabel("借方の科目2").fill("現金");
+  await work(page).getByLabel("借方の金額2").fill("0");
   await expect(postButton(page)).toBeDisabled();
-  await expect(secondDebit(page).getByText("1 円以上の金額を入れてください")).toBeVisible();
+  await expect(secondDebit(page).getByText("1円以上の金額を入れてください")).toBeVisible();
 });
 
 test("何も入れていない行は無視して記帳できる", async ({ page }) => {
@@ -66,7 +66,7 @@ test("何も入れていない行は無視して記帳できる", async ({ page 
 
 test("途中の行があっても「← 前へ」は入力が消えることを確認する", async ({ page }) => {
   await fillBalancedWithSecondLine(page);
-  await work(page).getByLabel("借方の金額 2").fill("500000");
+  await work(page).getByLabel("借方の金額2").fill("500000");
   let confirmed = false;
   page.once("dialog", (dialog) => {
     confirmed = true;
@@ -74,7 +74,7 @@ test("途中の行があっても「← 前へ」は入力が消えることを�
   });
   await page.getByRole("button", { name: "← 前へ" }).click();
   await expect.poll(() => confirmed).toBe(true);
-  await expect(work(page).getByLabel("借方の金額 2")).toHaveValue("500,000");
+  await expect(work(page).getByLabel("借方の金額2")).toHaveValue("500,000");
 });
 
 test("自由に試すでも、途中の行があると記帳できない", async ({ page }) => {
@@ -83,21 +83,21 @@ test("自由に試すでも、途中の行があると記帳できない", async
   const next = page.getByRole("button", { name: "次へ →" });
   await next.click();
   const fill = async () => {
-    await work(page).getByLabel("借方の科目 1").fill("現金");
-    await work(page).getByLabel("借方の金額 1").fill("100000");
-    await work(page).getByLabel("貸方の科目 1").fill("資本金");
-    await work(page).getByLabel("貸方の金額 1").fill("100000");
+    await work(page).getByLabel("借方の科目1").fill("現金");
+    await work(page).getByLabel("借方の金額1").fill("100000");
+    await work(page).getByLabel("貸方の科目1").fill("資本金");
+    await work(page).getByLabel("貸方の金額1").fill("100000");
   };
   await fill();
   await postButton(page).click();
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   await next.click();
   await next.click();
-  await expect(page.getByText("ステップ 4 / 4")).toBeVisible();
+  await expect(page.getByText("ステップ4 / 4")).toBeVisible();
 
   await fill();
   await work(page).getByRole("button", { name: "行を追加" }).first().click();
-  await work(page).getByLabel("借方の金額 2").fill("500000");
+  await work(page).getByLabel("借方の金額2").fill("500000");
   await expect(postButton(page)).toBeDisabled();
   await expect(postButton(page)).toHaveAccessibleDescription(INCOMPLETE_HINT);
 

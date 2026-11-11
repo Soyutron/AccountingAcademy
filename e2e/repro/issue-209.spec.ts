@@ -7,10 +7,10 @@ test("自由に試すで上限を超える金額は記帳できず、上限の�
   const results = page.getByRole("region", { name: "結果" });
   const next = page.getByRole("button", { name: "次へ →" });
   const fill = async (debit: [string, string], credit: [string, string]) => {
-    await work.getByLabel("借方の科目 1").fill(debit[0]);
-    await work.getByLabel("借方の金額 1").fill(debit[1]);
-    await work.getByLabel("貸方の科目 1").fill(credit[0]);
-    await work.getByLabel("貸方の金額 1").fill(credit[1]);
+    await work.getByLabel("借方の科目1").fill(debit[0]);
+    await work.getByLabel("借方の金額1").fill(debit[1]);
+    await work.getByLabel("貸方の科目1").fill(credit[0]);
+    await work.getByLabel("貸方の金額1").fill(credit[1]);
   };
   const post = async (debit: [string, string], credit: [string, string]) => {
     await fill(debit, credit);
@@ -26,9 +26,9 @@ test("自由に試すで上限を超える金額は記帳できず、上限の�
   await post(["車両運搬具", "1200000"], ["現金", "1200000"]);
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   await next.click();
-  await slide(2, 5); // 耐用年数 6 年
+  await slide(2, 5); // 耐用年数6年
   await next.click();
-  await slide(1, 6); // 残存価額 300,000
+  await slide(1, 6); // 残存価額300,000
   await next.click();
   await work.getByPlaceholder("金額(円)").fill("100000");
   await work.getByRole("button", { name: "確認する" }).click();
@@ -42,7 +42,7 @@ test("自由に試すで上限を超える金額は記帳できず、上限の�
   await work.getByPlaceholder("金額(円)").fill("900000");
   await work.getByRole("button", { name: "確認する" }).click();
   await next.click();
-  await expect(page.getByText("ステップ 9 / 9")).toBeVisible();
+  await expect(page.getByText("ステップ9 / 9")).toBeVisible();
 
   await post(["仕入", "5000000"], ["現金", "5000000"]);
   await fill(["現金", "9007199254740991"], ["資本金", "9007199254740991"]);

@@ -4,8 +4,8 @@ import { expect, test } from "@playwright/test";
 test("金額の入力中に用語をマウスが通過しても、入力欄のフォーカスと打鍵が保たれる", async ({ page }) => {
   await page.goto("/units/bookkeeping-basics/five-elements");
   await page.getByRole("button", { name: "次へ →" }).click();
-  await expect(page.getByText("ステップ 2 / 10")).toBeVisible();
-  const amount = page.getByRole("region", { name: "ワークスペース" }).getByLabel("借方の金額 1");
+  await expect(page.getByText("ステップ2 / 10")).toBeVisible();
+  const amount = page.getByRole("region", { name: "ワークスペース" }).getByLabel("借方の金額1");
   await amount.click();
   await page.keyboard.type("12");
   await page.getByRole("region", { name: "ガイド" }).locator("button.term").first().hover();
@@ -17,11 +17,11 @@ test("金額の入力中に用語をマウスが通過しても、入力欄の�
   await expect(amount).toHaveValue(/1,?234/);
 });
 
-test("ホバーで開いた用語を Esc で閉じても、入力欄のフォーカスが保たれる", async ({ page }) => {
+test("ホバーで開いた用語をEscで閉じても、入力欄のフォーカスが保たれる", async ({ page }) => {
   await page.goto("/units/bookkeeping-basics/five-elements");
   await page.getByRole("button", { name: "次へ →" }).click();
-  await expect(page.getByText("ステップ 2 / 10")).toBeVisible();
-  const amount = page.getByRole("region", { name: "ワークスペース" }).getByLabel("借方の金額 1");
+  await expect(page.getByText("ステップ2 / 10")).toBeVisible();
+  const amount = page.getByRole("region", { name: "ワークスペース" }).getByLabel("借方の金額1");
   await amount.click();
   await page.getByRole("region", { name: "ガイド" }).locator("button.term").first().hover();
   await expect(page.locator("[role=dialog]")).toBeVisible();
@@ -33,7 +33,7 @@ test("ホバーで開いた用語を Esc で閉じても、入力欄のフォー
 test("どこにもフォーカスが無いときは、ホバーで開いた用語を閉じてもトリガーへフォーカスを移さない", async ({ page }) => {
   await page.goto("/units/bookkeeping-basics/five-elements");
   await page.getByRole("button", { name: "次へ →" }).click();
-  await expect(page.getByText("ステップ 2 / 10")).toBeVisible();
+  await expect(page.getByText("ステップ2 / 10")).toBeVisible();
   await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
   const term = page.getByRole("region", { name: "ガイド" }).locator("button.term").first();
   await term.hover();
@@ -45,10 +45,10 @@ test("どこにもフォーカスが無いときは、ホバーで開いた用�
   await expect(term).not.toBeFocused();
 });
 
-test("キーボードで開いた用語を Esc で閉じると、トリガーへフォーカスが戻る", async ({ page }) => {
+test("キーボードで開いた用語をEscで閉じると、トリガーへフォーカスが戻る", async ({ page }) => {
   await page.goto("/units/bookkeeping-basics/five-elements");
   await page.getByRole("button", { name: "次へ →" }).click();
-  await expect(page.getByText("ステップ 2 / 10")).toBeVisible();
+  await expect(page.getByText("ステップ2 / 10")).toBeVisible();
   const term = page.getByRole("region", { name: "ガイド" }).locator("button.term").first();
   await term.focus();
   await page.keyboard.press("Enter");

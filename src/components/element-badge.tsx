@@ -1,7 +1,7 @@
 import type { Element } from "@/lib/accounting";
 import { ELEMENT_STYLE } from "@/lib/elements";
 
-// 要素のバッジ。色 + 記号 + 名前の 3 つで識別する(色だけに依存しない)
+// 要素のバッジ。色 + 記号 + 名前の3つで識別する(色だけに依存しない)
 
 export function ElementBadge({ element, contra = false, size = "sm" }: { element: Element; contra?: boolean; size?: "xs" | "sm" }) {
   const s = ELEMENT_STYLE[element];

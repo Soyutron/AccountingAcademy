@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
-// Issue #24: 概念と勘定科目で同じ ID の用語が用語集に 2 つ並び、単元のポップオーバーには例の無い勘定科目版が出ていた
-test("用語集の ID が一意で、単元の用語ポップオーバーに概念の例が出る", async ({ page }) => {
+// Issue #24: 概念と勘定科目で同じIDの用語が用語集に2つ並び、単元のポップオーバーには例の無い勘定科目版が出ていた
+test("用語集のIDが一意で、単元の用語ポップオーバーに概念の例が出る", async ({ page }) => {
   await page.goto("/glossary");
   for (const id of ["cash_over_and_short", "checking_account", "bank_overdraft", "petty_cash"]) {
     await expect(page.locator(`[id="${id}"]`)).toHaveCount(1);

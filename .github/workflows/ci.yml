@@ -1,7 +1,7 @@
 name: CI
 
-# 最小構成: main への push と pull request で、1 分以内に終わる検査だけを走らせる。
-# E2E と目視確認はローカルで行う(docs/decisions/0005-ci-policy.md)
+# 最小構成: mainへのpushとpull requestで、1分以内に終わる検査だけを走らせる。
+# E2Eと目視確認はローカルで行う(docs/decisions/0005-ci-policy.md)
 on:
   push:
     branches: [main]

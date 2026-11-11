@@ -8,7 +8,7 @@ import { AccountName } from "@/components/account-name";
 import { ElementBadge } from "@/components/element-badge";
 import { HelpIcon } from "./help-icon";
 
-// 結果ペイン: 会社のかたち(資産 vs 負債 + 純資産の帯)、貸借対照表、損益計算書。前のステップからの差分を ▲▼ で示す
+// 結果ペイン: 会社のかたち(資産vs負債 + 純資産の帯)、貸借対照表、損益計算書。前のステップからの差分を ▲▼ で示す
 
 interface Props {
   accounts: ReadonlyMap<string, GlossaryAccount>;
@@ -25,7 +25,7 @@ export function StatementsPane({ accounts, balances, diff, company }: Props) {
     const a = accounts.get(id);
     if (a) changedElements.set(a.element, (changedElements.get(a.element) ?? 0) + d);
   }
-  // 純資産は当期純利益を含む定義で見せる(仕訳エディタの影響表示・predict の採点と同じ。docs/content-model.md)
+  // 純資産は当期純利益を含む定義で見せる(仕訳エディタの影響表示・predictの採点と同じ。docs/content-model.md)
   const netIncomeDelta = (changedElements.get("revenue") ?? 0) - (changedElements.get("expense") ?? 0);
   changedElements.set("equity", (changedElements.get("equity") ?? 0) + netIncomeDelta);
   for (const [el, d] of [...changedElements]) if (d === 0) changedElements.delete(el);
@@ -146,7 +146,7 @@ function Group({ element, lines, diff, accounts, children }: { element: Element;
 function Row({ id, name, amount, delta, magnitude = false }: { id?: string; name: React.ReactNode; amount: number; delta: number; magnitude?: boolean }) {
   const changed = delta !== 0;
   // 当期純損失・評価勘定の △ は損失額・控除額の大きさなので、増減もその大きさの向きで示す。通常の科目のマイナス残高は符号どおり
-  // 利益から損失に転じた記帳は増減額が損失額を超え、大きさの増減として読めないので符号どおり(0 からの発生は大きさの増加)
+  // 利益から損失に転じた記帳は増減額が損失額を超え、大きさの増減として読めないので符号どおり(0からの発生は大きさの増加)
   const shown = magnitude && amount < 0 && amount - delta <= 0 ? -delta : delta;
   return (
     <div data-account={id} className={`flex flex-wrap items-baseline justify-between gap-x-2 rounded px-1 ${changed ? "bg-changed motion-safe:animate-highlight" : ""}`}>
@@ -158,7 +158,7 @@ function Row({ id, name, amount, delta, magnitude = false }: { id?: string; name
         {changed && (
           <span className="min-w-0 wrap-anywhere text-xs text-muted-foreground">
             <span aria-hidden>{shown > 0 ? "▲" : "▼"}</span>
-            <span className="sr-only">{shown > 0 ? "増加 " : "減少 "}</span>
+            <span className="sr-only">{shown > 0 ? "増加" : "減少"}</span>
             {formatAmount(Math.abs(delta))}
           </span>
         )}
@@ -183,7 +183,7 @@ function SignedAmount({ amount }: { amount: number }) {
   return (
     <>
       <span aria-hidden>△</span>
-      <span className="sr-only">マイナス </span>
+      <span className="sr-only">マイナス</span>
       {formatAmount(-amount)}
     </>
   );

@@ -7,15 +7,15 @@ async function reachLastStep(page: Page) {
   const next = page.getByRole("button", { name: "次へ →" });
   const work = page.getByRole("region", { name: "ワークスペース" });
   await next.click();
-  await work.getByLabel("借方の科目 1").fill("現金");
-  await work.getByLabel("借方の金額 1").fill("100000");
-  await work.getByLabel("貸方の科目 1").fill("資本金");
-  await work.getByLabel("貸方の金額 1").fill("100000");
+  await work.getByLabel("借方の科目1").fill("現金");
+  await work.getByLabel("借方の金額1").fill("100000");
+  await work.getByLabel("貸方の科目1").fill("資本金");
+  await work.getByLabel("貸方の金額1").fill("100000");
   await work.getByRole("button", { name: "記帳する" }).click();
   await expect(next).toHaveAttribute("aria-disabled", "false");
   await next.click();
   await next.click();
-  await expect(page.getByText("ステップ 4 / 4")).toBeVisible();
+  await expect(page.getByText("ステップ4 / 4")).toBeVisible();
 }
 
 test("ツアーをスキップしても、最終ステップから最初の単元へ進める", async ({ page }) => {

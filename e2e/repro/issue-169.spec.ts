@@ -32,10 +32,10 @@ test("スマホで予想して記帳すると、切り替わった結果タブ�
 
 test("スマホで記帳すると、切り替わった結果タブは先頭から見える(post)", async ({ page }) => {
   const work = await openWorkspaceOfStep2(page, "/units/bookkeeping-basics/five-elements");
-  await work.getByLabel("借方の科目 1").fill("現金");
-  await work.getByLabel("借方の金額 1").fill("1000000");
-  await work.getByLabel("貸方の科目 1").fill("資本金");
-  await work.getByLabel("貸方の金額 1").fill("1000000");
+  await work.getByLabel("借方の科目1").fill("現金");
+  await work.getByLabel("借方の金額1").fill("1000000");
+  await work.getByLabel("貸方の科目1").fill("資本金");
+  await work.getByLabel("貸方の金額1").fill("1000000");
   await work.getByRole("button", { name: "記帳する", exact: true }).click();
   await expectResultPaneFromTop(page);
 });

@@ -1,18 +1,18 @@
 import { devices, expect, test } from "@playwright/test";
 
-// Issue #88: スマホ幅の総勘定元帳で、同じ科目の借方と貸方の両方に摘要が並ぶと、ページが約 700px に広がって貸方の列が画面外に出ていた
+// Issue #88: スマホ幅の総勘定元帳で、同じ科目の借方と貸方の両方に摘要が並ぶと、ページが約700pxに広がって貸方の列が画面外に出ていた
 test.use({ ...devices["iPhone 13"] });
 
-test("390px の総勘定元帳で T 勘定の借方と貸方が画面幅に収まる", async ({ page }) => {
+test("390pxの総勘定元帳でT勘定の借方と貸方が画面幅に収まる", async ({ page }) => {
   const work = page.getByRole("region", { name: "ワークスペース" });
   await page.goto("/units/bookkeeping-basics/five-elements");
   await page.getByRole("button", { name: "今はしない" }).click({ timeout: 15000 });
   await page.getByRole("button", { name: "次へ →" }).click();
   await page.locator("#tab-work").click();
-  await work.getByLabel("借方の科目 1").fill("現金");
-  await work.getByLabel("借方の金額 1").fill("1000000");
-  await work.getByLabel("貸方の科目 1").fill("資本金");
-  await work.getByLabel("貸方の金額 1").fill("1000000");
+  await work.getByLabel("借方の科目1").fill("現金");
+  await work.getByLabel("借方の金額1").fill("1000000");
+  await work.getByLabel("貸方の科目1").fill("資本金");
+  await work.getByLabel("貸方の金額1").fill("1000000");
   await work.getByRole("button", { name: "記帳する" }).click();
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
 

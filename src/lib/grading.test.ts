@@ -26,7 +26,7 @@ const post: TaskOf<"post"> = {
   wrong_patterns: [
     { match: { swapped: true }, misconception: "debit_means_increase", feedback: "費用は借方です。" },
     { match: { credit: [{ account: "building" }] }, misconception: "direct_writeoff_vs_contra", feedback: "間接法では建物を直接減らしません。" },
-    { match: { debit: [{ amount: 1000000 }] }, misconception: "no_cost_allocation", feedback: "1 年分だけを費用にします。" },
+    { match: { debit: [{ amount: 1000000 }] }, misconception: "no_cost_allocation", feedback: "1年分だけを費用にします。" },
     { match: { unbalanced: true }, feedback: "借方と貸方の合計が一致していません。" },
   ],
 };
@@ -46,11 +46,11 @@ describe("gradePost", () => {
   it("行の順序が違っても正解", () => {
     expect(gradePost(post, { debit: [{ account: "depreciation_expense", amount: 100000 }], credit: [{ account: "accumulated_depreciation", amount: 100000 }] }).correct).toBe(true);
   });
-  it("貸借が逆なら誤解 debit_means_increase", () => {
+  it("貸借が逆なら誤解debit_means_increase", () => {
     const r = gradePost(post, { debit: [{ account: "accumulated_depreciation", amount: 100000 }], credit: [{ account: "depreciation_expense", amount: 100000 }] });
     expect(r).toMatchObject({ correct: false, misconception: "debit_means_increase" });
   });
-  it("建物を直接減らしたら direct_writeoff_vs_contra", () => {
+  it("建物を直接減らしたらdirect_writeoff_vs_contra", () => {
     const r = gradePost(post, { debit: [{ account: "depreciation_expense", amount: 100000 }], credit: [{ account: "building", amount: 100000 }] });
     expect(r.misconception).toBe("direct_writeoff_vs_contra");
   });
@@ -62,7 +62,7 @@ describe("gradePost", () => {
 });
 
 describe("その他の課題", () => {
-  it("predict は部分一致の誤答パターンで誤解を返す", () => {
+  it("predictは部分一致の誤答パターンで誤解を返す", () => {
     const task: TaskOf<"predict"> = {
       type: "predict",
       transaction: "減価償却費を計上した",
@@ -74,13 +74,13 @@ describe("その他の課題", () => {
     expect(gradePredict(task, task.answer).correct).toBe(true);
   });
 
-  it("calc は値の一致で採点し、既知の誤答値に誤解を付ける", () => {
+  it("calcは値の一致で採点し、既知の誤答値に誤解を付ける", () => {
     const task: TaskOf<"calc"> = { type: "calc", question: "当期の減価償却費は", answer: 60000, wrong_patterns: [{ match: 120000, misconception: "forgot_monthly_proration", feedback: "月割りを忘れています。" }] };
     expect(gradeCalc(task, 60000).correct).toBe(true);
     expect(gradeCalc(task, 120000).misconception).toBe("forgot_monthly_proration");
   });
 
-  it("classify は間違えた科目ごとに理由を返し、誤解を拾う", () => {
+  it("classifyは間違えた科目ごとに理由を返し、誤解を拾う", () => {
     const task: TaskOf<"classify"> = { type: "classify", accounts: ["cash", "loans_payable", "sales"], misconceptions: { loans_payable: { revenue: "revenue_equals_cash_in" } } };
     const r = gradeClassify(task, { cash: "asset", loans_payable: "revenue", sales: "revenue" }, accounts);
     expect(r.correct).toBe(false);
@@ -89,7 +89,7 @@ describe("その他の課題", () => {
     expect(gradeClassify(task, { cash: "asset", loans_payable: "liability", sales: "revenue" }, accounts).correct).toBe(true);
   });
 
-  it("classify は間違えた科目それぞれの誤解を重複なしで返す(Issue #95)", () => {
+  it("classifyは間違えた科目それぞれの誤解を重複なしで返す(Issue #95)", () => {
     const task: TaskOf<"classify"> = {
       type: "classify",
       accounts: ["cash", "loans_payable", "capital_stock", "sales"],
@@ -101,12 +101,12 @@ describe("その他の課題", () => {
     expect(gradeClassify(task, { cash: "asset", loans_payable: "liability", capital_stock: "equity", sales: "revenue" }, accounts).misconceptions).toEqual([]);
   });
 
-  it("tweak は式の出力が目標と一致したら正解", () => {
+  it("tweakは式の出力が目標と一致したら正解", () => {
     const task: TaskOf<"tweak"> = {
       type: "tweak",
       formula: "straight_line",
       params: [{ id: "cost", label: "取得原価", value: 1200000, min: 0, max: 2000000, step: 100000, unit: "円" }],
-      goal: { output: "annual_depreciation", equals: 150000, label: "1 年分の減価償却費" },
+      goal: { output: "annual_depreciation", equals: 150000, label: "1年分の減価償却費" },
     };
     const outputs = evaluateFormula("straight_line", { cost: 1200000, residual_value: 0, useful_life: 8 }).outputs;
     expect(outputs.annual_depreciation).toBe(150000);

@@ -1,14 +1,14 @@
 import { test, expect } from "@playwright/test";
 
-test("predict で資産と費用を外すと、費用の誤解にも触れる", async ({ page }) => {
+test("predictで資産と費用を外すと、費用の誤解にも触れる", async ({ page }) => {
   await page.goto("/units/bookkeeping-basics/five-elements");
   await page.getByRole("button", { name: "今はしない" }).click();
   await page.getByRole("button", { name: "次へ →" }).click();
   const work = page.getByRole("region", { name: "ワークスペース" });
-  await work.getByLabel("借方の科目 1").fill("現金");
-  await work.getByLabel("借方の金額 1").fill("1000000");
-  await work.getByLabel("貸方の科目 1").fill("資本金");
-  await work.getByLabel("貸方の金額 1").fill("1000000");
+  await work.getByLabel("借方の科目1").fill("現金");
+  await work.getByLabel("借方の金額1").fill("1000000");
+  await work.getByLabel("貸方の科目1").fill("資本金");
+  await work.getByLabel("貸方の金額1").fill("1000000");
   await work.getByRole("button", { name: "記帳する" }).click();
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "次へ →" }).click();

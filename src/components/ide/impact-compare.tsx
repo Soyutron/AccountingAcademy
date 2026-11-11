@@ -3,7 +3,7 @@
 import { type AccountInfo, type JournalEntry, ELEMENTS, computeImpact, formatAmount } from "@/lib/accounting";
 import { ElementBadge } from "@/components/element-badge";
 
-// 不正解のとき、学習者の仕訳の影響と期待される影響を 5 要素で並べる(docs/ide-design.md 3 章「誤りの見せ方」)
+// 不正解のとき、学習者の仕訳の影響と期待される影響を5要素で並べる(docs/ide-design.md 3章「誤りの見せ方」)
 
 export function ImpactCompare({ yours, expected, accounts }: { yours: JournalEntry; expected: JournalEntry; accounts: ReadonlyMap<string, AccountInfo> }) {
   const a = computeImpact(yours, accounts);

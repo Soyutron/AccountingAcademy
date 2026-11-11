@@ -1,7 +1,7 @@
 import { parse as parseYaml } from "yaml";
 import { defineConfig, s, z } from "velite";
 
-// コンテンツのスキーマと横断検査。構造の定義は docs/content-model.md、画面と学習フローは docs/ide-design.md が正本
+// コンテンツのスキーマと横断検査。構造の定義はdocs/content-model.md、画面と学習フローはdocs/ide-design.mdが正本
 
 const element = s.enum(["asset", "liability", "equity", "revenue", "expense"]);
 const change = s.enum(["increase", "decrease", "none"]);
@@ -17,7 +17,7 @@ const account = s.object({
   element,
   contra: s.boolean().default(false),
   why: s.string(),
-  // 用語集とポップオーバーの「例:」。概念と同じ役割(docs/content-model.md 4 節)
+  // 用語集とポップオーバーの「例:」。概念と同じ役割(docs/content-model.md 4節)
   example: s.string().optional(),
   concepts: idList,
 });
@@ -25,7 +25,7 @@ const account = s.object({
 const concept = s.object({
   id: s.string(),
   name: s.string(),
-  // 読み(ひらがな)。用語集の検索で引く(勘定科目の reading と同じ)
+  // 読み(ひらがな)。用語集の検索で引く(勘定科目のreadingと同じ)
   reading: s.array(s.string()).default([]),
   short: s.string(),
   summary: s.string(),
@@ -58,7 +58,7 @@ const effectPattern = effect.partial();
 const wrongPattern = <T extends z.ZodTypeAny>(match: T) =>
   s.object({ match, misconception: s.string().optional(), feedback: s.string() });
 
-// ステップの課題。種類は docs/ide-design.md 3 章
+// ステップの課題。種類はdocs/ide-design.md 3章
 const taskBase = { hint: s.string().optional(), success: s.string().optional() };
 export const taskSchema = s.discriminatedUnion("type", [
   s.object({ type: s.literal("observe"), entries: s.array(journalEntry).default([]) }),
@@ -112,7 +112,7 @@ export const taskSchema = s.discriminatedUnion("type", [
     ...taskBase,
     type: s.literal("classify"),
     accounts: s.array(s.string()).min(2),
-    // 科目 → 間違えた要素 → 誤解 ID
+    // 科目 → 間違えた要素 → 誤解ID
     misconceptions: s.record(s.string(), s.record(s.string(), s.string())).default({}),
   }),
   s.object({
@@ -125,7 +125,7 @@ export const taskSchema = s.discriminatedUnion("type", [
 ]);
 export type Task = z.infer<typeof taskSchema>;
 
-// 図解ブロック(docs/visual-guidelines.md 5 章)。alt は必須
+// 図解ブロック(docs/visual-guidelines.md 5章)。altは必須
 const amountItem = s.object({ account: s.string().optional(), label: s.string().optional(), amount: s.number().int() });
 const simpleFigure = s.discriminatedUnion("type", [
   s.object({
@@ -169,7 +169,7 @@ export const figureSchema = s.discriminatedUnion("type", [
 export type Figure = z.infer<typeof figureSchema>;
 const FIGURE_BLOCK = /```figure\s*\n([\s\S]*?)```/g;
 
-/** 図解の中で参照している勘定科目 ID */
+/** 図解の中で参照している勘定科目ID */
 function figureAccounts(f: Figure): string[] {
   switch (f.type) {
     case "elements":
@@ -192,7 +192,7 @@ export interface Step {
   figures: Figure[];
 }
 
-// 単元本文を「## 見出し」ごとのステップに分け、```task ブロックを課題として解釈する
+// 単元本文を「## 見出し」ごとのステップに分け、```taskブロックを課題として解釈する
 const TASK_BLOCK = /```task\s*\n([\s\S]*?)```/;
 function parseSteps(body: string, ctx: z.RefinementCtx): Step[] {
   const chunks = body.split(/^## /m).filter((c) => c.trim());
@@ -206,7 +206,7 @@ function parseSteps(body: string, ctx: z.RefinementCtx): Step[] {
     if (m) {
       const parsed = taskSchema.safeParse(parseYaml(m[1]));
       if (!parsed.success) {
-        ctx.addIssue({ code: "custom", message: `ステップ ${i + 1}「${title}」の task: ${parsed.error.issues.map((e) => `${e.path.join(".")} ${e.message}`).join("; ")}` });
+        ctx.addIssue({ code: "custom", message: `ステップ${i + 1}「${title}」のtask: ${parsed.error.issues.map((e) => `${e.path.join(".")} ${e.message}`).join("; ")}` });
         return;
       }
       task = parsed.data;
@@ -216,7 +216,7 @@ function parseSteps(body: string, ctx: z.RefinementCtx): Step[] {
     for (const fm of narrative.matchAll(FIGURE_BLOCK)) {
       const parsed = figureSchema.safeParse(parseYaml(fm[1]));
       if (!parsed.success) {
-        ctx.addIssue({ code: "custom", message: `ステップ ${i + 1}「${title}」の figure: ${parsed.error.issues.map((e) => `${e.path.join(".")} ${e.message}`).join("; ")}` });
+        ctx.addIssue({ code: "custom", message: `ステップ${i + 1}「${title}」のfigure: ${parsed.error.issues.map((e) => `${e.path.join(".")} ${e.message}`).join("; ")}` });
         return;
       }
       figures.push(parsed.data);
@@ -302,7 +302,7 @@ export default defineConfig({
     const dup = (label: string, ids: string[]) => {
       const seen = new Set<string>();
       for (const id of ids) {
-        if (seen.has(id)) errors.push(`${label} の ID が重複: ${id}`);
+        if (seen.has(id)) errors.push(`${label}のIDが重複: ${id}`);
         seen.add(id);
       }
     };
@@ -311,23 +311,23 @@ export default defineConfig({
     dup("誤解", misconceptions.misconceptions.map((m) => m.id));
     dup("単元", units.map((u) => u.id));
     dup("テーマ", topics.map((t) => t.id));
-    // 概念と勘定科目で同じ ID は「同じ用語」として用語集で 1 項目にまとめる(src/lib/content.ts)。名前が違えば別物なので拒否する
+    // 概念と勘定科目で同じIDは「同じ用語」として用語集で1項目にまとめる(src/lib/content.ts)。名前が違えば別物なので拒否する
     for (const a of accounts.accounts) {
       const c = conceptById.get(a.id);
-      if (c && c.name !== a.name) errors.push(`勘定科目 ${a.id}(${a.name})と概念 ${c.id}(${c.name})が同じ ID で名前が違う`);
+      if (c && c.name !== a.name) errors.push(`勘定科目${a.id}(${a.name})と概念${c.id}(${c.name})が同じIDで名前が違う`);
     }
 
     const requireConcept = (id: string, where: string) => {
-      if (!conceptIds.has(id)) errors.push(`${where}: 概念 ${id} が存在しない`);
+      if (!conceptIds.has(id)) errors.push(`${where}: 概念${id}が存在しない`);
     };
     const requireAccount = (id: string, where: string) => {
-      if (!accountIds.has(id)) errors.push(`${where}: 勘定科目 ${id} が存在しない`);
+      if (!accountIds.has(id)) errors.push(`${where}: 勘定科目${id}が存在しない`);
     };
     const requireUnit = (id: string, where: string) => {
-      if (!unitById.has(id)) errors.push(`${where}: 単元 ${id} が存在しない`);
+      if (!unitById.has(id)) errors.push(`${where}: 単元${id}が存在しない`);
     };
     const requireMisconception = (id: string | undefined, where: string) => {
-      if (id && !misconceptionIds.has(id)) errors.push(`${where}: 誤解 ${id} が存在しない`);
+      if (id && !misconceptionIds.has(id)) errors.push(`${where}: 誤解${id}が存在しない`);
     };
     const checkEntry = (entry: { debit: { account: string; amount: number }[]; credit: { account: string; amount: number }[] }, where: string) => {
       const sum = (lines: { amount: number }[]) => lines.reduce((t, l) => t + l.amount, 0);
@@ -339,15 +339,15 @@ export default defineConfig({
       return key(a) === key(b);
     };
 
-    for (const a of accounts.accounts) a.concepts.forEach((c) => requireConcept(c, `勘定科目 ${a.id}`));
+    for (const a of accounts.accounts) a.concepts.forEach((c) => requireConcept(c, `勘定科目${a.id}`));
     for (const m of misconceptions.misconceptions) {
-      m.concepts.forEach((c) => requireConcept(c, `誤解 ${m.id}`));
-      requireUnit(m.remediation, `誤解 ${m.id} の remediation`);
+      m.concepts.forEach((c) => requireConcept(c, `誤解${m.id}`));
+      requireUnit(m.remediation, `誤解${m.id}のremediation`);
     }
     for (const d of domains) {
-      for (const c of d.concepts) [...c.requires, ...c.related, ...c.contrasts].forEach((r) => requireConcept(r, `概念 ${c.id}`));
+      for (const c of d.concepts) [...c.requires, ...c.related, ...c.contrasts].forEach((r) => requireConcept(r, `概念${c.id}`));
     }
-    for (const t of topics) if (!domainIds.has(t.domain)) errors.push(`テーマ ${t.id}: 分野 ${t.domain} が存在しない`);
+    for (const t of topics) if (!domainIds.has(t.domain)) errors.push(`テーマ${t.id}: 分野${t.domain}が存在しない`);
 
     // 前提単元を辿って「説明済みの概念」を集める。循環は検出してエラーにする
     const explainedCache = new Map<string, Set<string>>();
@@ -367,40 +367,40 @@ export default defineConfig({
     };
 
     for (const u of units) {
-      const where = `単元 ${u.id}`;
-      if (!topicIds.has(u.topic)) errors.push(`${where}: テーマ ${u.topic} の topic.yaml がない`);
-      if (u.id !== u.path.replace(/^topics\//, "")) errors.push(`${where}: id とファイルパス ${u.path} が一致しない`);
+      const where = `単元${u.id}`;
+      if (!topicIds.has(u.topic)) errors.push(`${where}: テーマ${u.topic}のtopic.yamlがない`);
+      if (u.id !== u.path.replace(/^topics\//, "")) errors.push(`${where}: idとファイルパス${u.path}が一致しない`);
       u.introduces.forEach((c) => requireConcept(c, where));
       u.concepts.forEach((c) => requireConcept(c, where));
-      u.requires.forEach((r) => requireUnit(r, `${where} の requires`));
-      u.scenario.opening.forEach((l) => requireAccount(l.account, `${where} の opening`));
+      u.requires.forEach((r) => requireUnit(r, `${where}のrequires`));
+      u.scenario.opening.forEach((l) => requireAccount(l.account, `${where}のopening`));
 
-      if (u.steps.length < 4) errors.push(`${where}: ステップが ${u.steps.length} 個しかない(4 個以上)`);
-      if (u.steps.length > 0 && u.steps[0].task.type !== "observe") errors.push(`${where}: 最初のステップは observe(導入)にする`);
+      if (u.steps.length < 4) errors.push(`${where}: ステップが${u.steps.length}個しかない(4個以上)`);
+      if (u.steps.length > 0 && u.steps[0].task.type !== "observe") errors.push(`${where}: 最初のステップはobserve(導入)にする`);
       if (u.steps.length > 0 && !u.steps[u.steps.length - 1].title.includes("ふりかえり")) errors.push(`${where}: 最後のステップの見出しに「ふりかえり」を含める`);
-      if (!u.steps.some((st) => st.task.type === "post" || st.task.type === "predict")) errors.push(`${where}: post か predict のステップが 1 つもない`);
+      if (!u.steps.some((st) => st.task.type === "post" || st.task.type === "predict")) errors.push(`${where}: postかpredictのステップが1つもない`);
 
       const known = explained(u.id);
       const used = new Set<string>();
       u.steps.forEach((st, i) => {
-        const w = `${where} ステップ ${i + 1}「${st.title}」`;
+        const w = `${where}ステップ${i + 1}「${st.title}」`;
         if (!st.narrative.trim()) errors.push(`${w}: 説明文がない`);
-        if (st.figures.length > 1) errors.push(`${w}: 図解は 1 ステップに 1 つまで`);
+        if (st.figures.length > 1) errors.push(`${w}: 図解は1ステップに1つまで`);
         st.figures.forEach((f) => {
-          figureAccounts(f).forEach((a) => requireAccount(a, `${w} の図解`));
+          figureAccounts(f).forEach((a) => requireAccount(a, `${w}の図解`));
           if (f.type === "proportion") {
             const sum = (items: { amount: number }[]) => items.reduce((t, i) => t + i.amount, 0);
-            if (sum(f.assets) !== sum(f.liabilities) + sum(f.equity)) errors.push(`${w} の図解: 資産の合計が負債 + 純資産と一致しない`);
+            if (sum(f.assets) !== sum(f.liabilities) + sum(f.equity)) errors.push(`${w}の図解: 資産の合計が負債 + 純資産と一致しない`);
           }
         });
         for (const line of st.narrative.split("\n")) {
-          if (line.trimStart().startsWith("|") && /\[\[[^\]]*\|/.test(line)) errors.push(`${w}: 表の中では [[id|表示語]] が使えない。[[id]] と書く`);
+          if (line.trimStart().startsWith("|") && /\[\[[^\]]*\|/.test(line)) errors.push(`${w}: 表の中では[[id|表示語]]が使えない。[[id]]と書く`);
         }
         for (const m of st.narrative.matchAll(TERM_REF)) {
           const id = m[1];
           used.add(id);
-          if (!conceptIds.has(id) && !accountIds.has(id)) errors.push(`${w}: 用語 ${id} が概念にも勘定科目にもない`);
-          if (conceptIds.has(id) && !known.has(id)) errors.push(`${w}: 概念 ${id} を未説明のまま使っている(introduces か requires に含める)`);
+          if (!conceptIds.has(id) && !accountIds.has(id)) errors.push(`${w}: 用語${id}が概念にも勘定科目にもない`);
+          if (conceptIds.has(id) && !known.has(id)) errors.push(`${w}: 概念${id}を未説明のまま使っている(introducesかrequiresに含める)`);
         }
         const t = st.task;
         switch (t.type) {
@@ -424,10 +424,10 @@ export default defineConfig({
             break;
           case "tweak": {
             const outputs = FORMULA_OUTPUTS[t.formula];
-            if (!outputs.includes(t.goal.output)) errors.push(`${w}: goal.output ${t.goal.output} は ${t.formula} の出力(${outputs.join(", ")})にない`);
+            if (!outputs.includes(t.goal.output)) errors.push(`${w}: goal.output ${t.goal.output}は${t.formula}の出力(${outputs.join(", ")})にない`);
             t.params.forEach((p) => {
-              if (!FORMULA_PARAMS[t.formula].includes(p.id)) errors.push(`${w}: パラメータ ${p.id} は ${t.formula} にない`);
-              if (p.value < p.min || p.value > p.max) errors.push(`${w}: パラメータ ${p.id} の初期値が範囲外`);
+              if (!FORMULA_PARAMS[t.formula].includes(p.id)) errors.push(`${w}: パラメータ${p.id}は${t.formula}にない`);
+              if (p.value < p.min || p.value > p.max) errors.push(`${w}: パラメータ${p.id}の初期値が範囲外`);
             });
             break;
           }
@@ -447,7 +447,7 @@ export default defineConfig({
         }
       });
       u.introduces.forEach((c) => {
-        if (!used.has(c)) errors.push(`${where}: introduces の ${c} が本文で [[${c}]] として使われていない`);
+        if (!used.has(c)) errors.push(`${where}: introducesの${c}が本文で[[${c}]]として使われていない`);
       });
     }
 
@@ -470,15 +470,15 @@ export default defineConfig({
       const seen: string[] = [];
       for (const section of p.sections) {
         for (const unitId of section.units) {
-          requireUnit(unitId, `パス ${p.id}`);
+          requireUnit(unitId, `パス${p.id}`);
           unitById.get(unitId)?.requires.forEach((r) => {
-            if (!seen.includes(r)) errors.push(`パス ${p.id}: 単元 ${unitId} の前提 ${r} がパス内で先に出てこない`);
+            if (!seen.includes(r)) errors.push(`パス${p.id}: 単元${unitId}の前提${r}がパス内で先に出てこない`);
           });
           seen.push(unitId);
         }
       }
     }
 
-    if (errors.length > 0) throw new Error(`コンテンツ検査で ${errors.length} 件のエラー:\n- ${errors.join("\n- ")}`);
+    if (errors.length > 0) throw new Error(`コンテンツ検査で${errors.length}件のエラー:\n- ${errors.join("\n- ")}`);
   },
 });

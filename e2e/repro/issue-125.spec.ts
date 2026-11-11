@@ -5,9 +5,9 @@ test.use({ hasTouch: true, isMobile: true });
 async function openDebitCombobox(page: Page) {
   await page.goto("/units/bookkeeping-basics/five-elements");
   await page.getByRole("button", { name: "次へ →" }).click();
-  await expect(page.getByText("ステップ 2 / 10")).toBeVisible();
+  await expect(page.getByText("ステップ2 / 10")).toBeVisible();
   await page.getByRole("tablist", { name: "ペインの切り替え" }).getByRole("tab", { name: "ワークスペース" }).click();
-  const input = page.getByRole("region", { name: "ワークスペース" }).getByLabel("借方の科目 1");
+  const input = page.getByRole("region", { name: "ワークスペース" }).getByLabel("借方の科目1");
   await input.click();
   const first = page.getByRole("option").first();
   await expect(first).toBeVisible();

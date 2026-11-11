@@ -21,9 +21,9 @@ const postCases: { name: string; step: number; entry: JournalEntry; misconceptio
 ];
 
 describe("返品と運賃の仕訳の誤答", () => {
-  it.each(postCases)("$name(ステップ $step)に説明を返す", ({ step, entry: e, misconception, word }) => {
+  it.each(postCases)("$name(ステップ$step)に説明を返す", ({ step, entry: e, misconception, word }) => {
     const task = taskAt(step);
-    if (task.type !== "post") throw new Error("post ではない");
+    if (task.type !== "post") throw new Error("postではない");
     const result = gradePost(task, e);
     expect(result.correct).toBe(false);
     expect(result.misconception).toBe(misconception);
@@ -33,16 +33,16 @@ describe("返品と運賃の仕訳の誤答", () => {
 
   it("売掛金と売上を運賃込みにした上で運賃の行もあるときは、運賃の行を書いていないとは言わない", () => {
     const task = taskAt(4);
-    if (task.type !== "post") throw new Error("post ではない");
+    if (task.type !== "post") throw new Error("postではない");
     const result = gradePost(task, entry([line("accounts_receivable", 31500), line("shipping_expense", 1500)], [line("sales", 31500), line("cash", 1500)]));
     expect(result.misconception).toBe("shipping_mixed_into_sale");
     expect(result.feedback).not.toContain("書き忘れ");
   });
 });
 
-describe("今月の仕入の計算(ステップ 6)", () => {
+describe("今月の仕入の計算(ステップ6)", () => {
   const task = taskAt(6);
-  if (task.type !== "calc") throw new Error("calc ではない");
+  if (task.type !== "calc") throw new Error("calcではない");
 
   it("返品を足すと、取り消しだと説明する", () => {
     const result = gradeCalc(task, 62000);
@@ -54,14 +54,14 @@ describe("今月の仕入の計算(ステップ 6)", () => {
     expect(gradeCalc(task, 122000).feedback).toContain("先月まで");
   });
 
-  it.each([62000, 122000])("%d の説明に正解の金額を書かない", (value) => {
+  it.each([62000, 122000])("%dの説明に正解の金額を書かない", (value) => {
     expect(gradeCalc(task, value).feedback).not.toContain("42,000");
   });
 });
 
-describe("分類(ステップ 7)", () => {
+describe("分類(ステップ7)", () => {
   const task = taskAt(7);
-  if (task.type !== "classify") throw new Error("classify ではない");
+  if (task.type !== "classify") throw new Error("classifyではない");
 
   it("売掛金を負債、買掛金を資産に入れると、取り違えの誤解を返す", () => {
     const result = gradeClassify(task, { shipping_expense: "expense", purchases: "expense", accounts_payable: "asset", accounts_receivable: "liability" }, accountMap);

@@ -7,19 +7,19 @@ const GENERIC = "結果の表で何が動くはずか";
 const steps = unitMap.get("depreciation/what-is-depreciation")!.steps;
 const postTask = (index: number) => {
   const task = steps[index].task;
-  if (task.type !== "post") throw new Error("post ではない");
+  if (task.type !== "post") throw new Error("postではない");
   return task;
 };
 const predictTask = (index: number) => {
   const task = steps[index].task;
-  if (task.type !== "predict") throw new Error("predict ではない");
+  if (task.type !== "predict") throw new Error("predictではない");
   return task;
 };
 
-describe("2 年目の決算(ステップ 8)", () => {
+describe("2年目の決算(ステップ8)", () => {
   const task = postTask(7);
 
-  it("貸方を現金にすると 1 年目と同じ depreciation_as_cash_outflow", () => {
+  it("貸方を現金にすると1年目と同じdepreciation_as_cash_outflow", () => {
     const entry = {
       debit: [{ account: "depreciation_expense", amount: 100000 }],
       credit: [{ account: "cash", amount: 100000 }],
@@ -35,7 +35,7 @@ describe("2 年目の決算(ステップ 8)", () => {
   });
 });
 
-describe("減価償却を記帳する(ステップ 5)", () => {
+describe("減価償却を記帳する(ステップ5)", () => {
   const task = postTask(4);
 
   it("借方を備品にすると費用を立てていないことを指摘する", () => {
@@ -48,7 +48,7 @@ describe("減価償却を記帳する(ステップ 5)", () => {
     expect(result.feedback).not.toContain(GENERIC);
   });
 
-  it("借方が備品でも貸方が現金なら depreciation_as_cash_outflow のまま", () => {
+  it("借方が備品でも貸方が現金ならdepreciation_as_cash_outflowのまま", () => {
     const result = gradePost(task, {
       debit: [{ account: "equipment", amount: 100000 }],
       credit: [{ account: "cash", amount: 100000 }],
@@ -61,7 +61,7 @@ describe("減価償却を記帳する(ステップ 5)", () => {
   });
 });
 
-describe("電気代を払う(ステップ 2)", () => {
+describe("電気代を払う(ステップ2)", () => {
   const task = predictTask(1);
 
   it("純資産が増えると答えると、費用で純資産が減ることを説明する", () => {

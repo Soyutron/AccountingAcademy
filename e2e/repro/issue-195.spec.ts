@@ -8,17 +8,17 @@ test("post: 「答えを見る」の後に「記帳する」の案内が出て�
   await next.click();
   const work = page.getByRole("region", { name: "ワークスペース" });
   const answer = async (debit: string, credit: string) => {
-    await work.getByLabel("借方の科目 1").fill(debit);
-    await work.getByLabel("借方の金額 1").fill("1000000");
-    await work.getByLabel("貸方の科目 1").fill(credit);
-    await work.getByLabel("貸方の金額 1").fill("1000000");
+    await work.getByLabel("借方の科目1").fill(debit);
+    await work.getByLabel("借方の金額1").fill("1000000");
+    await work.getByLabel("貸方の科目1").fill(credit);
+    await work.getByLabel("貸方の金額1").fill("1000000");
     await work.getByRole("button", { name: "記帳する" }).click();
     await expect(page.getByRole("status").getByText("もう一歩")).toBeVisible();
   };
   await answer("資本金", "現金");
   await answer("現金", "借入金");
   await page.getByRole("button", { name: "答えを見る" }).click();
-  await expect(work.getByLabel("借方の科目 1")).toHaveValue("現金");
+  await expect(work.getByLabel("借方の科目1")).toHaveValue("現金");
   await expect(page.getByRole("status").filter({ hasText: /「記帳する」を押すと次へ進めます/ })).toBeVisible();
   await expect(page.getByText("課題ができると次へ進めます")).toHaveCount(0);
   await work.getByRole("button", { name: "記帳する" }).click();
@@ -31,7 +31,7 @@ test("calc: 「答えを見る」の後に「確認する」の案内が出る",
   const work = page.getByRole("region", { name: "ワークスペース" });
   const wrong = page.getByRole("status").filter({ hasText: "もう一歩" });
   const next = page.getByRole("button", { name: "次へ →" });
-  // ステップ 2 が predict(答えれば進める)、ステップ 3 が calc
+  // ステップ2がpredict(答えれば進める)、ステップ3がcalc
   await page.goto("/units/depreciation/what-is-depreciation");
   await next.click();
   for (const el of ["資産", "負債", "純資産", "収益", "費用"]) {

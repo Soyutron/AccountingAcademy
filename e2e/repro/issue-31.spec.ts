@@ -8,11 +8,11 @@ const cases = [
 ] as const;
 
 for (const [from, to] of cases) {
-  test(`${from} のふりかえりに次の単元 ${to} へのリンクがある`, async ({ page }) => {
+  test(`${from}のふりかえりに次の単元${to}へのリンクがある`, async ({ page }) => {
     await page.goto(from);
     await expect(page.getByRole("region", { name: "ワークスペース" })).toBeVisible();
-    // 次の単元リンクは最終ステップでしか描画されないので、HTML に埋め込まれた IdeShell の props(next)で確かめる。
-    // RSC ペイロード内では引用符がエスケープされている
+    // 次の単元リンクは最終ステップでしか描画されないので、HTMLに埋め込まれたIdeShellのprops(next)で確かめる。
+    // RSCペイロード内では引用符がエスケープされている
     const html = await page.content();
     const id = to.replace("/units/", "");
     expect(html).toMatch(new RegExp(`\\\\?"next\\\\?":\\{\\\\?"id\\\\?":\\\\?"${id}\\\\?"`));

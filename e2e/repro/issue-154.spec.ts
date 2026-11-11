@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
-// Issue #154: 本文が「結果の貸借対照表を見ずに計算して」と言う calc の直下に「結果の表を読んで答えましょう」と出ていた
-test("「見ずに計算して」と言う calc の「やること」と初回の注記が、表を読めと指示しない", async ({ page }) => {
+// Issue #154: 本文が「結果の貸借対照表を見ずに計算して」と言うcalcの直下に「結果の表を読んで答えましょう」と出ていた
+test("「見ずに計算して」と言うcalcの「やること」と初回の注記が、表を読めと指示しない", async ({ page }) => {
   const work = page.getByRole("region", { name: "ワークスペース" });
   const next = page.getByRole("button", { name: "次へ →" });
   const field = async (label: string, value: string) => {
@@ -9,10 +9,10 @@ test("「見ずに計算して」と言う calc の「やること」と初回�
     await page.keyboard.press("Escape");
   };
   const post = async (debit: string, credit: string, amount: string) => {
-    await field("借方の科目 1", debit);
-    await field("借方の金額 1", amount);
-    await field("貸方の科目 1", credit);
-    await field("貸方の金額 1", amount);
+    await field("借方の科目1", debit);
+    await field("借方の金額1", amount);
+    await field("貸方の科目1", credit);
+    await field("貸方の金額1", amount);
     await work.getByRole("button", { name: "記帳する" }).click();
     await expect(next).not.toHaveAttribute("aria-disabled", "true");
     await next.click();
@@ -30,7 +30,7 @@ test("「見ずに計算して」と言う calc の「やること」と初回�
   await post("仕入", "当座預金", "25000");
   await post("現金", "売上", "30000");
 
-  await expect(page.getByText("ステップ 6 /")).toBeVisible();
+  await expect(page.getByText("ステップ6 /")).toBeVisible();
   const guide = page.getByRole("region", { name: "ガイド" });
   await expect(guide).toContainText("結果の貸借対照表を見ずに計算してから");
   const instruction = guide.getByText(/^やること:/);

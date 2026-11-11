@@ -24,13 +24,13 @@ test("ツアーの記入の段で別のペインへ移ると、案内先へ戻�
 
   await expect(tabs.getByRole("tab", { selected: true })).toHaveText("ワークスペース");
   await expect(card).not.toContainText("タブに戻ると続けられます");
-  await page.getByLabel("借方の科目 1").fill("現金");
-  await page.getByLabel("借方の金額 1").fill("100000");
+  await page.getByLabel("借方の科目1").fill("現金");
+  await page.getByLabel("借方の金額1").fill("100000");
   await card.getByRole("button", { name: "次へ", exact: true }).click();
   await expect(card).toContainText("5 / 12");
 });
 
-test("PC 幅では 3 ペインが並ぶので戻る案内を出さない", async ({ page }) => {
+test("PC幅では3ペインが並ぶので戻る案内を出さない", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto("/units/tutorial/first-entry?tour=1");
   const card = page.getByRole("dialog", { name: "チュートリアル" });

@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-// #212 390px の単元一覧で説明文が 1 行に切られ、「何を身につけるか」が読めない
+// #212 390pxの単元一覧で説明文が1行に切られ、「何を身につけるか」が読めない
 test.use({ viewport: { width: 390, height: 664 } });
 
 for (const path of ["/paths/boki-3", "/topics/merchandise"]) {

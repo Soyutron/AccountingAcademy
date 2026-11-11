@@ -6,12 +6,12 @@ import { TimelineFigure } from "./timeline-figure";
 import { TAccountFigure } from "./taccount-figure";
 import { ProportionFigure } from "./proportion-figure";
 
-// 図解ブロックの振り分け(docs/visual-guidelines.md 5 章)。種類ごとの描画は各ファイル
+// 図解ブロックの振り分け(docs/visual-guidelines.md 5章)。種類ごとの描画は各ファイル
 
 export type FigureSpec = Unit["steps"][number]["figures"][number];
 type SimpleFigure = Exclude<FigureSpec, { type: "compare" }>;
 
-// 実行時は YAML をそのまま解釈するので、スキーマの既定値(省略された配列など)をここで補う
+// 実行時はYAMLをそのまま解釈するので、スキーマの既定値(省略された配列など)をここで補う
 function Simple({ spec }: { spec: SimpleFigure }) {
   switch (spec.type) {
     case "elements":

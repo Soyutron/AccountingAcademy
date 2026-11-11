@@ -8,9 +8,9 @@ async function goToPost(page: Page) {
   await page.getByRole("button", { name: "次へ →" }).click();
 }
 
-const helpDialog = (page: Page) => page.getByRole("dialog", { name: "会計 IDE の使い方" });
+const helpDialog = (page: Page) => page.getByRole("dialog", { name: "会計IDEの使い方" });
 
-// Radix の Dialog は表示の数レンダー後に Esc のリスナーを登録するので、負荷が高いと表示直後の Esc が失われる
+// RadixのDialogは表示の数レンダー後にEscのリスナーを登録するので、負荷が高いと表示直後のEscが失われる
 async function closeWithEscape(page: Page) {
   await expect(async () => {
     await page.keyboard.press("Escape");
@@ -18,7 +18,7 @@ async function closeWithEscape(page: Page) {
   }).toPass();
 }
 
-test("「?」の「もっと詳しく」から開いた使い方を Esc で閉じると、押した「?」にフォーカスが戻る", async ({ page }) => {
+test("「?」の「もっと詳しく」から開いた使い方をEscで閉じると、押した「?」にフォーカスが戻る", async ({ page }) => {
   await goToPost(page);
   const icon = page.getByRole("button", { name: "「仕訳帳に書く」の説明" });
   await icon.focus();
@@ -29,13 +29,13 @@ test("「?」の「もっと詳しく」から開いた使い方を Esc で閉�
   await expect(icon).toBeFocused();
 });
 
-test("note の「くわしく」から開いた使い方を Esc で閉じると、「くわしく」にフォーカスが戻る", async ({ page }) => {
+test("noteの「くわしく」から開いた使い方をEscで閉じると、「くわしく」にフォーカスが戻る", async ({ page }) => {
   await goToPost(page);
   const work = page.getByRole("region", { name: "ワークスペース" });
-  await work.getByLabel("借方の科目 1").fill("現金");
-  await work.getByLabel("借方の金額 1").fill("1000000");
-  await work.getByLabel("貸方の科目 1").fill("資本金");
-  await work.getByLabel("貸方の金額 1").fill("1000000");
+  await work.getByLabel("借方の科目1").fill("現金");
+  await work.getByLabel("借方の金額1").fill("1000000");
+  await work.getByLabel("貸方の科目1").fill("資本金");
+  await work.getByLabel("貸方の金額1").fill("1000000");
   await work.getByRole("button", { name: "記帳する" }).click();
   await page.getByRole("button", { name: "次へ →" }).click();
   const more = page.getByRole("note", { name: "初めての「予想して記帳する」" }).getByRole("button", { name: "くわしく" });

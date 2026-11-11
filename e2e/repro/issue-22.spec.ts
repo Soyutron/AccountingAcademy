@@ -8,9 +8,9 @@ test("仕入の返品で右を現金にした誤答に、右を直す説明が�
     for (const [side, lines] of [["借方", d], ["貸方", c]] as const) {
       for (let i = 0; i < lines.length; i++) {
         if (i > 0) await work.getByRole("button", { name: "行を追加" }).nth(side === "借方" ? 0 : 1).click();
-        await work.getByLabel(`${side}の科目 ${i + 1}`).fill(lines[i][0]);
-        await work.getByLabel(`${side}の科目 ${i + 1}`).press("Escape");
-        await work.getByLabel(`${side}の金額 ${i + 1}`).fill(String(lines[i][1]));
+        await work.getByLabel(`${side}の科目${i + 1}`).fill(lines[i][0]);
+        await work.getByLabel(`${side}の科目${i + 1}`).press("Escape");
+        await work.getByLabel(`${side}の金額${i + 1}`).fill(String(lines[i][1]));
       }
     }
     await work.getByRole("button", { name: "記帳する" }).click();
@@ -19,7 +19,7 @@ test("仕入の返品で右を現金にした誤答に、右を直す説明が�
   await post([["仕入", 52000]], [["買掛金", 50000], ["現金", 2000]]);
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "次へ →" }).click();
-  await expect(page.getByText("ステップ 3 / 8")).toBeVisible();
+  await expect(page.getByText("ステップ3 / 8")).toBeVisible();
   await post([["買掛金", 10000]], [["現金", 10000]]);
   const status = page.getByRole("status").filter({ hasText: "もう一歩" });
   await expect(status).toBeVisible();

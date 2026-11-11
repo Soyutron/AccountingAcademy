@@ -7,14 +7,14 @@ const GENERIC = "結果の表で何が動くはずか";
 
 function postTask(step: number) {
   const task = unitMap.get("merchandise/credit-transactions")!.steps[step].task;
-  if (task.type !== "post") throw new Error("post ではない");
+  if (task.type !== "post") throw new Error("postではない");
   return task;
 }
 
-describe("問屋から掛けで仕入れる(ステップ 2)", () => {
+describe("問屋から掛けで仕入れる(ステップ2)", () => {
   const task = postTask(1);
 
-  it("右に売掛金と書くと receivable_payable_confused で買掛金を示す", () => {
+  it("右に売掛金と書くとreceivable_payable_confusedで買掛金を示す", () => {
     const result = gradePost(task, {
       debit: [{ account: "purchases", amount: 40000 }],
       credit: [{ account: "accounts_receivable", amount: 40000 }],
@@ -25,7 +25,7 @@ describe("問屋から掛けで仕入れる(ステップ 2)", () => {
     expect(result.feedback).not.toContain(GENERIC);
   });
 
-  it("右に未払金と書くと、誤解 ID なしで商品の代金は買掛金だと示す", () => {
+  it("右に未払金と書くと、誤解IDなしで商品の代金は買掛金だと示す", () => {
     const result = gradePost(task, {
       debit: [{ account: "purchases", amount: 40000 }],
       credit: [{ account: "accounts_payable_other", amount: 40000 }],
@@ -51,10 +51,10 @@ describe("問屋から掛けで仕入れる(ステップ 2)", () => {
   });
 });
 
-describe("月末、代金が振り込まれる(ステップ 4)", () => {
+describe("月末、代金が振り込まれる(ステップ4)", () => {
   const task = postTask(3);
 
-  it("右に買掛金と書くと receivable_payable_confused で売掛金を示す", () => {
+  it("右に買掛金と書くとreceivable_payable_confusedで売掛金を示す", () => {
     const result = gradePost(task, {
       debit: [{ account: "bank_deposit", amount: 60000 }],
       credit: [{ account: "accounts_payable", amount: 60000 }],
@@ -70,10 +70,10 @@ describe("月末、代金が振り込まれる(ステップ 4)", () => {
   });
 });
 
-describe("問屋に代金を払う(ステップ 5)", () => {
+describe("問屋に代金を払う(ステップ5)", () => {
   const task = postTask(4);
 
-  it("左に売掛金と書くと receivable_payable_confused で買掛金を示す", () => {
+  it("左に売掛金と書くとreceivable_payable_confusedで買掛金を示す", () => {
     const result = gradePost(task, {
       debit: [{ account: "accounts_receivable", amount: 40000 }],
       credit: [{ account: "cash", amount: 40000 }],

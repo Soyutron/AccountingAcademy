@@ -5,10 +5,10 @@ import { gradePost } from "./grading";
 // Issue #29: 同じ科目を複数行に分けて記帳すると、合計が正解と同じでも汎用文の「もう一歩」に落ちていた
 describe("掛けで仕入れる(同じ科目を複数行に分ける)", () => {
   const step = unitMap.get("merchandise/credit-transactions")!.steps[1];
-  if (step.task.type !== "post") throw new Error("post ではない");
+  if (step.task.type !== "post") throw new Error("postではない");
   const task = step.task;
 
-  it("仕入 30,000 + 10,000 / 買掛金 40,000 は正解", () => {
+  it("仕入30,000 + 10,000 / 買掛金40,000は正解", () => {
     const result = gradePost(task, {
       debit: [
         { account: "purchases", amount: 30000 },

@@ -1,13 +1,13 @@
 import { expect, test } from "@playwright/test";
 
-// ヘッドレス Chromium は既定でスクロールバーを隠す。隠れていると右端は候補行に当たり、修正前でも通ってしまう
+// ヘッドレスChromiumは既定でスクロールバーを隠す。隠れていると右端は候補行に当たり、修正前でも通ってしまう
 test.use({ launchOptions: { ignoreDefaultArgs: ["--hide-scrollbars"] } });
 
 test("科目の候補一覧のスクロールバーを押しても一覧が閉じない", async ({ page }) => {
   await page.goto("/units/bookkeeping-basics/five-elements");
   await page.getByRole("button", { name: "次へ →" }).click();
   const work = page.getByRole("region", { name: "ワークスペース" });
-  const input = work.getByLabel("借方の科目 1");
+  const input = work.getByLabel("借方の科目1");
   await input.click();
   const list = page.getByRole("listbox", { name: "科目の候補" });
   await expect(list).toBeVisible();
@@ -23,7 +23,7 @@ test("科目の候補一覧のスクロールバーを押しても一覧が閉�
   await expect(list).toBeVisible();
   await expect(input).toBeFocused();
   await expect(input).toHaveAttribute("aria-expanded", "true");
-  // preventDefault してもネイティブのスクロールバー操作は効く
+  // preventDefaultしてもネイティブのスクロールバー操作は効く
   await expect.poll(() => container.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
   await page.mouse.up();
   await expect(list).toBeVisible();

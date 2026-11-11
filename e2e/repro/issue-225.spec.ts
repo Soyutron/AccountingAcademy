@@ -11,7 +11,7 @@ async function expandTerm(page: Page) {
   const dialog = page.getByRole("dialog", { name: "立替金・預り金" });
   await dialog.getByRole("button", { name: "もっと見る" }).tap();
   await expect(dialog.getByRole("link", { name: "用語集で見る" })).toBeAttached();
-  // 開閉のアニメーションと Radix の再配置が落ち着くのを待つ
+  // 開閉のアニメーションとRadixの再配置が落ち着くのを待つ
   await page.waitForTimeout(400);
   return dialog;
 }

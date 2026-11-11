@@ -6,8 +6,8 @@ body:
     id: unit
     attributes:
       label: 単元とステップ
-      description: 画面の URL か、単元名とステップ番号
-      placeholder: "/units/depreciation/straight-line ステップ 3"
+      description: 画面のURLか、単元名とステップ番号
+      placeholder: "/units/depreciation/straight-lineステップ3"
     validations:
       required: true
   - type: textarea

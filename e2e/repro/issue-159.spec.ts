@@ -1,16 +1,16 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// Issue #159: 空の科目欄を開いただけで先頭の「現金」が選択状態になり、Enter で選んでいない科目が入っていた。
-// 矢印キー・文字入力・ホバーで候補を指したときだけ Enter で確定する
+// Issue #159: 空の科目欄を開いただけで先頭の「現金」が選択状態になり、Enterで選んでいない科目が入っていた。
+// 矢印キー・文字入力・ホバーで候補を指したときだけEnterで確定する
 
 async function openFirstJournal(page: Page) {
   await page.goto("/units/bookkeeping-basics/five-elements");
   await page.getByRole("button", { name: "次へ →" }).click();
-  await expect(page.getByText("ステップ 2 / 10")).toBeVisible();
-  return page.getByRole("region", { name: "ワークスペース" }).getByLabel("借方の科目 1");
+  await expect(page.getByText("ステップ2 / 10")).toBeVisible();
+  return page.getByRole("region", { name: "ワークスペース" }).getByLabel("借方の科目1");
 }
 
-test("空の科目欄で Enter を押しても、選んでいない科目は入らない", async ({ page }) => {
+test("空の科目欄でEnterを押しても、選んでいない科目は入らない", async ({ page }) => {
   const account = await openFirstJournal(page);
   await account.click();
   await expect(account).toHaveAttribute("aria-expanded", "true");
@@ -19,7 +19,7 @@ test("空の科目欄で Enter を押しても、選んでいない科目は入�
   await expect(account).toHaveValue("");
 });
 
-test("文字を消して空に戻した欄で Enter を押しても、科目は入らない", async ({ page }) => {
+test("文字を消して空に戻した欄でEnterを押しても、科目は入らない", async ({ page }) => {
   const account = await openFirstJournal(page);
   await account.click();
   await account.pressSequentially("金");
@@ -30,21 +30,21 @@ test("文字を消して空に戻した欄で Enter を押しても、科目は�
   await expect(account).toHaveValue("");
 });
 
-test("入力済みの欄を開いただけで Enter を押しても、値は変わらず記帳もされない", async ({ page }) => {
+test("入力済みの欄を開いただけでEnterを押しても、値は変わらず記帳もされない", async ({ page }) => {
   const account = await openFirstJournal(page);
   const work = page.getByRole("region", { name: "ワークスペース" });
   await account.fill("金");
-  await work.getByLabel("借方の金額 1").fill("1000000");
-  await work.getByLabel("貸方の科目 1").fill("資本金");
-  await work.getByLabel("貸方の金額 1").fill("1000000");
+  await work.getByLabel("借方の金額1").fill("1000000");
+  await work.getByLabel("貸方の科目1").fill("資本金");
+  await work.getByLabel("貸方の金額1").fill("1000000");
   await account.click();
   await expect(account).toHaveAttribute("aria-expanded", "true");
   await account.press("Enter");
   await expect(account).toHaveValue("金");
 
-  // 正解の仕訳が入っていても、候補が開いている間の Enter では記帳しない
+  // 正解の仕訳が入っていても、候補が開いている間のEnterでは記帳しない
   await account.fill("現金");
-  await work.getByLabel("借方の金額 1").click();
+  await work.getByLabel("借方の金額1").click();
   await account.click();
   await expect(account).toHaveAttribute("aria-expanded", "true");
   await account.press("Enter");
@@ -53,7 +53,7 @@ test("入力済みの欄を開いただけで Enter を押しても、値は変�
   await expect(page.getByText("できました", { exact: true })).toHaveCount(0);
 });
 
-test("ArrowDown を 1 回押してから Enter を押すと先頭の候補が入る", async ({ page }) => {
+test("ArrowDownを1回押してからEnterを押すと先頭の候補が入る", async ({ page }) => {
   const account = await openFirstJournal(page);
   await account.click();
   await account.press("ArrowDown");
@@ -62,7 +62,7 @@ test("ArrowDown を 1 回押してから Enter を押すと先頭の候補が入
   await expect(account).toHaveValue("現金");
 });
 
-test("文字を入れて絞り込んだ後の Enter は先頭の候補を確定する", async ({ page }) => {
+test("文字を入れて絞り込んだ後のEnterは先頭の候補を確定する", async ({ page }) => {
   const account = await openFirstJournal(page);
   await account.click();
   await account.pressSequentially("金");
@@ -70,15 +70,15 @@ test("文字を入れて絞り込んだ後の Enter は先頭の候補を確定�
   await expect(account).toHaveValue("現金");
 });
 
-test("「自由に試す」で科目名を打ち切って Enter で記帳した後、空に戻った欄で Enter を押しても科目は入らない", async ({ page }) => {
+test("「自由に試す」で科目名を打ち切ってEnterで記帳した後、空に戻った欄でEnterを押しても科目は入らない", async ({ page }) => {
   await page.goto("/units/depreciation/straight-line");
   const work = page.getByRole("region", { name: "ワークスペース" });
   const next = page.getByRole("button", { name: "次へ →" });
   const fill = async (debit: [string, string], credit: [string, string]) => {
-    await work.getByLabel("借方の科目 1").fill(debit[0]);
-    await work.getByLabel("借方の金額 1").fill(debit[1]);
-    await work.getByLabel("貸方の科目 1").fill(credit[0]);
-    await work.getByLabel("貸方の金額 1").fill(credit[1]);
+    await work.getByLabel("借方の科目1").fill(debit[0]);
+    await work.getByLabel("借方の金額1").fill(debit[1]);
+    await work.getByLabel("貸方の科目1").fill(credit[0]);
+    await work.getByLabel("貸方の金額1").fill(credit[1]);
   };
   const slide = async (i: number, steps: number) => {
     const s = page.getByRole("slider").nth(i);
@@ -91,9 +91,9 @@ test("「自由に試す」で科目名を打ち切って Enter で記帳した�
   await work.getByRole("button", { name: "記帳する" }).click();
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   await next.click();
-  await slide(2, 5); // 耐用年数 6 年
+  await slide(2, 5); // 耐用年数6年
   await next.click();
-  await slide(1, 6); // 残存価額 300,000
+  await slide(1, 6); // 残存価額300,000
   await next.click();
   await work.getByPlaceholder("金額(円)").fill("100000");
   await work.getByRole("button", { name: "確認する" }).click();
@@ -108,12 +108,12 @@ test("「自由に試す」で科目名を打ち切って Enter で記帳した�
   await work.getByPlaceholder("金額(円)").fill("900000");
   await work.getByRole("button", { name: "確認する" }).click();
   await next.click();
-  await expect(page.getByText("ステップ 9 / 9")).toBeVisible();
+  await expect(page.getByText("ステップ9 / 9")).toBeVisible();
 
-  await work.getByLabel("借方の科目 1").fill("現金");
-  await work.getByLabel("借方の金額 1").fill("1000");
-  await work.getByLabel("貸方の金額 1").fill("1000");
-  const credit = work.getByLabel("貸方の科目 1");
+  await work.getByLabel("借方の科目1").fill("現金");
+  await work.getByLabel("借方の金額1").fill("1000");
+  await work.getByLabel("貸方の金額1").fill("1000");
+  const credit = work.getByLabel("貸方の科目1");
   await credit.pressSequentially("資本金");
   await credit.press("Enter");
   await expect(work.getByText("自由に記帳")).toHaveCount(1);

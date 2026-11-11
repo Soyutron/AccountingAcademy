@@ -7,7 +7,7 @@ import { motion, useReducedMotion } from "motion/react";
 import { type AccountInfo, type Element, ELEMENTS } from "@/lib/accounting";
 import { ELEMENT_STYLE } from "@/lib/elements";
 
-// 仕分けボード: 科目を 5 つの箱に入れる。正本の経路はクリックとキーボードで、ドラッグはその上乗せ
+// 仕分けボード: 科目を5つの箱に入れる。正本の経路はクリックとキーボードで、ドラッグはその上乗せ
 
 interface Props {
   accounts: AccountInfo[];
@@ -19,7 +19,7 @@ interface Props {
 
 const POOL_ID = "pool";
 const CHIP_CLASS = "rounded-full border px-3 min-h-10 text-sm select-none touch-manipulation";
-// 読み上げは「入れました」の 1 文に揃える。dnd-kit の既定は英語で、持ち上げるたびに喋る
+// 読み上げは「入れました」の1文に揃える。dnd-kitの既定は英語で、持ち上げるたびに喋る
 const NO_ANNOUNCEMENTS = { announcements: { onDragStart: () => undefined, onDragOver: () => undefined, onDragEnd: () => undefined, onDragCancel: () => undefined } };
 
 interface ChipProps {
@@ -32,7 +32,7 @@ interface ChipProps {
 }
 
 function Chip({ account, selected, wrong, pressed, disabled, onPress }: ChipProps) {
-  // attributes は渡さない。キーボード操作はボタンのままで、role や tabindex を上書きされたくない
+  // attributesは渡さない。キーボード操作はボタンのままで、roleやtabindexを上書きされたくない
   const { listeners, setNodeRef, isDragging } = useDraggable({ id: account.id, disabled });
   const reduced = useReducedMotion();
   return (
@@ -67,7 +67,7 @@ function Pool({ children }: { children: ReactNode }) {
 function Bin({ element, onPress, children }: { element: Element; onPress?: () => void; children: ReactNode }) {
   const { setNodeRef, isOver } = useDroppable({ id: element });
   const style = ELEMENT_STYLE[element];
-  // 余白を押す経路はポインタ専用で、キーボードと読み上げは見出しの button を使う。button の中のクリックはそれぞれの button が処理する
+  // 余白を押す経路はポインタ専用で、キーボードと読み上げは見出しのbuttonを使う。buttonの中のクリックはそれぞれのbuttonが処理する
   const onClick = onPress && ((e: MouseEvent) => {
     if (!(e.target as HTMLElement).closest("button")) onPress();
   });
@@ -105,11 +105,11 @@ export function ClassifyBoard({ accounts, placed, onChange, wrong, disabled }: P
       move(selected, el);
       setSelected(null);
     });
-    // focus() はプールまでスクロールするので、タップでは移さない(ページが跳ねる。Issue #223)
+    // focus()はプールまでスクロールするので、タップでは移さない(ページが跳ねる。Issue #223)
     if (byKeyboard) poolChips.current?.querySelector<HTMLElement>("[data-chip]")?.focus();
   };
   const unplace = (id: string) => {
-    // 箱の中の chip は消え、プールには別の DOM ノードとして描かれるので、描画後に移す(Issue #85)
+    // 箱の中のchipは消え、プールには別のDOMノードとして描かれるので、描画後に移す(Issue #85)
     flushSync(() => {
       move(id, null);
       setSelected(id);

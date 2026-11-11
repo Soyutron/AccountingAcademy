@@ -4,17 +4,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const KEY = "tutorial-state";
 const stored = () => JSON.parse(localStorage.getItem(KEY) ?? "null");
 
-// cache はモジュール変数なので、テストごとに読み込み直して「タブを開いた直後」にする
+// cacheはモジュール変数なので、テストごとに読み込み直して「タブを開いた直後」にする
 async function openTab() {
   vi.resetModules();
   return import("./tutorial-store");
 }
 
-describe("別タブが変えた tutorial-state", () => {
+describe("別タブが変えたtutorial-state", () => {
   beforeEach(() => localStorage.clear());
   afterEach(() => vi.restoreAllMocks());
 
-  it("storage イベントが届く前の更新でも、別タブの enabled: false を潰さない", async () => {
+  it("storageイベントが届く前の更新でも、別タブのenabled: falseを潰さない", async () => {
     const { updateTutorial, useTutorialState } = await openTab();
     const { unmount } = renderHook(() => useTutorialState());
 
@@ -25,7 +25,7 @@ describe("別タブが変えた tutorial-state", () => {
     unmount();
   });
 
-  it("storage イベントで画面の状態が最新になる", async () => {
+  it("storageイベントで画面の状態が最新になる", async () => {
     const { useTutorialState } = await openTab();
     const { result, unmount } = renderHook(() => useTutorialState());
     expect(result.current.status).toBe("pending");
@@ -39,7 +39,7 @@ describe("別タブが変えた tutorial-state", () => {
     unmount();
   });
 
-  it("別タブの localStorage.clear()(key が null)でも読み直す", async () => {
+  it("別タブのlocalStorage.clear()(keyがnull)でも読み直す", async () => {
     localStorage.setItem(KEY, JSON.stringify({ status: "done", enabled: true }));
     const { useTutorialState } = await openTab();
     const { result, unmount } = renderHook(() => useTutorialState());

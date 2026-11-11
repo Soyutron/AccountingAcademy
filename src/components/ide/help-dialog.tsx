@@ -31,7 +31,7 @@ export function HelpDialog({ open, onOpenChange, focusTopic, returnToRef, ctx, s
   // 「チュートリアルを最初から」で閉じるときは、フォーカスをトリガーに戻さずツアーの吹き出しに任せる(Issue #51)
   const toTour = useRef(false);
 
-  // 開いたあとに話題へ移す。Dialog の初期フォーカスより後に動かす必要があるので、次のフレームで行う
+  // 開いたあとに話題へ移す。Dialogの初期フォーカスより後に動かす必要があるので、次のフレームで行う
   useEffect(() => {
     if (!open || !focusTopic) return;
     const id = requestAnimationFrame(() => {
@@ -56,7 +56,7 @@ export function HelpDialog({ open, onOpenChange, focusTopic, returnToRef, ctx, s
           if (toTour.current) {
             e.preventDefault();
           } else if (returnToRef.current?.getClientRects().length) {
-            // 「場所を示す」でスマホのペインが切り替わると戻り先は隠れて focus できないので、そのときはトリガーに任せる
+            // 「場所を示す」でスマホのペインが切り替わると戻り先は隠れてfocusできないので、そのときはトリガーに任せる
             e.preventDefault();
             returnToRef.current.focus();
           }
@@ -66,11 +66,11 @@ export function HelpDialog({ open, onOpenChange, focusTopic, returnToRef, ctx, s
         }}
       >
         <DialogHeader>
-          <DialogTitle>会計 IDE の使い方</DialogTitle>
+          <DialogTitle>会計IDEの使い方</DialogTitle>
           <DialogDescription>困ったときに、必要なところだけ開いて読めます。</DialogDescription>
         </DialogHeader>
 
-        {/* × は DialogContent に absolute で置かれるので、一緒に流れないよう本文だけをスクロールさせる */}
+        {/* × はDialogContentにabsoluteで置かれるので、一緒に流れないよう本文だけをスクロールさせる */}
         <div className="-mx-4 -mb-4 space-y-4 overflow-y-auto px-4 pb-4">
           {current.length > 0 && (
             <section aria-labelledby="help-current" className="space-y-2">
@@ -89,12 +89,12 @@ export function HelpDialog({ open, onOpenChange, focusTopic, returnToRef, ctx, s
             {HELP_CATEGORIES.map((cat) => {
               const topics = HELP_TOPICS.filter((t) => t.category === cat.id);
               return (
-                // key に focusCategory を含め、「?」から開き直したときに open 属性を初期値から効かせる
+                // keyにfocusCategoryを含め、「?」から開き直したときにopen属性を初期値から効かせる
                 <details key={`${cat.id}-${focusCategory === cat.id}`} open={focusCategory === cat.id} className="group rounded-md border">
                   <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 px-3 text-sm marker:hidden [&::-webkit-details-marker]:hidden">
                     <span className="font-medium">{cat.label}</span>
                     <span className="text-xs text-muted-foreground">
-                      {topics.length} 項目 <span aria-hidden className="inline-block transition-transform group-open:rotate-90">▸</span>
+                      {topics.length}項目 <span aria-hidden className="inline-block transition-transform group-open:rotate-90">▸</span>
                     </span>
                   </summary>
                   <div className="border-t px-3 py-2">

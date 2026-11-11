@@ -13,7 +13,7 @@ test("ふりかえりが現金過不足を使う条件と決算日の直接処�
   expect(review).toContain("雑益");
 });
 
-test("雑損と書いたときの feedback が期中の話だと分かる", () => {
+test("雑損と書いたときのfeedbackが期中の話だと分かる", () => {
   const pattern = unit().steps[1].task.wrong_patterns.find(
     (p: { misconception?: string; match: { debit?: { account: string }[] } }) =>
       p.misconception === "shortage_is_loss" && p.match.debit?.[0].account === "miscellaneous_loss",
@@ -21,7 +21,7 @@ test("雑損と書いたときの feedback が期中の話だと分かる", () =
   expect(pattern.feedback).toContain("期中");
 });
 
-test("誤解 shortage_is_loss の正しい考え方が期中の話だと分かる", () => {
+test("誤解shortage_is_lossの正しい考え方が期中の話だと分かる", () => {
   const { misconceptions } = JSON.parse(readFileSync(".velite/misconceptions.json", "utf8"));
   const misconception = misconceptions.find((m: { id: string }) => m.id === "shortage_is_loss");
   expect(misconception.correct).toContain("期中");

@@ -4,10 +4,10 @@ import { type Locator, type Page, expect, test } from "@playwright/test";
 const UNIT = "/units/bookkeeping-basics/five-elements";
 
 const post = async (page: Page, debit: string, credit: string, amount: string) => {
-  await page.getByLabel("借方の科目 1").fill(debit);
-  await page.getByLabel("借方の金額 1").fill(amount);
-  await page.getByLabel("貸方の科目 1").fill(credit);
-  await page.getByLabel("貸方の金額 1").fill(amount);
+  await page.getByLabel("借方の科目1").fill(debit);
+  await page.getByLabel("借方の金額1").fill(amount);
+  await page.getByLabel("貸方の科目1").fill(credit);
+  await page.getByLabel("貸方の金額1").fill(amount);
   await page.getByRole("button", { name: "記帳する" }).click();
   await expect(page.getByRole("status").getByText("できました", { exact: true })).toBeVisible();
 };
@@ -46,7 +46,7 @@ async function openBoard(page: Page, mobile = false) {
 const drop = (board: Locator, id: string) => board.locator(`[data-drop="${id}"]`);
 const chipOf = (scope: Locator, name: string) => scope.getByRole("button", { name: new RegExp(`^${name}`) });
 
-// 箱の下端から offset px 上の、見出しにもチップにも当たらない位置
+// 箱の下端からoffset px上の、見出しにもチップにも当たらない位置
 async function lowerPoint(target: Locator, offset: number) {
   await target.scrollIntoViewIfNeeded();
   const box = (await target.boundingBox())!;
@@ -59,7 +59,7 @@ const expectPlaced = async (page: Page, board: Locator) => {
   await expect(page.getByRole("status").getByText("備品を資産に入れました", { exact: true })).toBeAttached();
 };
 
-test("PC 幅のクリックでも、箱の見出しより下を押すと選んだ科目が入る", async ({ page }) => {
+test("PC幅のクリックでも、箱の見出しより下を押すと選んだ科目が入る", async ({ page }) => {
   const board = await openBoard(page);
   await chipOf(board, "備品").click();
   const point = await lowerPoint(drop(board, "asset"), 8);

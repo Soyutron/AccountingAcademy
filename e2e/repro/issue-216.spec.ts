@@ -1,14 +1,14 @@
 import { expect, test } from "@playwright/test";
 
-// 返品と運賃のステップ 2〜4 で、運賃と返品の扱いを取り違えた誤答に汎用文だけが出ていた
+// 返品と運賃のステップ2〜4で、運賃と返品の扱いを取り違えた誤答に汎用文だけが出ていた
 test("運賃と返品の取り違えに、汎用文ではなく説明を返す", async ({ page }) => {
   const work = page.getByRole("region", { name: "ワークスペース" });
   const next = page.getByRole("button", { name: "次へ →" });
   const post = work.getByRole("button", { name: "記帳する" });
   const status = page.getByRole("status").filter({ hasText: "もう一歩" });
   const line = async (side: "借方" | "貸方", n: number, account: string, amount: string) => {
-    await work.getByLabel(`${side}の科目 ${n}`).fill(account);
-    await work.getByLabel(`${side}の金額 ${n}`).fill(amount);
+    await work.getByLabel(`${side}の科目${n}`).fill(account);
+    await work.getByLabel(`${side}の金額${n}`).fill(amount);
   };
   const wrong = async (word: string) => {
     await post.click();
@@ -33,7 +33,7 @@ test("運賃と返品の取り違えに、汎用文ではなく説明を返す",
   await post.click();
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   await next.click();
-  await expect(page.getByText("ステップ 4 / 8")).toBeVisible();
+  await expect(page.getByText("ステップ4 / 8")).toBeVisible();
   await line("借方", 1, "売掛金", "31500");
   await line("貸方", 1, "売上", "31500");
   await wrong("運賃");

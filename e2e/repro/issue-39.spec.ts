@@ -1,6 +1,6 @@
 import { devices, expect, test } from "@playwright/test";
 
-// Issue #39: タップ直後の互換マウスイベント mouseleave がホバー用の閉じるタイマーを仕掛け、ポップオーバーが約 0.25 秒で閉じていた
+// Issue #39: タップ直後の互換マウスイベントmouseleaveがホバー用の閉じるタイマーを仕掛け、ポップオーバーが約0.25秒で閉じていた
 const { defaultBrowserType: _, ...iPhone } = devices["iPhone 13"];
 test.use(iPhone);
 

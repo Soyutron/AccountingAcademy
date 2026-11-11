@@ -37,7 +37,7 @@ export const ELEMENT_LABELS: Record<Element, string> = {
   expense: "費用",
 };
 
-// why は「なぜその要素か」の答えなので、問いが読めるように見出しを付けて用語の説明にする
+// whyは「なぜその要素か」の答えなので、問いが読めるように見出しを付けて用語の説明にする
 export function accountSummary(account: Pick<AccountInfo, "element" | "why">): string {
   return `${ELEMENT_LABELS[account.element]}に分類する理由: ${account.why}`;
 }
@@ -60,7 +60,7 @@ export function accountIncreaseSide(account: Pick<AccountInfo, "element" | "cont
 }
 
 /**
- * 1 行の仕訳が、その科目の属する要素をいくら増減させるか。
+ * 1行の仕訳が、その科目の属する要素をいくら増減させるか。
  * 評価勘定(減価償却累計額など)は「科目自体」は貸方で増えるが、「要素(資産)」は減るので、要素への影響は通常の科目と同じ式になる
  */
 export function lineEffect(account: AccountInfo, side: Side, amount: number): number {
@@ -81,7 +81,7 @@ export interface Impact {
   balanced: boolean;
 }
 
-/** 仕訳が 5 要素と当期純利益に与える影響。未知の科目の行は無視する */
+/** 仕訳が5要素と当期純利益に与える影響。未知の科目の行は無視する */
 export function computeImpact(entry: JournalEntry, accounts: ReadonlyMap<string, AccountInfo>): Impact {
   const impact = { asset: 0, liability: 0, equity: 0, revenue: 0, expense: 0 };
   const apply = (lines: JournalLine[], side: Side) => {

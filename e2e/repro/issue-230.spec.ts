@@ -1,6 +1,6 @@
 import { type Page, expect, test } from "@playwright/test";
 
-// 減価償却の 2 単元で、相手科目を取り違えた誤答に汎用文だけが出ていた
+// 減価償却の2単元で、相手科目を取り違えた誤答に汎用文だけが出ていた
 const parts = (page: Page) => ({
   work: page.getByRole("region", { name: "ワークスペース" }),
   status: page.getByRole("status"),
@@ -9,10 +9,10 @@ const parts = (page: Page) => ({
 
 async function post(page: Page, debit: string, credit: string, amount: string) {
   const { work } = parts(page);
-  await work.getByLabel("借方の科目 1").fill(debit);
-  await work.getByLabel("借方の金額 1").fill(amount);
-  await work.getByLabel("貸方の科目 1").fill(credit);
-  await work.getByLabel("貸方の金額 1").fill(amount);
+  await work.getByLabel("借方の科目1").fill(debit);
+  await work.getByLabel("借方の金額1").fill(amount);
+  await work.getByLabel("貸方の科目1").fill(credit);
+  await work.getByLabel("貸方の金額1").fill(amount);
   await work.getByRole("button", { name: "記帳する" }).click();
 }
 
@@ -38,7 +38,7 @@ async function expectSpecific(page: Page, word: string) {
   await expect(status).not.toContainText("まだ合っていません");
 }
 
-test("減価償却とは何か ステップ 5 の自然な誤答に、汎用文でない説明を返す", async ({ page }) => {
+test("減価償却とは何か ステップ5の自然な誤答に、汎用文でない説明を返す", async ({ page }) => {
   const { next } = parts(page);
   await page.goto("/units/depreciation/what-is-depreciation");
   await next.click();
@@ -53,7 +53,7 @@ test("減価償却とは何か ステップ 5 の自然な誤答に、汎用文�
   }
 });
 
-test("定額法 ステップ 7 の自然な誤答に、汎用文でない説明を返す", async ({ page }) => {
+test("定額法 ステップ7の自然な誤答に、汎用文でない説明を返す", async ({ page }) => {
   const { next, work, status } = parts(page);
   await page.goto("/units/depreciation/straight-line");
   await next.click();

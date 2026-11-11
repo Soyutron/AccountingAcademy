@@ -5,10 +5,10 @@ function ide(page: Page) {
   const status = page.getByRole("status");
   const next = page.getByRole("button", { name: "次へ →" });
   const post = async (debit: string, credit: string, amount: string) => {
-    await work.getByLabel("借方の科目 1").fill(debit);
-    await work.getByLabel("借方の金額 1").fill(amount);
-    await work.getByLabel("貸方の科目 1").fill(credit);
-    await work.getByLabel("貸方の金額 1").fill(amount);
+    await work.getByLabel("借方の科目1").fill(debit);
+    await work.getByLabel("借方の金額1").fill(amount);
+    await work.getByLabel("貸方の科目1").fill(credit);
+    await work.getByLabel("貸方の金額1").fill(amount);
     await work.getByRole("button", { name: "記帳する" }).click();
   };
   const passed = () => expect(status.getByText("できました", { exact: true })).toBeVisible();
@@ -70,6 +70,6 @@ test("最初の単元・三分法・現金過不足の自然な誤答に、汎�
   await next.click();
   await calc("1000");
   await next.click();
-  await specific("通信費", "現金過不足", "1000", "原因が分かった 2,000 円");
+  await specific("通信費", "現金過不足", "1000", "原因が分かった2,000円");
   await specific("雑損", "普通預金", "1000", "帳簿の中");
 });

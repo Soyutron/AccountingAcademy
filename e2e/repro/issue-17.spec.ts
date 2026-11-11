@@ -1,13 +1,13 @@
 import { expect, test } from "@playwright/test";
 
 // Issue #17: 仕訳帳の科目候補が <datalist> で、科目名と要素の分類が同じ見た目で並んでいた。
-// 自前のコンボボックスで 5 要素ごとにまとめ、キーボードとクリックの両方で選べるようにする
+// 自前のコンボボックスで5要素ごとにまとめ、キーボードとクリックの両方で選べるようにする
 
 test("科目の候補が要素ごとにまとまり、キーボードで選べる", async ({ page }) => {
   await page.goto("/units/bookkeeping-basics/five-elements");
   await page.getByRole("button", { name: "次へ →" }).click();
   const work = page.getByRole("region", { name: "ワークスペース" });
-  const input = work.getByLabel("借方の科目 1");
+  const input = work.getByLabel("借方の科目1");
   await input.pressSequentially("金");
 
   const list = page.getByRole("listbox", { name: "科目の候補" });
@@ -20,10 +20,10 @@ test("科目の候補が要素ごとにまとまり、キーボードで選べ�
   await input.press("Enter");
   await expect(input).toHaveValue("小口現金");
   await expect(list).toBeHidden();
-  // Enter で候補を選んでもフォームは送信されない
+  // Enterで候補を選んでもフォームは送信されない
   await expect(page.getByText("できました", { exact: true })).toBeHidden();
 
-  // Esc で閉じる
+  // Escで閉じる
   await input.fill("現金");
   await expect(list).toBeVisible();
   await input.press("Escape");
@@ -35,7 +35,7 @@ test("クリックで候補を選ぶと行が要素の色になる", async ({ pa
   await page.goto("/units/bookkeeping-basics/five-elements");
   await page.getByRole("button", { name: "次へ →" }).click();
   const work = page.getByRole("region", { name: "ワークスペース" });
-  const input = work.getByLabel("貸方の科目 1");
+  const input = work.getByLabel("貸方の科目1");
   await input.click();
   const list = page.getByRole("listbox", { name: "科目の候補" });
   await list.getByRole("option", { name: /^買掛金/ }).click();

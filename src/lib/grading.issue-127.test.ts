@@ -7,15 +7,15 @@ const GENERIC = "結果の表で何が動くはずか";
 
 function postTask(step: number) {
   const task = unitMap.get("bookkeeping-basics/five-elements")!.steps[step].task;
-  if (task?.type !== "post") throw new Error("post ではない");
+  if (task?.type !== "post") throw new Error("postではない");
   return task;
 }
 
-describe("5 つの要素と仕訳 ステップ 2(元手をお店に入れる)", () => {
+describe("5つの要素と仕訳 ステップ2(元手をお店に入れる)", () => {
   const task = postTask(1);
   const cash = { account: "cash", amount: 1000000 };
 
-  it("元手を借入金と書くと capital_loan_confused と専用の説明を返す", () => {
+  it("元手を借入金と書くとcapital_loan_confusedと専用の説明を返す", () => {
     const result = gradePost(task, { debit: [cash], credit: [{ account: "loans_payable", amount: 1000000 }] });
     expect(result.correct).toBe(false);
     expect(result.misconception).toBe("capital_loan_confused");
@@ -32,7 +32,7 @@ describe("5 つの要素と仕訳 ステップ 2(元手をお店に入れる)", 
     }
   });
 
-  it("既存の 3 パターンの結果は変わらない", () => {
+  it("既存の3パターンの結果は変わらない", () => {
     expect(gradePost(task, { debit: [{ account: "capital_stock", amount: 1000000 }], credit: [cash] }).misconception).toBe("debit_means_increase");
     expect(gradePost(task, { debit: [cash], credit: [{ account: "sales", amount: 1000000 }] }).misconception).toBe("revenue_equals_cash_in");
     const unbalanced = gradePost(task, { debit: [cash], credit: [{ account: "capital_stock", amount: 900000 }] });
@@ -45,7 +45,7 @@ describe("5 つの要素と仕訳 ステップ 2(元手をお店に入れる)", 
   });
 });
 
-describe("5 つの要素と仕訳 ステップ 4(銀行からお金を借りる)", () => {
+describe("5つの要素と仕訳 ステップ4(銀行からお金を借りる)", () => {
   it("借入を資本金と書く逆向きの混同にも同じ誤解を返す", () => {
     const task = postTask(3);
     const result = gradePost(task, {

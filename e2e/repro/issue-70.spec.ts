@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
-// 3 ペインの狭いガイドでも、流れ図のノードが語の途中で折れない
+// 3ペインの狭いガイドでも、流れ図のノードが語の途中で折れない
 
 function flowFigure(page: Page) {
   return page.getByRole("region", { name: "ガイド" }).locator("figure").first();
@@ -23,7 +23,7 @@ async function expectNodesOnSingleLine(figure: Locator) {
 test.describe("1280px", () => {
   test.use({ viewport: { width: 1280, height: 800 } });
 
-  test("ガイドが狭いので縦に並び、ノードが 1 行に収まる", async ({ page }) => {
+  test("ガイドが狭いので縦に並び、ノードが1行に収まる", async ({ page }) => {
     await page.goto("/units/bookkeeping-basics/five-elements");
     const figure = flowFigure(page);
     await expectNodesOnSingleLine(figure);
@@ -42,7 +42,7 @@ test.describe("1440px", () => {
     await expect(figure.getByText("→").first()).toBeVisible();
   });
 
-  test("1 行に収まらない 4 ノードの図は、ノードの区切りで折り返してはみ出さない", async ({ page }) => {
+  test("1行に収まらない4ノードの図は、ノードの区切りで折り返してはみ出さない", async ({ page }) => {
     await page.goto("/units/cash-and-deposits/cash-over-and-short");
     const figure = flowFigure(page);
     await expect(figure.getByText("原因を探す", { exact: true })).toBeVisible();

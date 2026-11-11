@@ -10,14 +10,14 @@ import { ElementBadge } from "@/components/element-badge";
 import { AccountCombobox } from "@/components/account-combobox";
 import { HelpIcon } from "@/components/ide/help-icon";
 
-// 仕訳エディタ。入力に応じて 5 要素の増減と当期純利益への影響をその場で表示する(要件 4.1)
+// 仕訳エディタ。入力に応じて5要素の増減と当期純利益への影響をその場で表示する(要件4.1)
 
 interface Props {
   accounts: AccountInfo[];
   value: EditableEntry;
   onChange?: (value: EditableEntry) => void;
   readOnly?: boolean;
-  // predict では予想を送るまで 5 要素の増減を見せない(答えが見えてしまう。Issue #11)
+  // predictでは予想を送るまで5要素の増減を見せない(答えが見えてしまう。Issue #11)
   showImpact?: boolean;
 }
 
@@ -25,7 +25,7 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
   const idPrefix = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const focusLine = useRef<string | null>(null);
-  // IME の変換中は読みの途中なので「科目がない」と言わない(Issue #79)
+  // IMEの変換中は読みの途中なので「科目がない」と言わない(Issue #79)
   const [composingLine, setComposingLine] = useState<string | null>(null);
   const accountMap = useMemo(() => new Map(accounts.map((a) => [a.id, a])), [accounts]);
   const entry = useMemo(() => toJournalEntry(value, accounts), [value, accounts]);
@@ -39,8 +39,8 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
     focusLine.current = `${side}-${value[side].length}`;
     onChange?.({ ...value, [side]: [...value[side], { accountName: "", amount: "" }] });
   };
-  // 新しい行は「行を追加」より前に描画され、Tab では届かない(Issue #68)
-  // 解説ペインの読み取り専用エディタも同じ data-journal-line を持つので、自分の中だけを探す
+  // 新しい行は「行を追加」より前に描画され、Tabでは届かない(Issue #68)
+  // 解説ペインの読み取り専用エディタも同じdata-journal-lineを持つので、自分の中だけを探す
   useEffect(() => {
     const line = focusLine.current;
     if (!line) return;
@@ -76,11 +76,11 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
             <div key={i} data-journal-line={`${side}-${i}`} className={`rounded-md border p-1.5 transition-colors ${style ? `${style.border} ${style.bg}` : "bg-background"}`}>
               <div className="flex gap-1 items-center">
                 {readOnly ? (
-                  <Input aria-label={`${label}の科目 ${i + 1}`} placeholder="科目" value={line.accountName} readOnly className="min-w-24 flex-[6] @lg:flex-[3] px-1.5 bg-background" />
+                  <Input aria-label={`${label}の科目${i + 1}`} placeholder="科目" value={line.accountName} readOnly className="min-w-24 flex-[6] @lg:flex-[3] px-1.5 bg-background" />
                 ) : (
                   <AccountCombobox
                     accounts={accounts}
-                    aria-label={`${label}の科目 ${i + 1}`}
+                    aria-label={`${label}の科目${i + 1}`}
                     placeholder="科目"
                     value={line.accountName}
                     onChange={(accountName) => update(side, i, { accountName })}
@@ -91,7 +91,7 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
                 <Input
                   inputMode="numeric"
                   data-amount-field={`${side}-${i}`}
-                  aria-label={`${label}の金額 ${i + 1}`}
+                  aria-label={`${label}の金額${i + 1}`}
                   placeholder="金額"
                   value={line.amount}
                   readOnly={readOnly}
@@ -102,7 +102,7 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
                     const p = parseAmount(e.target.value);
                     if ("value" in p) update(side, i, { amount: formatAmount(p.value) });
                   }}
-                  // 借方・貸方が縦積みの幅では 390px でも 1,000,000,000 と 7 文字の科目名の両方が入る比にする。横並びは 1 行が狭く、科目名を優先する(Issue #116)
+                  // 借方・貸方が縦積みの幅では390pxでも1,000,000,000と7文字の科目名の両方が入る比にする。横並びは1行が狭く、科目名を優先する(Issue #116)
                   className="min-w-24 flex-[7] @lg:flex-[2] px-1.5 text-right bg-background font-mono tabular-nums"
                 />
                 {!readOnly && (
@@ -149,7 +149,7 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
   );
 
   return (
-    // 借方・貸方の並べ方は画面幅ではなくカード自身の幅で決める(3 ペインでは画面が広くてもカードが狭い。Issue #33)
+    // 借方・貸方の並べ方は画面幅ではなくカード自身の幅で決める(3ペインでは画面が広くてもカードが狭い。Issue #33)
     <div ref={rootRef} className="@container rounded-lg border bg-card p-3 space-y-3 not-prose">
       <div className="flex flex-col @lg:flex-row gap-3">
         {renderSide("debit", "借方")}
@@ -181,7 +181,7 @@ function ImpactPanel({ impact }: { impact: ReturnType<typeof computeImpact> }) {
         <HelpIcon topic="impact" />
       </div>
       <div className="mt-1 text-xs text-muted-foreground">
-        借方合計 {formatAmount(impact.debitTotal)} / 貸方合計 {formatAmount(impact.creditTotal)}
+        借方合計{formatAmount(impact.debitTotal)} / 貸方合計{formatAmount(impact.creditTotal)}
         {impact.debitTotal + impact.creditTotal > 0 && (
           <span className={impact.balanced ? " text-ok-fg" : " text-error-fg"}>{impact.balanced ? " 一致" : " 不一致"}</span>
         )}

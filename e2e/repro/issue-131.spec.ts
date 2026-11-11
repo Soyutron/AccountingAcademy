@@ -1,6 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 
-// IME の長音符や △ から始まる負数を calc で読み、読めない書き方には負号の付け方を案内する(Issue #131)
+// IMEの長音符や △ から始まる負数をcalcで読み、読めない書き方には負号の付け方を案内する(Issue #131)
 async function openNegativeCalc(page: Page) {
   const work = page.getByRole("region", { name: "ワークスペース" });
   await page.goto("/units/depreciation/what-is-depreciation");
@@ -14,7 +14,7 @@ async function openNegativeCalc(page: Page) {
   return { calc: work.getByPlaceholder("金額(円)"), confirm: work.getByRole("button", { name: "確認する" }), work };
 }
 
-test("calc で IME の長音符から始まる負数を読み、読めない書き方には負号の付け方を案内する", async ({ page }) => {
+test("calcでIMEの長音符から始まる負数を読み、読めない書き方には負号の付け方を案内する", async ({ page }) => {
   const { calc, confirm, work } = await openNegativeCalc(page);
   await calc.fill("(260000)");
   await confirm.click();
@@ -25,7 +25,7 @@ test("calc で IME の長音符から始まる負数を読み、読めない書�
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
 });
 
-test("calc で結果ペインと同じ △ の書き方でも正解になる", async ({ page }) => {
+test("calcで結果ペインと同じ △ の書き方でも正解になる", async ({ page }) => {
   const { calc, confirm } = await openNegativeCalc(page);
   await calc.fill("△260,000");
   await confirm.click();

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// Issue #165: 「今はしない」やスキップの後は status が pending に戻らず、「使い方」のチェックを付け直しても案内が出なかった
+// Issue #165: 「今はしない」やスキップの後はstatusがpendingに戻らず、「使い方」のチェックを付け直しても案内が出なかった
 
 const firstUnit = "/units/bookkeeping-basics/five-elements";
 const otherUnit = "/units/merchandise/three-account-method";
@@ -40,7 +40,7 @@ test("「今はしない」を押すと「使い方」のチェックが外れ�
   await expect(bannerOf(page)).toBeVisible();
 });
 
-test("付け直して戻った案内の「はじめる」でツアーが始まり、スキップ後の reload では始まり直さない", async ({ page }) => {
+test("付け直して戻った案内の「はじめる」でツアーが始まり、スキップ後のreloadでは始まり直さない", async ({ page }) => {
   await declineFromBanner(page);
   await openHelp(page);
   await settingOf(page).check();

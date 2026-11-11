@@ -16,7 +16,7 @@ async function expectNotCovered(page: Page, target: Locator) {
   expect(covered).toBe(false);
 }
 
-test("390px の仕分けボードで誤答しても、間違えた科目がパネルに隠れない(classify)", async ({ page }) => {
+test("390pxの仕分けボードで誤答しても、間違えた科目がパネルに隠れない(classify)", async ({ page }) => {
   const work = page.getByRole("region", { name: "ワークスペース" });
   const next = page.getByRole("button", { name: "次へ →" });
   const done = () => expect(page.getByText("できました", { exact: true })).toBeVisible();
@@ -26,10 +26,10 @@ test("390px の仕分けボードで誤答しても、間違えた科目がパ�
   };
   const post = async (debit: string, credit: string, amount: string) => {
     await toWork();
-    await work.getByLabel("借方の科目 1").fill(debit);
-    await work.getByLabel("借方の金額 1").fill(amount);
-    await work.getByLabel("貸方の科目 1").fill(credit);
-    await work.getByLabel("貸方の金額 1").fill(amount);
+    await work.getByLabel("借方の科目1").fill(debit);
+    await work.getByLabel("借方の金額1").fill(amount);
+    await work.getByLabel("貸方の科目1").fill(credit);
+    await work.getByLabel("貸方の金額1").fill(amount);
     await work.getByRole("button", { name: "記帳する" }).click();
     await done();
   };
@@ -62,19 +62,19 @@ test("390px の仕分けボードで誤答しても、間違えた科目がパ�
   await expectNotCovered(page, board.getByRole("button", { name: /間違い/ }));
 });
 
-test("390px で仕訳を誤答しても、「記帳する」がパネルに隠れない(post)", async ({ page }) => {
+test("390pxで仕訳を誤答しても、「記帳する」がパネルに隠れない(post)", async ({ page }) => {
   await page.goto("/units/merchandise/credit-transactions");
   await page.getByRole("button", { name: "今はしない" }).click({ timeout: 15000 });
   await page.getByRole("button", { name: "次へ →" }).click();
   await page.locator("#tab-work").click();
   const work = page.getByRole("region", { name: "ワークスペース" });
   // 左右を入れ替えた誤答は、思い込みの説明まで出てパネルが長くなる
-  await work.getByLabel("借方の科目 1").fill("買掛金");
+  await work.getByLabel("借方の科目1").fill("買掛金");
   await page.keyboard.press("Escape");
-  await work.getByLabel("借方の金額 1").fill("40000");
-  await work.getByLabel("貸方の科目 1").fill("仕入");
+  await work.getByLabel("借方の金額1").fill("40000");
+  await work.getByLabel("貸方の科目1").fill("仕入");
   await page.keyboard.press("Escape");
-  await work.getByLabel("貸方の金額 1").fill("40000");
+  await work.getByLabel("貸方の金額1").fill("40000");
   const postButton = work.getByRole("button", { name: "記帳する" });
   await postButton.click();
   await expectNotCovered(page, postButton);

@@ -1,6 +1,6 @@
 import { type Task, canRevealAnswer } from "@/lib/grading";
 
-// ヘルプの話題の正本。「?」のポップオーバー・「使い方」はこの表から文言を引く(docs/help-design.md 4 章)
+// ヘルプの話題の正本。「?」のポップオーバー・「使い方」はこの表から文言を引く(docs/help-design.md 4章)
 
 export type HelpCategory = "guide" | "work" | "result" | "task" | "progress";
 
@@ -15,13 +15,13 @@ export interface HelpTopic {
   id: string;
   category: HelpCategory;
   title: string;
-  // 「?」用。1〜2 文
+  // 「?」用。1〜2文
   short: string;
-  // 「使い方」用。手順とキーボードの別手段。4 文まで。課題の種類で言えることが変わる話題は関数にする
+  // 「使い方」用。手順とキーボードの別手段。4文まで。課題の種類で言えることが変わる話題は関数にする
   body: string | ((ctx: HelpContext) => string);
   // 「いまの画面でできること」に入れる条件。無ければ常に
   when?: (ctx: HelpContext) => boolean;
-  // 「場所を示す」で光らせる要素(data-tour の値)と、スマートフォンで切り替えるペイン
+  // 「場所を示す」で光らせる要素(data-tourの値)と、スマートフォンで切り替えるペイン
   target?: string;
   pane?: "guide" | "work" | "result";
 }
@@ -44,7 +44,7 @@ export const HELP_TOPICS: HelpTopic[] = [
     target: "guide",
     pane: "guide",
     short: "ガイドに、物語と「やること」が出ます。読んだらすぐ手を動かします。",
-    body: "ガイドに、物語と「やること」が出ます。ステップごとに 2〜4 文だけなので、読んだらすぐ手を動かします。問題文の金額を押すと、仕訳帳の金額欄に入ります。",
+    body: "ガイドに、物語と「やること」が出ます。ステップごとに2〜4文だけなので、読んだらすぐ手を動かします。問題文の金額を押すと、仕訳帳の金額欄に入ります。",
   },
   {
     id: "hint",
@@ -52,10 +52,10 @@ export const HELP_TOPICS: HelpTopic[] = [
     title: "ヒントと答え",
     target: "hint",
     pane: "guide",
-    short: "迷ったら「ヒントを見る」で手がかりが出ます。答えを変えて 2 回間違えると「答えを見る」も使えます。",
+    short: "迷ったら「ヒントを見る」で手がかりが出ます。答えを変えて2回間違えると「答えを見る」も使えます。",
     body: (c) =>
       canRevealAnswer(c.taskType)
-        ? "迷ったら「ヒントを見る」で手がかりが出ます。答えを変えて 2 回間違えると「答えを見る」も使えます。答えを見ても次へ進めますが、できれば見る前にもう一度だけ試してみましょう。"
+        ? "迷ったら「ヒントを見る」で手がかりが出ます。答えを変えて2回間違えると「答えを見る」も使えます。答えを見ても次へ進めますが、できれば見る前にもう一度だけ試してみましょう。"
         : "迷ったら「ヒントを見る」で手がかりが出ます。",
     when: (c) => c.hasHint,
   },
@@ -66,9 +66,9 @@ export const HELP_TOPICS: HelpTopic[] = [
     target: "journal",
     pane: "work",
     short: "科目と金額を入れて「記帳する」を押します。科目は途中まで打つと候補が出ます。",
-    // post は不一致も採点するので押せる。止めるのは採点の無い自由に試すだけ(Issue #199)
+    // postは不一致も採点するので押せる。止めるのは採点の無い自由に試すだけ(Issue #199)
     body: (c) =>
-      `科目と金額を入れて「記帳する」を押します。科目は途中まで打つと候補が出ます。金額欄で Enter を押しても記帳できます。${
+      `科目と金額を入れて「記帳する」を押します。科目は途中まで打つと候補が出ます。金額欄でEnterを押しても記帳できます。${
         c.taskType === "observe" && c.isLast ? "借方と貸方の合計がそろうまで「記帳する」は押せません。" : "借方と貸方の合計がそろっていないまま押すと、そろえるよう案内が出ます。"
       }`,
     when: canWrite,
@@ -79,8 +79,8 @@ export const HELP_TOPICS: HelpTopic[] = [
     title: "影響の表示",
     target: "impact",
     pane: "work",
-    short: "入力中の仕訳で 5 要素と当期純利益がどう動くかを、記帳する前に見せます。",
-    body: "入力中の仕訳で 5 要素と当期純利益がどう動くかを、記帳する前に見せます。動く要素だけに色が付きます。借方と貸方の合計がそろうと「一致」になります。",
+    short: "入力中の仕訳で5要素と当期純利益がどう動くかを、記帳する前に見せます。",
+    body: "入力中の仕訳で5要素と当期純利益がどう動くかを、記帳する前に見せます。動く要素だけに色が付きます。借方と貸方の合計がそろうと「一致」になります。",
     when: canWrite,
   },
   {
@@ -93,11 +93,11 @@ export const HELP_TOPICS: HelpTopic[] = [
   {
     id: "ledger",
     category: "work",
-    title: "総勘定元帳(T 勘定)",
+    title: "総勘定元帳(T勘定)",
     target: "ledger",
     pane: "work",
     short: "科目ごとの増減を左右に分けて見られます。ワークスペースのタブで切り替えます。",
-    body: "「総勘定元帳(T 勘定)」タブで、科目ごとの増減を左右に分けて見られます。仕訳帳は取引の順、元帳は科目ごと、という見方の違いが分かります。",
+    body: "「総勘定元帳(T勘定)」タブで、科目ごとの増減を左右に分けて見られます。仕訳帳は取引の順、元帳は科目ごと、という見方の違いが分かります。",
   },
   {
     id: "statements",
@@ -124,16 +124,16 @@ export const HELP_TOPICS: HelpTopic[] = [
     title: "帳簿をさかのぼる",
     target: "rewind",
     pane: "result",
-    short: "結果の上のスライダーで、記帳を 1 件ずつ巻き戻せます。動かすと、その時点の会社の姿になります。",
-    body: "結果の上のスライダーで、記帳を 1 件ずつ巻き戻せます。動かすと、その時点の貸借対照表と損益計算書になります。矢印キーでも動かせます。「最新に戻る」で戻ります。",
+    short: "結果の上のスライダーで、記帳を1件ずつ巻き戻せます。動かすと、その時点の会社の姿になります。",
+    body: "結果の上のスライダーで、記帳を1件ずつ巻き戻せます。動かすと、その時点の貸借対照表と損益計算書になります。矢印キーでも動かせます。「最新に戻る」で戻ります。",
     when: (c) => c.postedCount >= 2,
   },
   {
     id: "changed",
     category: "result",
     title: "このステップで動いた要素",
-    short: "このステップの記帳で、5 要素のどれがいくら動いたかをまとめて出します。",
-    body: "結果の下に、このステップの記帳で 5 要素のどれがいくら動いたかをまとめて出します。表のどこが変わったか分からなくなったら、ここを見ます。",
+    short: "このステップの記帳で、5要素のどれがいくら動いたかをまとめて出します。",
+    body: "結果の下に、このステップの記帳で5要素のどれがいくら動いたかをまとめて出します。表のどこが変わったか分からなくなったら、ここを見ます。",
   },
   {
     id: "predict",
@@ -141,14 +141,14 @@ export const HELP_TOPICS: HelpTopic[] = [
     title: "予想して記帳する",
     target: "task-predict",
     pane: "work",
-    short: "記帳の前に、5 要素がどう動くかを選びます。外れても実際の動きと見比べて進めます。",
-    body: "記帳の前に、5 要素それぞれが増えるか減るか変わらないかを選びます。「予想して記帳する」を押すと記帳され、予想と実際の動きが並びます。外れても進めます。処理を覚えるより、影響を考える練習です。",
+    short: "記帳の前に、5要素がどう動くかを選びます。外れても実際の動きと見比べて進めます。",
+    body: "記帳の前に、5要素それぞれが増えるか減るか変わらないかを選びます。「予想して記帳する」を押すと記帳され、予想と実際の動きが並びます。外れても進めます。処理を覚えるより、影響を考える練習です。",
     when: (c) => c.taskType === "predict",
   },
   {
     id: "classify",
     category: "task",
-    title: "5 つの箱に分ける",
+    title: "5つの箱に分ける",
     target: "task-classify",
     pane: "work",
     short: "科目を箱へドラッグするか、科目を押してから箱を押します。全部入れたら「確認する」。",
@@ -162,7 +162,7 @@ export const HELP_TOPICS: HelpTopic[] = [
     target: "task-calc",
     pane: "work",
     short: "問題文を読んで金額を入力し、「確認する」を押します。",
-    body: "問題文を読んで金額を入力し、「確認する」を押します(Enter でも可)。桁区切りのカンマや「円」は付けても付けなくても構いません。",
+    body: "問題文を読んで金額を入力し、「確認する」を押します(Enterでも可)。桁区切りのカンマや「円」は付けても付けなくても構いません。",
     when: (c) => c.taskType === "calc",
   },
   {
@@ -172,7 +172,7 @@ export const HELP_TOPICS: HelpTopic[] = [
     target: "task-tweak",
     pane: "work",
     short: "スライダーで金額や年数を動かし、計算結果がどう変わるかを試します。目標の値にすると次へ進めます。",
-    body: "スライダーで金額や年数を動かし、計算結果がどう変わるかをその場で見ます。目標の値になると「できました」が出て次へ進めます。矢印キーでも 1 目盛りずつ動かせます。",
+    body: "スライダーで金額や年数を動かし、計算結果がどう変わるかをその場で見ます。目標の値になると「できました」が出て次へ進めます。矢印キーでも1目盛りずつ動かせます。",
     when: (c) => c.taskType === "tweak",
   },
   {
@@ -190,8 +190,8 @@ export const HELP_TOPICS: HelpTopic[] = [
     category: "progress",
     title: "ステップと「次へ」",
     target: "next-button",
-    short: "上の「ステップ n / N」が進み具合です。課題ができると下の「次へ →」が押せます。",
-    body: "上の「ステップ n / N」が進み具合です。課題ができると下の「次へ →」が押せます。「← 前へ」で見直しに戻れ、達成したステップには「次へ」でまた進めます。",
+    short: "上の「ステップn / N」が進み具合です。課題ができると下の「次へ →」が押せます。",
+    body: "上の「ステップn / N」が進み具合です。課題ができると下の「次へ →」が押せます。「← 前へ」で見直しに戻れ、達成したステップには「次へ」でまた進めます。",
   },
   {
     id: "resume",
@@ -213,7 +213,7 @@ export function helpTopic(id: string): HelpTopic {
 // 初めて画面に出たときに案内を出す課題の種類(docs/help-design.md 5.2)
 export const FIRST_TIME_IDS = ["predict", "classify", "calc", "tweak", "sandbox"] as const;
 
-/** 現在のステップで初出の案内を出す話題。該当しなければ null */
+/** 現在のステップで初出の案内を出す話題。該当しなければnull */
 export function firstTimeTopic(ctx: HelpContext): HelpTopic | null {
   const id = ctx.taskType === "observe" ? (ctx.isLast ? "sandbox" : null) : ctx.taskType === "post" ? null : ctx.taskType;
   return id ? helpTopic(id) : null;

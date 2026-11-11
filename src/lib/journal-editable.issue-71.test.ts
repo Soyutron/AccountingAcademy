@@ -9,7 +9,7 @@ describe("isIncompleteLine", () => {
   it.each([
     ["", ""],
     ["  ", "　"],
-  ])("科目 %j / 金額 %j は未入力の行なので無視する", (accountName, amount) => {
+  ])("科目%j / 金額%jは未入力の行なので無視する", (accountName, amount) => {
     expect(isIncompleteLine({ accountName, amount }, accounts)).toBe(false);
   });
 
@@ -22,9 +22,9 @@ describe("isIncompleteLine", () => {
     ["現金", "", "金額が空"],
     ["げんきん", "500000", "読みのままで科目が確定していない"],
     ["ぜんぜん無い科目", "500000", "存在しない科目"],
-    ["現金", "0", "0 円"],
+    ["現金", "0", "0円"],
     ["現金", "abc", "数字でない金額"],
-  ])("科目 %j / 金額 %j は不完全(%s)", (accountName, amount) => {
+  ])("科目%j / 金額%jは不完全(%s)", (accountName, amount) => {
     expect(isIncompleteLine({ accountName, amount }, accounts)).toBe(true);
   });
 });

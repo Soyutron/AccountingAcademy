@@ -5,7 +5,7 @@ import { formatAmount } from "@/lib/accounting";
 import { ELEMENT_STYLE } from "@/lib/elements";
 import type { Element } from "@/lib/accounting";
 
-// 取引の流れのアニメーション: 記帳した仕訳の金額が、財務諸表の該当行へ飛ぶ(docs/visual-guidelines.md 2 章)
+// 取引の流れのアニメーション: 記帳した仕訳の金額が、財務諸表の該当行へ飛ぶ(docs/visual-guidelines.md 2章)
 
 export interface Flight {
   id: string;

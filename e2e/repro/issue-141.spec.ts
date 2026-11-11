@@ -34,7 +34,7 @@ test("クリックで固定しただけの用語も、マウスを外しても�
   await expect(popover(page)).toBeVisible();
 });
 
-test("固定した用語を Esc で閉じるとフォーカスが用語へ戻り、開き直すと「もっと見る」から始まる", async ({ page }) => {
+test("固定した用語をEscで閉じるとフォーカスが用語へ戻り、開き直すと「もっと見る」から始まる", async ({ page }) => {
   await pinByClick(page);
   await moveIntoPopover(page);
   await popover(page).getByRole("button", { name: "もっと見る" }).click();
@@ -53,7 +53,7 @@ test("固定した用語は外側のクリックで閉じる", async ({ page }) 
   await expect(popover(page)).toHaveCount(0);
 });
 
-test("Enter で開いた用語は、マウスが用語の上を通過しても閉じない", async ({ page }) => {
+test("Enterで開いた用語は、マウスが用語の上を通過しても閉じない", async ({ page }) => {
   await page.goto("/units/depreciation/straight-line");
   await firstTerm(page).focus();
   await page.keyboard.press("Enter");
@@ -81,10 +81,10 @@ test("クリックで固定した用語から別の用語へマウスを移す�
   await page.goto("/units/bookkeeping-basics/five-elements");
   await page.getByRole("button", { name: "次へ →" }).click();
   const work = page.getByRole("region", { name: "ワークスペース" });
-  await work.getByLabel("借方の科目 1").fill("現金");
-  await work.getByLabel("借方の金額 1").fill("1000000");
-  await work.getByLabel("貸方の科目 1").fill("資本金");
-  await work.getByLabel("貸方の金額 1").fill("1000000");
+  await work.getByLabel("借方の科目1").fill("現金");
+  await work.getByLabel("借方の金額1").fill("1000000");
+  await work.getByLabel("貸方の科目1").fill("資本金");
+  await work.getByLabel("貸方の金額1").fill("1000000");
   await work.getByRole("button", { name: "記帳する" }).click();
   await expect(page.getByRole("status").filter({ hasText: "できました" })).toBeVisible();
 

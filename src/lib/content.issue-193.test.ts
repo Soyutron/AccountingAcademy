@@ -13,7 +13,7 @@ describe("金庫のお金が合わない「多かったときは」の仕訳", (
       expect(prose).toContain(line.amount.toLocaleString("en-US"));
     }
     expect(prose).toContain("切手代とは別の例");
-    expect(prose).toContain("金庫のほうが帳簿より 2,000 円多かった");
+    expect(prose).toContain("金庫のほうが帳簿より2,000円多かった");
   });
 
   it("超過の記帳と、決算での雑益への振り替えが並ぶ", () => {

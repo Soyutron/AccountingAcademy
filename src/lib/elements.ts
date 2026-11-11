@@ -1,8 +1,8 @@
 import type { Element } from "./accounting";
 
-// 5 要素のビジュアル言語。アプリ全体で同じ色・記号・名前を使う(docs/ide-design.md 8 章)。
-// 色の実体はテーマの CSS 変数(--el-<要素>-fg / -bg / -border / -bar。docs/design-system.md 2.2)。
-// Tailwind がクラス名を拾えるように、クラスは文字列のまま並べる
+// 5要素のビジュアル言語。アプリ全体で同じ色・記号・名前を使う(docs/ide-design.md 8章)。
+// 色の実体はテーマのCSS変数(--el-<要素>-fg / -bg / -border / -bar。docs/design-system.md 2.2)。
+// Tailwindがクラス名を拾えるように、クラスは文字列のまま並べる
 
 export interface ElementStyle {
   label: string;

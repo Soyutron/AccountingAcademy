@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test";
 
-// Issue #82: 売掛金・買掛金が用語集に 2 項目ずつ並び、結果ペインからは例も関連も無い勘定科目版が開いていた
+// Issue #82: 売掛金・買掛金が用語集に2項目ずつ並び、結果ペインからは例も関連も無い勘定科目版が開いていた
 
 for (const name of ["売掛金", "買掛金"]) {
-  test(`用語集で「${name}」を検索すると 1 項目だけ出る`, async ({ page }) => {
+  test(`用語集で「${name}」を検索すると1項目だけ出る`, async ({ page }) => {
     await page.goto("/glossary");
     await page.getByPlaceholder("用語を検索").fill(name);
     await expect(page.locator("main div[id]").first()).toContainText(name);
@@ -24,10 +24,10 @@ test("結果ペインの「買掛金」から本文の「買掛金」と同じ�
   await page.keyboard.press("Escape");
 
   const work = page.getByRole("region", { name: "ワークスペース" });
-  await work.getByLabel("借方の科目 1").fill("仕入");
-  await work.getByLabel("借方の金額 1").fill("40000");
-  await work.getByLabel("貸方の科目 1").fill("買掛金");
-  await work.getByLabel("貸方の金額 1").fill("40000");
+  await work.getByLabel("借方の科目1").fill("仕入");
+  await work.getByLabel("借方の金額1").fill("40000");
+  await work.getByLabel("貸方の科目1").fill("買掛金");
+  await work.getByLabel("貸方の金額1").fill("40000");
   await work.getByRole("button", { name: "記帳する" }).click();
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
 

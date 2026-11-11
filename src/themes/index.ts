@@ -1,11 +1,11 @@
-// テーマの登録簿(docs/design-system.md 3 章)。テーマを足すときは CSS を 1 つ置いてここに 1 行加える。
+// テーマの登録簿(docs/design-system.md 3章)。テーマを足すときはCSSを1つ置いてここに1行加える。
 // 色・書体・形はテーマが決め、レイアウトと操作は全テーマ共通
 
 export interface ThemeInfo {
   id: string;
   name: string;
   description: string;
-  // 切り替え UI のプレビュー: 主色・背景・差し色(ライトの値)
+  // 切り替えUIのプレビュー: 主色・背景・差し色(ライトの値)
   preview: [string, string, string];
 }
 
@@ -22,7 +22,7 @@ export const MODES = ["auto", "light", "dark"] as const;
 export type Mode = (typeof MODES)[number];
 export const MODE_LABELS: Record<Mode, string> = { auto: "自動", light: "ライト", dark: "ダーク" };
 
-// localStorage のキー。閲覧の設定なので DB には置かない
+// localStorageのキー。閲覧の設定なのでDBには置かない
 export const THEME_STORAGE_KEY = "theme";
 export const MODE_STORAGE_KEY = "mode";
 
@@ -44,18 +44,18 @@ function applySavedTheme(themeKey: string, modeKey: string, ids: string[]) {
     const dark = m === "dark" || (m !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
     d.dataset.mode = dark ? "dark" : "light";
   } catch {
-    // localStorage が使えない環境では既定の表示のまま
+    // localStorageが使えない環境では既定の表示のまま
   }
 }
 
 const SAVED_THEME_ARGS: Parameters<typeof applySavedTheme> = [THEME_STORAGE_KEY, MODE_STORAGE_KEY, THEMES.map((t) => t.id)];
 
-/** 描画前に localStorage の設定を <html> に反映する。ちらつきを防ぐため <head> のインラインスクリプトとして埋め込む */
+/** 描画前にlocalStorageの設定を <html> に反映する。ちらつきを防ぐため <head> のインラインスクリプトとして埋め込む */
 export function themeBootScript(): string {
   return `(${applySavedTheme.toString()})(...${JSON.stringify(SAVED_THEME_ARGS)})`;
 }
 
-/** インラインスクリプトが実行されない経路(root layout のクライアント描画)のために、同じ反映をクライアントから行う */
+/** インラインスクリプトが実行されない経路(root layoutのクライアント描画)のために、同じ反映をクライアントから行う */
 export function restoreSavedTheme() {
   applySavedTheme(...SAVED_THEME_ARGS);
 }

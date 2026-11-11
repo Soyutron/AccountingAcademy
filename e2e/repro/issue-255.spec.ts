@@ -1,8 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 
-// Issue #255: 素の <a href="#…"> で積まれた履歴は history.state が null で、単元から戻っても Next.js が画面を更新しない
+// Issue #255: 素の <a href="#…"> で積まれた履歴はhistory.stateがnullで、単元から戻ってもNext.jsが画面を更新しない
 
-// ハイドレーション前にアンカーを押すと後続の Link が通常のページ遷移になり、再現しない。アンカー移動の後もルーターへの通知を待つ
+// ハイドレーション前にアンカーを押すと後続のLinkが通常のページ遷移になり、再現しない。アンカー移動の後もルーターへの通知を待つ
 const waitForRouterState = (page: Page) => expect.poll(() => page.evaluate(() => Boolean(window.history.state?.__NA))).toBe(true);
 
 const guide = (page: Page) => page.getByRole("region", { name: "ガイド" });
@@ -22,7 +22,7 @@ test("用語集の関連リンクの後に単元へ進んで戻ると、用語�
   await expect(page.locator("#journal_entry")).toBeInViewport();
   await expect(guide(page)).toHaveCount(0);
 
-  // アンカー移動が履歴を 1 件だけ積んでいること
+  // アンカー移動が履歴を1件だけ積んでいること
   await page.goBack();
   await expect(page).toHaveURL(/\/glossary$/);
   await expect(page.locator("#transaction")).toBeVisible();
@@ -81,7 +81,7 @@ test("トップページのスキップリンクの後に用語集へ進んで�
   await expect(page.getByLabel("用語を検索")).toHaveCount(0);
 });
 
-test("単元でスキップリンクを使っても、会計 IDE は作り直されない", async ({ page }) => {
+test("単元でスキップリンクを使っても、会計IDEは作り直されない", async ({ page }) => {
   await page.goto("/glossary");
   await page.locator("#journal_entry a[href^='/units']").first().click();
   await expect(guide(page)).toBeVisible();

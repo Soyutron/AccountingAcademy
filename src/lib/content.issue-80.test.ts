@@ -4,7 +4,7 @@ import { gradePost, gradePredict } from "./grading";
 
 function postTask(unitId: string, index: number) {
   const task = unitMap.get(unitId)!.steps[index].task;
-  if (task?.type !== "post") throw new Error("post ではない");
+  if (task?.type !== "post") throw new Error("postではない");
   return task;
 }
 
@@ -44,10 +44,10 @@ describe("誤答と誤解の対応", () => {
     expect(r.misconception).toBe("incidental_cost_separate");
   });
 
-  // 商品を資産と考えると、現金と商品の入れ替えで 5 つとも動かない予想になる
+  // 商品を資産と考えると、現金と商品の入れ替えで5つとも動かない予想になる
   it("仕入の予想がすべて「変わらない」なら、仕入は資産の誤解のまま", () => {
     const task = unitMap.get("merchandise/three-account-method")!.steps[2].task;
-    if (task?.type !== "predict") throw new Error("predict ではない");
+    if (task?.type !== "predict") throw new Error("predictではない");
     const r = gradePredict(task, { asset: "none", liability: "none", equity: "none", revenue: "none", expense: "none" });
     expect(r.misconception).toBe("purchase_is_asset");
   });

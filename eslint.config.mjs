@@ -14,7 +14,7 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // 無人ループが書く操作スクリプトとログ
     "logs/**",
-    // 並列セッションと夜間ループの worktree(別の作業ツリーなので main の lint 対象にしない)
+    // 並列セッションと夜間ループのworktree(別の作業ツリーなのでmainのlint対象にしない)
     ".claude/worktrees/**",
   ]),
 ]);

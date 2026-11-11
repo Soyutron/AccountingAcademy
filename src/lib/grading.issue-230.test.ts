@@ -7,7 +7,7 @@ import { gradePost } from "./grading";
 const GENERIC = "結果の表で何が動くはずか";
 const postAt = (unit: string, transaction: string) => {
   const task = unitMap.get(unit)!.steps.map((s) => s.task).find((t) => t.type === "post" && t.transaction.startsWith(transaction));
-  if (task?.type !== "post") throw new Error(`post が見つからない: ${transaction}`);
+  if (task?.type !== "post") throw new Error(`postが見つからない: ${transaction}`);
   return task;
 };
 const entry = (debit: string, credit: string, amount: number): JournalEntry => ({
@@ -16,8 +16,8 @@ const entry = (debit: string, credit: string, amount: number): JournalEntry => (
 });
 
 const tasks = [
-  { name: "減価償却とは何か 1 年目", task: postAt("depreciation/what-is-depreciation", "決算にあたり"), amount: 100000, vehicle: false },
-  { name: "減価償却とは何か 2 年目", task: postAt("depreciation/what-is-depreciation", "2 年目の決算"), amount: 100000, vehicle: false },
+  { name: "減価償却とは何か1年目", task: postAt("depreciation/what-is-depreciation", "決算にあたり"), amount: 100000, vehicle: false },
+  { name: "減価償却とは何か2年目", task: postAt("depreciation/what-is-depreciation", "2年目の決算"), amount: 100000, vehicle: false },
   { name: "定額法 マシン", task: postAt("depreciation/straight-line", "決算にあたり、コーヒーマシン"), amount: 50000, vehicle: true },
 ];
 
@@ -28,8 +28,8 @@ const wrongs = [
   { name: "備品 / 減価償却累計額", debit: "equipment", credit: "accumulated_depreciation", misconception: "direct_writeoff_vs_contra", word: "備品" },
 ];
 
-describe.each(tasks)("$name の誤答", ({ task, amount, vehicle }) => {
-  it.each(wrongs)("$name に説明と誤解を返す", ({ debit, credit, misconception, word }) => {
+describe.each(tasks)("$nameの誤答", ({ task, amount, vehicle }) => {
+  it.each(wrongs)("$nameに説明と誤解を返す", ({ debit, credit, misconception, word }) => {
     const result = gradePost(task, entry(debit, credit, amount));
     expect(result.correct).toBe(false);
     expect(result.misconception).toBe(misconception);

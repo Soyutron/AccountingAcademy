@@ -2,10 +2,10 @@ import { expect, test, type Page } from "@playwright/test";
 
 async function fill(page: Page, debit: [string, number], credit: [string, number]) {
   const work = page.getByRole("region", { name: "ワークスペース" });
-  await work.getByLabel("借方の科目 1").fill(debit[0]);
-  await work.getByLabel("借方の金額 1").fill(String(debit[1]));
-  await work.getByLabel("貸方の科目 1").fill(credit[0]);
-  await work.getByLabel("貸方の金額 1").fill(String(credit[1]));
+  await work.getByLabel("借方の科目1").fill(debit[0]);
+  await work.getByLabel("借方の金額1").fill(String(debit[1]));
+  await work.getByLabel("貸方の科目1").fill(credit[0]);
+  await work.getByLabel("貸方の金額1").fill(String(credit[1]));
   await work.getByRole("button", { name: "記帳する" }).click();
 }
 

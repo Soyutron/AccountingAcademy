@@ -5,14 +5,14 @@ const GENERIC = /結果の表で何が動くはずか|計算の式と、使う�
 
 async function post(page: Page, debit: [string, number], credits: [string, number][]) {
   const work = page.getByRole("region", { name: "ワークスペース" });
-  await work.getByLabel("借方の科目 1").fill(debit[0]);
-  await work.getByLabel("借方の科目 1").press("Escape");
-  await work.getByLabel("借方の金額 1").fill(String(debit[1]));
+  await work.getByLabel("借方の科目1").fill(debit[0]);
+  await work.getByLabel("借方の科目1").press("Escape");
+  await work.getByLabel("借方の金額1").fill(String(debit[1]));
   for (const [i, [account, amount]] of credits.entries()) {
-    if (i > 0 && (await work.getByLabel(`貸方の科目 ${i + 1}`).count()) === 0) await work.getByRole("button", { name: "行を追加" }).nth(1).click();
-    await work.getByLabel(`貸方の科目 ${i + 1}`).fill(account);
-    await work.getByLabel(`貸方の科目 ${i + 1}`).press("Escape");
-    await work.getByLabel(`貸方の金額 ${i + 1}`).fill(String(amount));
+    if (i > 0 && (await work.getByLabel(`貸方の科目${i + 1}`).count()) === 0) await work.getByRole("button", { name: "行を追加" }).nth(1).click();
+    await work.getByLabel(`貸方の科目${i + 1}`).fill(account);
+    await work.getByLabel(`貸方の科目${i + 1}`).press("Escape");
+    await work.getByLabel(`貸方の金額${i + 1}`).fill(String(amount));
   }
   await work.getByRole("button", { name: "記帳する" }).click();
 }
@@ -27,7 +27,7 @@ async function predict(page: Page) {
   await ok(page);
 }
 
-/** ステップ n の手前まで正解で進める */
+/** ステップnの手前まで正解で進める */
 async function goToStep(page: Page, n: number) {
   const next = page.getByRole("button", { name: "次へ →" });
   await page.goto(unit);
@@ -57,25 +57,25 @@ async function expectExplained(page: Page, reason: string) {
   await expect(status).toContainText(reason);
 }
 
-test("ステップ 2: 未収入金を未払金と取り違えると理由を返す", async ({ page }) => {
+test("ステップ2: 未収入金を未払金と取り違えると理由を返す", async ({ page }) => {
   await goToStep(page, 2);
   await post(page, ["未払金", 50000], [["備品", 50000]]);
   await expectExplained(page, "後で払う義務");
 });
 
-test("ステップ 4: 前払金を未収入金と取り違えると理由を返す", async ({ page }) => {
+test("ステップ4: 前払金を未収入金と取り違えると理由を返す", async ({ page }) => {
   await goToStep(page, 4);
   await post(page, ["未収入金", 10000], [["現金", 10000]]);
   await expectExplained(page, "豆を受け取る権利");
 });
 
-test("ステップ 5: 豆の残額を未払金にすると買掛金だと説明する", async ({ page }) => {
+test("ステップ5: 豆の残額を未払金にすると買掛金だと説明する", async ({ page }) => {
   await goToStep(page, 5);
   await post(page, ["仕入", 40000], [["前払金", 10000], ["未払金", 30000]]);
   await expectExplained(page, "買掛金");
 });
 
-test("ステップ 7: 未収入金まで負債に足すと理由を返す", async ({ page }) => {
+test("ステップ7: 未収入金まで負債に足すと理由を返す", async ({ page }) => {
   await goToStep(page, 7);
   await page.getByPlaceholder("金額(円)").fill("365000");
   await page.getByRole("button", { name: "確認する" }).click();

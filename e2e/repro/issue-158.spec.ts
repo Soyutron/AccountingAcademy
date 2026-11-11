@@ -8,10 +8,10 @@ const ELEMENT_LABELS: Record<string, string> = { asset: "資産", liability: "�
 
 const fillEntry = async (page: Page, debitAccount: string, creditAccount: string, amount: number) => {
   const work = page.getByRole("region", { name: "ワークスペース" });
-  await work.getByLabel("借方の科目 1").fill(debitAccount);
-  await work.getByLabel("借方の金額 1").fill(String(amount));
-  await work.getByLabel("貸方の科目 1").fill(creditAccount);
-  await work.getByLabel("貸方の金額 1").fill(String(amount));
+  await work.getByLabel("借方の科目1").fill(debitAccount);
+  await work.getByLabel("借方の金額1").fill(String(amount));
+  await work.getByLabel("貸方の科目1").fill(creditAccount);
+  await work.getByLabel("貸方の金額1").fill(String(amount));
 };
 
 const goToSandbox = async (page: Page) => {
@@ -45,8 +45,8 @@ const goToSandbox = async (page: Page) => {
   await expect(page.getByRole("heading", { name: "自由に試す" })).toBeVisible();
 };
 
-// Issue #158: 自由記帳も課題と同じく、同一ティックの連打を 1 回の記帳として扱う
-test("自由に試すの「記帳する」を同一ティックで連打しても仕訳は 1 件", async ({ page }) => {
+// Issue #158: 自由記帳も課題と同じく、同一ティックの連打を1回の記帳として扱う
+test("自由に試すの「記帳する」を同一ティックで連打しても仕訳は1件", async ({ page }) => {
   const work = page.getByRole("region", { name: "ワークスペース" });
   await goToSandbox(page);
   await fillEntry(page, "現金", "売上", 12345);
@@ -61,8 +61,8 @@ test("自由に試すの「記帳する」を同一ティックで連打して�
   await expect(work.getByText("37,035")).toHaveCount(0);
 });
 
-// 同じ仕訳をわざと 2 回記帳するのは正当な操作なので、内容で弾いてはいけない
-test("自由に試すで同じ仕訳を入力し直して記帳すると 2 件並ぶ", async ({ page }) => {
+// 同じ仕訳をわざと2回記帳するのは正当な操作なので、内容で弾いてはいけない
+test("自由に試すで同じ仕訳を入力し直して記帳すると2件並ぶ", async ({ page }) => {
   const work = page.getByRole("region", { name: "ワークスペース" });
   await goToSandbox(page);
   for (const expected of [1, 2]) {

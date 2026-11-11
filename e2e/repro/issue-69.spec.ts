@@ -10,10 +10,10 @@ test("記帳したことのある学習者には、別の単元でも開き直�
   await expect(banner).toBeVisible();
 
   await page.getByRole("button", { name: "次へ →" }).click();
-  await page.getByLabel("借方の科目 1").fill("現金");
-  await page.getByLabel("借方の金額 1").fill("1000000");
-  await page.getByLabel("貸方の科目 1").fill("資本金");
-  await page.getByLabel("貸方の金額 1").fill("1000000");
+  await page.getByLabel("借方の科目1").fill("現金");
+  await page.getByLabel("借方の金額1").fill("1000000");
+  await page.getByLabel("貸方の科目1").fill("資本金");
+  await page.getByLabel("貸方の金額1").fill("1000000");
   await page.getByRole("button", { name: "記帳する" }).click();
   await expect(page.getByRole("status").filter({ hasText: "できました" })).toBeVisible();
   const saved = page.waitForResponse((r) => r.url().includes("/rest/v1/unit_progress") && r.request().method() === "POST");
@@ -29,6 +29,6 @@ test("記帳したことのある学習者には、別の単元でも開き直�
 
   await page.goto(UNIT);
   const guide = page.getByRole("region", { name: "ガイド" });
-  await expect(guide.getByText(/前回はステップ \d+ まで進みました/)).toBeVisible();
+  await expect(guide.getByText(/前回はステップ\d+まで進みました/)).toBeVisible();
   await expect(guide.getByRole("note").filter({ hasText: "初めてですか" })).toHaveCount(0);
 });

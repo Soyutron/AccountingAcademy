@@ -9,10 +9,10 @@ test("当座預金の振り替えで左を「預金」と書くと、普通預�
   };
   await page.goto("/units/cash-and-deposits/checking-account");
   await page.getByRole("button", { name: "次へ →" }).click();
-  await field("借方の科目 1", "預金");
-  await field("借方の金額 1", "200000");
-  await field("貸方の科目 1", "普通預金");
-  await field("貸方の金額 1", "200000");
+  await field("借方の科目1", "預金");
+  await field("借方の金額1", "200000");
+  await field("貸方の科目1", "普通預金");
+  await field("貸方の金額1", "200000");
   await work.getByRole("button", { name: "記帳する" }).click();
   const box = page.getByRole("status").filter({ hasText: "もう一歩" });
   await expect(box).toBeVisible();

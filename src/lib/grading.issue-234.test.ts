@@ -10,10 +10,10 @@ if (calc?.type !== "calc" || predict?.type !== "predict") throw new Error("課�
 
 describe("初年度の減価償却費の誤答", () => {
   it.each([
-    { value: 83333, word: "5 か月" },
-    { value: 116666, word: "7 か月" },
-    { value: 116667, word: "7 か月" },
-  ])("$value には月数の数え方を返す", ({ value, word }) => {
+    { value: 83333, word: "5か月" },
+    { value: 116666, word: "7か月" },
+    { value: 116667, word: "7か月" },
+  ])("$valueには月数の数え方を返す", ({ value, word }) => {
     const result = gradeCalc(calc, value);
     expect(result.correct).toBe(false);
     expect(result.feedback).toContain(word);
@@ -22,7 +22,7 @@ describe("初年度の減価償却費の誤答", () => {
     expect(result.feedback).not.toContain("100,000");
   });
 
-  it("1100000 には帳簿価額を答えていると返す", () => {
+  it("1100000には帳簿価額を答えていると返す", () => {
     const result = gradeCalc(calc, 1100000);
     expect(result.correct).toBe(false);
     expect(result.feedback).toContain("帳簿価額");
@@ -32,7 +32,7 @@ describe("初年度の減価償却費の誤答", () => {
 });
 
 describe("減価償却の予想", () => {
-  it("資産が増えるの予想に、累計額は資産のマイナスだと誤解 ID 付きで返す", () => {
+  it("資産が増えるの予想に、累計額は資産のマイナスだと誤解ID付きで返す", () => {
     const result = gradePredict(predict, { ...predict.answer, asset: "increase" });
     expect(result.correct).toBe(false);
     expect(result.feedback).toContain("資産のマイナス");

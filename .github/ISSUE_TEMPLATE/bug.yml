@@ -6,7 +6,7 @@ body:
     id: steps
     attributes:
       label: 再現手順
-      description: どの画面で、何をしたら、何が起きたか。URL とステップ番号があると助かります
+      description: どの画面で、何をしたら、何が起きたか。URLとステップ番号があると助かります
     validations:
       required: true
   - type: textarea
@@ -19,4 +19,4 @@ body:
     id: env
     attributes:
       label: 環境
-      placeholder: "例: Chrome 142 / Windows 11 / 画面幅 1280px、または iPhone Safari"
+      placeholder: "例: Chrome 142 / Windows 11 / 画面幅1280px、またはiPhone Safari"

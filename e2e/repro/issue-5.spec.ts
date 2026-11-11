@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
-// Issue #5: 用語集の「関連」に同じ用語が 2 回並び、React が重複 key の console.error を出す
-test("用語集の関連リンクに同じ用語が重複せず、重複 key の console.error も出ない", async ({ page }) => {
+// Issue #5: 用語集の「関連」に同じ用語が2回並び、Reactが重複keyのconsole.errorを出す
+test("用語集の関連リンクに同じ用語が重複せず、重複keyのconsole.errorも出ない", async ({ page }) => {
   const dupKeyErrors: string[] = [];
   page.on("console", (msg) => {
     if (msg.type() === "error" && /same key/.test(msg.text())) dupKeyErrors.push(msg.text());

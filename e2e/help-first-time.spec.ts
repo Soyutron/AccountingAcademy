@@ -2,27 +2,27 @@ import { expect, test, type Page } from "@playwright/test";
 
 // 初めて出る課題の種類の案内と、「使い方」の「場所を示す」(docs/help-design.md 5.2 / 5.3)
 
-// 5 つの要素と仕訳: ステップ 2(post)を解いてステップ 3(predict)へ
+// 5つの要素と仕訳: ステップ2(post)を解いてステップ3(predict)へ
 async function goToPredict(page: Page) {
   await page.goto("/units/bookkeeping-basics/five-elements");
   await page.getByRole("button", { name: "今はしない" }).click();
   await page.getByRole("button", { name: "次へ →" }).click();
   const work = page.getByRole("region", { name: "ワークスペース" });
-  await work.getByLabel("借方の科目 1").fill("現金");
-  await work.getByLabel("借方の金額 1").fill("1000000");
-  await work.getByLabel("貸方の科目 1").fill("資本金");
-  await work.getByLabel("貸方の金額 1").fill("1000000");
+  await work.getByLabel("借方の科目1").fill("現金");
+  await work.getByLabel("借方の金額1").fill("1000000");
+  await work.getByLabel("貸方の科目1").fill("資本金");
+  await work.getByLabel("貸方の金額1").fill("1000000");
   await work.getByRole("button", { name: "記帳する" }).click();
   await page.getByRole("button", { name: "次へ →" }).click();
 }
 
 const seen = (page: Page) => page.evaluate(() => (JSON.parse(localStorage.getItem("tutorial-state") ?? "{}").seen ?? []) as string[]);
 
-test("predict が初めて出たとき案内が出て、「わかった」で閉じると二度と出ない", async ({ page }) => {
+test("predictが初めて出たとき案内が出て、「わかった」で閉じると二度と出ない", async ({ page }) => {
   await goToPredict(page);
   const note = page.getByRole("note", { name: "初めての「予想して記帳する」" });
   await expect(note).toBeVisible();
-  await expect(note).toContainText("5 要素がどう動くかを選びます");
+  await expect(note).toContainText("5要素がどう動くかを選びます");
   await note.getByRole("button", { name: "わかった" }).click();
   await expect(note).toBeHidden();
   expect(await seen(page)).toContain("predict");
@@ -37,7 +37,7 @@ test("案内を閉じずに課題を済ませても見た扱いになり、「�
   await goToPredict(page);
   const note = page.getByRole("note", { name: "初めての「予想して記帳する」" });
   await note.getByRole("button", { name: "くわしく" }).click();
-  const help = page.getByRole("dialog", { name: "会計 IDE の使い方" });
+  const help = page.getByRole("dialog", { name: "会計IDEの使い方" });
   await expect(help.locator("#help-predict")).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(help).toBeHidden();
@@ -54,13 +54,13 @@ test("チュートリアル単元では案内を出さない", async ({ page }) 
   await expect(page.getByRole("note", { name: /初めての/ })).toHaveCount(0);
 });
 
-test("「使い方」の「場所を示す」で対象が光り、Esc で消える", async ({ page }) => {
+test("「使い方」の「場所を示す」で対象が光り、Escで消える", async ({ page }) => {
   await page.goto("/units/tutorial/first-entry");
   await page.evaluate(() => localStorage.setItem("tutorial-state", JSON.stringify({ status: "done", enabled: true })));
   await page.reload();
   await page.getByRole("button", { name: "次へ →" }).click();
   await page.getByRole("button", { name: "使い方" }).click();
-  const help = page.getByRole("dialog", { name: "会計 IDE の使い方" });
+  const help = page.getByRole("dialog", { name: "会計IDEの使い方" });
   const now = help.getByRole("region", { name: "いまの画面でできること" });
   // 画面に出ていない機能(帳簿をさかのぼる)には付かない
   await help.getByText("結果(見る)").click();
@@ -80,7 +80,7 @@ test("スマホ幅の「場所を示す」は対象のペインへ切り替え�
   await page.reload();
   await page.getByRole("button", { name: "次へ →" }).click();
   await page.getByRole("button", { name: "使い方" }).click();
-  const help = page.getByRole("dialog", { name: "会計 IDE の使い方" });
+  const help = page.getByRole("dialog", { name: "会計IDEの使い方" });
   await help.getByText("結果(見る)").click();
   await help.locator("#help-statements").getByRole("button", { name: "場所を示す" }).click();
   await expect(page.getByRole("tab", { name: "結果" })).toHaveAttribute("aria-selected", "true");

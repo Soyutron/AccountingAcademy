@@ -5,10 +5,10 @@ const next = (page: Page) => page.getByRole("button", { name: "次へ →" }).cl
 
 async function post(page: Page, debit: string, credit: string, amount: number) {
   const w = work(page);
-  await w.getByLabel("借方の科目 1").fill(debit);
-  await w.getByLabel("借方の金額 1").fill(String(amount));
-  await w.getByLabel("貸方の科目 1").fill(credit);
-  await w.getByLabel("貸方の金額 1").fill(String(amount));
+  await w.getByLabel("借方の科目1").fill(debit);
+  await w.getByLabel("借方の金額1").fill(String(amount));
+  await w.getByLabel("貸方の科目1").fill(credit);
+  await w.getByLabel("貸方の金額1").fill(String(amount));
   await w.getByRole("button", { name: "記帳する" }).click();
   await expect(page.getByRole("status").getByText("できました", { exact: true })).toBeVisible();
 }
@@ -31,7 +31,7 @@ test("「← 前へ」で戻ったステップの財務諸表は、そのステ�
   await post(page, "支払家賃", "現金", 50000);
 
   await page.getByRole("button", { name: "← 前へ" }).click();
-  await expect(page.getByText("ステップ 5 / 10").first()).toBeVisible();
+  await expect(page.getByText("ステップ5 / 10").first()).toBeVisible();
 
   const income = page.getByRole("region", { name: "損益計算書" });
   await expect(income).toContainText("売上");
@@ -45,13 +45,13 @@ test("「← 前へ」で戻ったステップの財務諸表は、そのステ�
   const journal = work(page).getByRole("tabpanel");
   await expect(journal).toContainText("売上");
   await expect(journal).not.toContainText("支払家賃");
-  await work(page).getByRole("tab", { name: "総勘定元帳(T 勘定)" }).click();
+  await work(page).getByRole("tab", { name: "総勘定元帳(T勘定)" }).click();
   await expect(work(page).getByRole("tabpanel")).toContainText("売上");
   await expect(work(page).getByRole("tabpanel")).not.toContainText("支払家賃");
 
   // 「次へ →」で進み直すと、後の仕訳は失われず元の残高に戻る
   await next(page);
-  await expect(page.getByText("ステップ 6 / 10").first()).toBeVisible();
+  await expect(page.getByText("ステップ6 / 10").first()).toBeVisible();
   await expect(income).toContainText("支払家賃");
   await expect(page.getByRole("region", { name: "貸借対照表" })).toContainText("730,000");
 });

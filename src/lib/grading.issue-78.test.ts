@@ -6,14 +6,14 @@ import { gradePost } from "./grading";
 const GENERIC = "結果の表で何が動くはずか";
 const postTask = (unitId: string, index: number) => {
   const task = unitMap.get(unitId)!.steps[index].task;
-  if (task.type !== "post") throw new Error("post ではない");
+  if (task.type !== "post") throw new Error("postではない");
   return task;
 };
 
-describe("仮払金の精算(ステップ 6)", () => {
+describe("仮払金の精算(ステップ6)", () => {
   const task = postTask("receivables-and-payables/temporary-and-deposits", 5);
 
-  it("使った分だけ仮払金を消すと settlement_clears_only_spent", () => {
+  it("使った分だけ仮払金を消すとsettlement_clears_only_spent", () => {
     const result = gradePost(task, {
       debit: [{ account: "travel_expense", amount: 18000 }],
       credit: [{ account: "suspense_payment", amount: 18000 }],
@@ -24,7 +24,7 @@ describe("仮払金の精算(ステップ 6)", () => {
     expect(result.feedback).not.toContain(GENERIC);
   });
 
-  it("仮払金の代わりに現金を減らすと settlement_credits_cash", () => {
+  it("仮払金の代わりに現金を減らすとsettlement_credits_cash", () => {
     const result = gradePost(task, {
       debit: [
         { account: "travel_expense", amount: 18000 },
@@ -38,7 +38,7 @@ describe("仮払金の精算(ステップ 6)", () => {
     expect(result.feedback).not.toContain(GENERIC);
   });
 
-  it("全額を費用にする誤りは settlement_full_amount_is_expense のまま", () => {
+  it("全額を費用にする誤りはsettlement_full_amount_is_expenseのまま", () => {
     const result = gradePost(task, {
       debit: [{ account: "travel_expense", amount: 20000 }],
       credit: [{ account: "cash", amount: 20000 }],
@@ -51,10 +51,10 @@ describe("仮払金の精算(ステップ 6)", () => {
   });
 });
 
-describe("小口現金の週末の報告(ステップ 4)", () => {
+describe("小口現金の週末の報告(ステップ4)", () => {
   const task = postTask("cash-and-deposits/petty-cash", 3);
 
-  it("3 つの費用を通信費に寄せると petty_expenses_lumped", () => {
+  it("3つの費用を通信費に寄せるとpetty_expenses_lumped", () => {
     const result = gradePost(task, {
       debit: [{ account: "communication_expense", amount: 12500 }],
       credit: [{ account: "petty_cash", amount: 12500 }],
@@ -64,7 +64,7 @@ describe("小口現金の週末の報告(ステップ 4)", () => {
     expect(result.feedback).not.toContain(GENERIC);
   });
 
-  it("通信費に寄せて貸方を現金にした場合は petty_cash_is_cash のまま", () => {
+  it("通信費に寄せて貸方を現金にした場合はpetty_cash_is_cashのまま", () => {
     const result = gradePost(task, {
       debit: [{ account: "communication_expense", amount: 12500 }],
       credit: [{ account: "cash", amount: 12500 }],

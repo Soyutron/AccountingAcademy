@@ -1,7 +1,7 @@
 import { isAuthRetryableFetchError, type Session } from "@supabase/supabase-js";
 import { createClient } from "./supabase/client";
 
-// 学習者の回答と進捗の保存(docs/architecture.md 3.2 / 5 章)。
+// 学習者の回答と進捗の保存(docs/architecture.md 3.2 / 5章)。
 // 匿名サインインは閲覧時ではなく最初の書き込みの直前に行う。
 
 export type UnitStatus = "started" | "completed";
@@ -18,23 +18,23 @@ export interface Progress {
   userId: string;
   isAnonymous: boolean;
   units: Record<string, { status: UnitStatus; step: number }>;
-  // 単元ごとの正解済みステップ index(attempts の correct 行の exercise_id = `${unitId}#${index}`)
+  // 単元ごとの正解済みステップindex(attemptsのcorrect行のexercise_id = `${unitId}#${index}`)
   solved: Record<string, number[]>;
-  // 単元 → ステップ index → 最後の回答(正誤を問わない)。predict は間違えても進めるので、再開時の復元に使う
+  // 単元 → ステップindex → 最後の回答(正誤を問わない)。predictは間違えても進めるので、再開時の復元に使う
   answers: Record<string, Record<number, unknown>>;
-  // 単元 → ステップ index → 誤答の回数。再開時に「答えを見る」の条件(2 回誤答)を引き継ぐ(Issue #21)
+  // 単元 → ステップindex → 誤答の回数。再開時に「答えを見る」の条件(2回誤答)を引き継ぐ(Issue #21)
   wrong: Record<string, Record<number, number>>;
-  // 誤解 ID ごとの発生回数(立ち止まりの判断に使う)
+  // 誤解IDごとの発生回数(立ち止まりの判断に使う)
   misconceptions: Record<string, number>;
 }
 
 const supabase = createClient();
 
-// サインイン中だけ Promise を共有し、同時に複数の書き込みが走っても匿名ユーザーを 1 人しか作らない
+// サインイン中だけPromiseを共有し、同時に複数の書き込みが走っても匿名ユーザーを1人しか作らない
 let signInPromise: Promise<string> | null = null;
 
-// getSession() は Cookie の中身を検証しない。refresh_token が空で期限切れなら例外を投げ、user が無くても session を返す。
-// どちらも使えないので無いものとして扱い、次のサインインで Cookie を上書きする(Issue #136)
+// getSession()はCookieの中身を検証しない。refresh_tokenが空で期限切れなら例外を投げ、userが無くてもsessionを返す。
+// どちらも使えないので無いものとして扱い、次のサインインでCookieを上書きする(Issue #136)
 async function loadSession(): Promise<Session | null> {
   try {
     const { data } = await supabase.auth.getSession();
@@ -44,14 +44,14 @@ async function loadSession(): Promise<Session | null> {
   }
 }
 
-/** Cookie に書けずセッションを保持できない。再読み込みでは直らないので、他の保存失敗と区別する */
+/** Cookieに書けずセッションを保持できない。再読み込みでは直らないので、他の保存失敗と区別する */
 export class CookieBlockedError extends Error {
   name = "CookieBlockedError";
 }
 
 function canStoreCookie(): boolean {
   const probe = "cookie-probe=1";
-  // サンドボックス化された iframe などでは document.cookie の参照自体が例外になる
+  // サンドボックス化されたiframeなどではdocument.cookieの参照自体が例外になる
   try {
     document.cookie = `${probe}; path=/; SameSite=Lax`;
     const stored = document.cookie.split("; ").includes(probe);
@@ -63,7 +63,7 @@ function canStoreCookie(): boolean {
 }
 
 async function signIn(): Promise<string> {
-  // ロックを待つ間に別タブがサインインしていれば、Cookie 経由でそのセッションを使う
+  // ロックを待つ間に別タブがサインインしていれば、Cookie経由でそのセッションを使う
   const current = await loadSession();
   if (current) return current.user.id;
   const { data: signed, error } = await supabase.auth.signInAnonymously();
@@ -71,14 +71,14 @@ async function signIn(): Promise<string> {
   return signed.user.id;
 }
 
-// signInPromise はタブ内でしか共有されず、signInAnonymously もタブ間で排他されない(Issue #134)
+// signInPromiseはタブ内でしか共有されず、signInAnonymouslyもタブ間で排他されない(Issue #134)
 async function acrossTabs<T>(task: () => Promise<T>): Promise<T> {
-  // navigator.locks が無い非セキュアコンテキスト(HTTP の LAN 接続など)でも保存は止めない
+  // navigator.locksが無い非セキュアコンテキスト(HTTPのLAN接続など)でも保存は止めない
   if (!navigator.locks) return task();
   return navigator.locks.request("anonymous-sign-in", task);
 }
 
-// PostgREST が 401 を返した後に呼ぶ。refresh できれば同じユーザーのまま、できなければローカルのセッションを捨てる
+// PostgRESTが401を返した後に呼ぶ。refreshできれば同じユーザーのまま、できなければローカルのセッションを捨てる
 async function recoverSession(): Promise<void> {
   await acrossTabs(async () => {
     // ロックを待つ間に別タブや並行した読み書きが直していれば、捨てて上書きしない
@@ -91,14 +91,14 @@ async function recoverSession(): Promise<void> {
   });
 }
 
-// 書き込みのたびに現在のセッションを読む。user_id を持ち続けると、Cookie が消えた・別タブで別のゲストに
-// 入れ替わったときに古い user_id で書いて RLS に弾かれ続ける(Issue #14)
+// 書き込みのたびに現在のセッションを読む。user_idを持ち続けると、Cookieが消えた・別タブで別のゲストに
+// 入れ替わったときに古いuser_idで書いてRLSに弾かれ続ける(Issue #14)
 async function ensureUserId(): Promise<string> {
   const session = await loadSession();
   if (session) return session.user.id;
-  // セッションの置き場は Cookie だけなので、書けないままサインインすると保存に使えない匿名ユーザーが書き込みごとに増える。
-  // Cookie をブロックしたブラウザは Web Locks も拒否するので、ロックを取る前に確かめる
-  if (!canStoreCookie()) throw new CookieBlockedError("Cookie を保存できないため匿名サインインを行いません");
+  // セッションの置き場はCookieだけなので、書けないままサインインすると保存に使えない匿名ユーザーが書き込みごとに増える。
+  // CookieをブロックしたブラウザはWeb Locksも拒否するので、ロックを取る前に確かめる
+  if (!canStoreCookie()) throw new CookieBlockedError("Cookieを保存できないため匿名サインインを行いません");
   if (!signInPromise) {
     signInPromise = acrossTabs(signIn).finally(() => {
       signInPromise = null;
@@ -107,7 +107,7 @@ async function ensureUserId(): Promise<string> {
   return signInPromise;
 }
 
-// 401 はトークンが無効という合図。再読み込みしても同じ Cookie が読まれるだけなので、ここでセッションを立て直して 1 回やり直す
+// 401はトークンが無効という合図。再読み込みしても同じCookieが読まれるだけなので、ここでセッションを立て直して1回やり直す
 async function writeAsUser<T extends { status: number }>(write: (userId: string) => PromiseLike<T>): Promise<T> {
   const result = await write(await ensureUserId());
   if (result.status !== 401) return result;
@@ -139,16 +139,16 @@ export async function setUnitProgress(unitId: string, status: UnitStatus, step: 
   if (error) throw new Error(`進捗の保存に失敗しました: ${error.message}`);
 }
 
-// 後退防止のトリガーがあるので、ステップを減らした単元の範囲外の step は upsert では下げられない(Issue #197)
+// 後退防止のトリガーがあるので、ステップを減らした単元の範囲外のstepはupsertでは下げられない(Issue #197)
 export async function resetOutOfRangeStep(unitId: string, stepCount: number): Promise<void> {
   const { error } = await supabase.rpc("reset_out_of_range_step", { p_unit_id: unitId, p_step_count: stepCount });
   if (error) throw new Error(`進捗の修正に失敗しました: ${error.message}`);
 }
 
-// PostgREST の max_rows(既定 1000)を超えた行はエラーなしで切られる
+// PostgRESTのmax_rows(既定1000)を超えた行はエラーなしで切られる
 const ATTEMPTS_PAGE_SIZE = 1000;
 
-// 最後の回答を後勝ちで復元するので、古い順のまま全件読む(Issue #202)。created_at が同時刻でもページがずれないよう id でも並べる
+// 最後の回答を後勝ちで復元するので、古い順のまま全件読む(Issue #202)。created_atが同時刻でもページがずれないようidでも並べる
 async function queryAttempts() {
   const rows: Record<string, unknown>[] = [];
   for (;;) {
@@ -168,7 +168,7 @@ function queryProgress() {
   return Promise.all([supabase.from("unit_progress").select("unit_id,status,step"), queryAttempts()]);
 }
 
-/** セッションが無ければ null(まだ何も回答していない閲覧者) */
+/** セッションが無ければnull(まだ何も回答していない閲覧者) */
 export async function fetchProgress(): Promise<Progress | null> {
   let session = await loadSession();
   if (!session) return null;

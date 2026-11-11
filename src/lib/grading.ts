@@ -1,7 +1,7 @@
 import type { Unit } from "#content";
 import { type AccountInfo, type Change, type Element, type JournalEntry, ELEMENTS, ELEMENT_LABELS, computeImpact, sameEntry } from "./accounting";
 
-// ステップの課題の採点(純粋関数)。正誤だけでなく「どの誤解か」を返す(docs/architecture.md 6 章)
+// ステップの課題の採点(純粋関数)。正誤だけでなく「どの誤解か」を返す(docs/architecture.md 6章)
 
 export type Task = Unit["steps"][number]["task"];
 export type TaskOf<T extends Task["type"]> = Extract<Task, { type: T }>;
@@ -17,14 +17,14 @@ const GENERIC_WRONG = "まだ合っていません。結果の表で何が動く
 // 正解の金額は書かない。計算で求める課題では答えそのものになる
 const AMOUNT_WRONG = "科目は合っています。金額をもう一度確かめましょう。";
 // 比較表が全行「同じ」になる誤答。表を見直させても手がかりが無いので、科目へ目を向けさせる
-const SAME_IMPACT = "5 つの要素の動きは合っています。使っている科目を見直しましょう。";
+const SAME_IMPACT = "5つの要素の動きは合っています。使っている科目を見直しましょう。";
 const EXTRA_LINES = "正しい行はそろっています。この取引に含まれない余計な行を消しましょう。";
 // 計算問題では記帳しないので、結果の表の動きではなく計算そのものの見直しを促す
 const CALC_WRONG = "まだ合っていません。計算の式と、使う数字をもう一度確かめましょう。";
-// 予想は 1 回限りで、回答と同時に記帳される。やり直しではなく実際の動きとの見比べを促す
+// 予想は1回限りで、回答と同時に記帳される。やり直しではなく実際の動きとの見比べを促す
 const PREDICT_WRONG = "予想と実際の動きが違いました。下の表で、どの要素がどう動いたかを見比べましょう。外れても、このまま次へ進めます。";
 
-/** 2 回誤答すると「答えを見る」が出る課題か。predict は 1 回で進み、tweak は目標に合わせるだけなので誤答が重ならない */
+/** 2回誤答すると「答えを見る」が出る課題か。predictは1回で進み、tweakは目標に合わせるだけなので誤答が重ならない */
 export function canRevealAnswer(type: Task["type"]): boolean {
   return type === "post" || type === "calc" || type === "classify";
 }
@@ -65,7 +65,7 @@ export function gradePost(task: TaskOf<"post">, entry: JournalEntry, accounts?: 
   if (answers.some(hasAllLines)) return ng(EXTRA_LINES);
   if (answers.some((e) => sameAccounts(e, entry))) return ng(AMOUNT_WRONG);
   if (accounts) {
-    // 比較表と同じく task.answer とだけ比べる
+    // 比較表と同じくtask.answerとだけ比べる
     const yours = computeImpact(entry, accounts);
     const expected = computeImpact(task.answer, accounts);
     if (ELEMENTS.every((el) => yours[el] === expected[el])) return ng(SAME_IMPACT);
@@ -74,7 +74,7 @@ export function gradePost(task: TaskOf<"post">, entry: JournalEntry, accounts?: 
 }
 
 export interface PredictResult extends GradeResult {
-  // 外した要素それぞれの誤解(重複なし)。misconception はこの先頭で、attempts には 1 件だけ保存する
+  // 外した要素それぞれの誤解(重複なし)。misconceptionはこの先頭で、attemptsには1件だけ保存する
   misconceptions: string[];
 }
 
@@ -95,13 +95,13 @@ export function gradeCalc(task: TaskOf<"calc">, value: number): GradeResult {
 }
 
 export function gradeTweak(task: TaskOf<"tweak">, outputs: Record<string, number>): GradeResult {
-  return outputs[task.goal.output] === task.goal.equals ? ok(task) : ng(`いまの${task.goal.label}は ${outputs[task.goal.output]?.toLocaleString("ja-JP")} 円です。条件を動かして ${task.goal.equals.toLocaleString("ja-JP")} 円にしてみましょう。`);
+  return outputs[task.goal.output] === task.goal.equals ? ok(task) : ng(`いまの${task.goal.label}は${outputs[task.goal.output]?.toLocaleString("ja-JP")}円です。条件を動かして${task.goal.equals.toLocaleString("ja-JP")}円にしてみましょう。`);
 }
 
 export interface ClassifyResult extends GradeResult {
   // 間違えた科目ごとの説明
   wrong: { account: string; feedback: string; misconception?: string }[];
-  // 間違えた科目それぞれの誤解(重複なし)。misconception はこの先頭で、attempts には 1 件だけ保存する
+  // 間違えた科目それぞれの誤解(重複なし)。misconceptionはこの先頭で、attemptsには1件だけ保存する
   misconceptions: string[];
 }
 
@@ -119,5 +119,5 @@ export function gradeClassify(task: TaskOf<"classify">, placed: Partial<Record<s
   }
   if (wrong.length === 0) return { ...ok(task), wrong, misconceptions: [] };
   const misconceptions = [...new Set(wrong.flatMap((w) => w.misconception ?? []))];
-  return { ...ng(`${wrong.length} 個の科目が別の箱に入っています。`, misconceptions[0]), wrong, misconceptions };
+  return { ...ng(`${wrong.length}個の科目が別の箱に入っています。`, misconceptions[0]), wrong, misconceptions };
 }
