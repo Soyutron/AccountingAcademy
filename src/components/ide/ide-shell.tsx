@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { type ReactNode, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { type MouseEvent, type ReactNode, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
 import type { GlossaryAccount } from "@/lib/content";
 import { type AccountInfo, type Change, type Element, type JournalEntry, type Side, ELEMENT_LABELS, ELEMENTS, computeImpact, toChange } from "@/lib/accounting";
@@ -98,6 +98,12 @@ function replayEntries(steps: IdeStep[], upto: number): Posted[] {
     if (t.type === "predict") posted.push({ step: i, memo: t.transaction, entry: t.entry });
   });
   return posted;
+}
+
+// ダブルクリックの 2 回目は、1 回目で描画された次のステップや同じ位置の最終ステップのリンクに当たる(Issue #198)。
+// ブラウザの数えるクリック回数で見分けるので、キーボード(detail 0)と普通の 1 回押しは妨げない
+function isRepeatedClick(e: MouseEvent<HTMLElement>) {
+  return e.detail > 1;
 }
 
 export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) {
@@ -1081,19 +1087,27 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               aria-disabled={!done}
               className={done ? (pulseNext ? "animate-next-pulse" : "") : "opacity-50"}
               onAnimationEnd={() => setPulseNext(false)}
-              onClick={() => done && stepTo(stepIndex + 1)}
+              onClick={(e) => done && !isRepeatedClick(e) && stepTo(stepIndex + 1)}
               data-tour="next-button"
             >
               次へ →
             </Button>
           ) : unit.next ? (
             <Button asChild>
-              <Link href={`/units/${unit.next.id}`}>次の単元: {unit.next.title} →</Link>
+              <Link href={`/units/${unit.next.id}`} onClick={(e) => isRepeatedClick(e) && e.preventDefault()}>
+                次の単元: {unit.next.title} →
+              </Link>
             </Button>
           ) : isTutorialUnit ? (
             <Button asChild>
               {/* ツアーの途中で進むと pending のまま残り、次の単元で「初めてですか?」と勧めてしまう */}
-              <Link href={`/units/${FIRST_UNIT_AFTER_TUTORIAL}`} onClick={() => tutorial.status === "pending" && updateTutorial({ status: "done" })}>
+              <Link
+                href={`/units/${FIRST_UNIT_AFTER_TUTORIAL}`}
+                onClick={(e) => {
+                  if (isRepeatedClick(e)) return e.preventDefault();
+                  if (tutorial.status === "pending") updateTutorial({ status: "done" });
+                }}
+              >
                 3 級パスの最初の単元へ →
               </Link>
             </Button>
