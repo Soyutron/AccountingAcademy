@@ -78,7 +78,7 @@ create table unit_progress (
   unit_id     text not null,                       -- 例: depreciation/straight-line
   status      text not null check (status in ('started','completed')),
   updated_at  timestamptz not null default now(),
-  step        integer not null default 0,         -- 最後に到達したステップ。before update トリガーで後退させない(completed も戻さない)
+  step        integer not null default 0,         -- 最後に到達したステップ。before update トリガーで後退させない(completed も戻さない。範囲外の値だけ reset_out_of_range_step で 0 に戻す)
   primary key (user_id, unit_id)
 );
 
