@@ -24,7 +24,6 @@ describe("5 要素の動きが正解と同じ誤答", () => {
   it.each([
     ["普通預金で受けた元入れ", FIVE, 1, entry([["bank_deposit", 1000000]], [["capital_stock", 1000000]])],
     ["現金と普通預金に分けた元入れ", FIVE, 1, entry([["cash", 500000], ["bank_deposit", 500000]], [["capital_stock", 1000000]])],
-    ["運賃を売掛金から引く", RETURNS, 3, entry([["accounts_receivable", 28500], ["shipping_expense", 1500]], [["sales", 30000]])],
     ["普通預金 / 現金", CREDIT, 3, entry([["bank_deposit", 60000]], [["cash", 60000]])],
     ["買掛金 / 普通預金", CREDIT, 4, entry([["accounts_payable", 40000]], [["bank_deposit", 40000]])],
     ["買掛金 / 売掛金", CREDIT, 4, entry([["accounts_payable", 40000]], [["accounts_receivable", 40000]])],
@@ -32,6 +31,11 @@ describe("5 要素の動きが正解と同じ誤答", () => {
     const result = gradePost(postTask(unitId, index), wrong, accountMap);
     expect(result.correct).toBe(false);
     expect(result.feedback).toBe(SAME_IMPACT);
+  });
+
+  it("誤答パターンに書いた説明は汎用の文より優先する", () => {
+    const result = gradePost(postTask(RETURNS, 3), entry([["accounts_receivable", 28500], ["shipping_expense", 1500]], [["sales", 30000]]), accountMap);
+    expect(result.feedback).toContain("運賃の分を引かずに");
   });
 
   it("相殺行は余計な行として案内する", () => {
