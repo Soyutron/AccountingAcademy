@@ -139,6 +139,12 @@ export async function setUnitProgress(unitId: string, status: UnitStatus, step: 
   if (error) throw new Error(`進捗の保存に失敗しました: ${error.message}`);
 }
 
+// 後退防止のトリガーがあるので、ステップを減らした単元の範囲外の step は upsert では下げられない(Issue #197)
+export async function resetOutOfRangeStep(unitId: string, stepCount: number): Promise<void> {
+  const { error } = await supabase.rpc("reset_out_of_range_step", { p_unit_id: unitId, p_step_count: stepCount });
+  if (error) throw new Error(`進捗の修正に失敗しました: ${error.message}`);
+}
+
 // PostgREST の max_rows(既定 1000)を超えた行はエラーなしで切られる
 const ATTEMPTS_PAGE_SIZE = 1000;
 

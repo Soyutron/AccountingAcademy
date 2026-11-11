@@ -13,7 +13,7 @@ import { type EditableEntry, emptyEntry, fromJournalEntry, isIncompleteLine, par
 import { type ClassifyResult, type EffectAnswer, type GradeResult, type PredictResult, type Task, canRevealAnswer, gradeCalc, gradeClassify, gradePost, gradePredict, gradeTweak } from "@/lib/grading";
 import { evaluateFormula } from "@/lib/formulas";
 import { type OpeningLine, computeBalances, diffBalances } from "@/lib/ledger";
-import { CookieBlockedError, fetchProgress, recordAttempt, setUnitProgress } from "@/lib/progress";
+import { CookieBlockedError, fetchProgress, recordAttempt, resetOutOfRangeStep, setUnitProgress } from "@/lib/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { JournalEditor } from "@/components/journal-editor";
@@ -234,8 +234,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       .then((p) => {
         setNoRecord(!p || (Object.keys(p.units).length === 0 && Object.keys(p.answers).length === 0));
         const saved = p?.units[unit.id];
-        // ステップを減らした単元では保存値が範囲外になる。そのまま持つと最後に着いても完了にならないので無視する
+        // ステップを減らした単元では保存値が範囲外になる。そのまま持つと最後に着いても完了にならないので無視し、DB の値も戻す(再開できるように)
         if (saved && saved.step < unit.steps.length) savedStep.current = saved.step;
+        else if (saved) resetOutOfRangeStep(unit.id, unit.steps.length).catch((e: Error) => console.error(e));
         if (saved && saved.step > 0 && saved.step < unit.steps.length) {
           const answer = p.answers[unit.id]?.[saved.step];
           resumeAnswered.current = new Map(
