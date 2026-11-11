@@ -1000,6 +1000,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         <TutorialTour
           key={tourKey}
           ctx={{ stepIndex, postedCount: posted.length, debit: entryDraft.debit, credit: entryDraft.credit }}
+          pane={pane}
+          paneLabels={PANE_LABELS}
           onExit={exitTour}
           onPane={setPane}
         />
