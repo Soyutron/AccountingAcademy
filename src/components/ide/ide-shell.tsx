@@ -333,6 +333,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       return;
     }
     if (r.correct) {
+      // 他の課題種別と同じく状態欄へフォーカスを移し、「次へ →」まで結果ペインの用語を通らずに届くようにする(Issue #200)
+      focusStatus.current = true;
       setTweakDone(true);
       setResult(r);
       record(r, values);
