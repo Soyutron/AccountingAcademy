@@ -17,7 +17,7 @@ test("ステップ 1 の本文が図と同じく振り込みと読める", async
 test("出張の仮払いの本文が仮払金を金額にも触れて説明する", () => {
   const text = narrative("出張の仮払い");
   expect(text).not.toContain("使い道が決まる前のお金");
-  expect(text).toMatch(/金額や使い道が決まるまでのお金は「仮払金」/);
+  expect(text).toContain("金額や使い道が決まるまでのお金は「[[suspense_payment|仮払金]]」");
 });
 
 test("ふりかえりが仮払金を金額にも触れて説明する", () => {

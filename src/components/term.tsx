@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { GlossaryEntry } from "@/lib/content";
 import { ElementBadge } from "./element-badge";
+import { useCloseWhenHidden } from "./use-close-when-hidden";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 // 本文中の用語。ホバーまたはタップで short → summary / example → 単元へ、と段階的に掘れる(要件 1 章)
@@ -36,24 +37,29 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
     }, delay);
   };
 
+  const changeOpen = (next: boolean) => {
+    // 予約済みのホバーのタイマーが残ると、クリック直後の Esc で閉じた後に開き直る
+    if (timer.current) clearTimeout(timer.current);
+    byHover.current = false;
+    setOpen(next);
+    if (!next) setExpanded(false);
+  };
+
+  useCloseWhenHidden(trigger, open, () => changeOpen(false));
+
   useEffect(() => () => {
     if (timer.current) clearTimeout(timer.current);
   }, []);
 
   useEffect(() => {
-    if (expanded) details.current?.focus();
+    // カードがスクロールするときに、フォーカス移動で用語名が上へ隠れないようにする
+    if (expanded) details.current?.focus({ preventScroll: true });
   }, [expanded]);
 
   return (
     <Popover
       open={open}
-      onOpenChange={(next) => {
-        // 予約済みのホバーのタイマーが残ると、クリック直後の Esc で閉じた後に開き直る
-        if (timer.current) clearTimeout(timer.current);
-        byHover.current = false;
-        setOpen(next);
-        if (!next) setExpanded(false);
-      }}
+      onOpenChange={changeOpen}
     >
       <PopoverTrigger asChild>
         <button
@@ -77,7 +83,8 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
       </PopoverTrigger>
       <PopoverContent
         ref={content}
-        className="w-80 text-sm space-y-2"
+        // 横向きのスマホでは上下どちらにも展開後の高さが無い。上限が無いと先頭が画面の外に切れて読めない(Issue #225)
+        className="w-80 max-h-(--radix-popover-content-available-height) overflow-y-auto overscroll-contain text-sm space-y-2"
         onOpenAutoFocus={(e) => {
           if (byHover.current) e.preventDefault();
         }}

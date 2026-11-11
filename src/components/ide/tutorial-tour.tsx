@@ -50,6 +50,7 @@ const STEPS: TourStep[] = [
   { title: "できました", body: "使い方は以上です。ここからは 3 級パスの最初の単元で、カフェを開業するところから始めましょう。" },
 ];
 
+const FOCUSABLE = "input:not([disabled]), button:not([disabled])";
 const NEXT_BUTTON_STAGE = STEPS.findIndex((s) => s.target === "next-button");
 const RESULT_STAGE = STEPS.findIndex((s) => s.target === "statements");
 // tutorial/first-entry で仕訳課題があるステップ
@@ -103,6 +104,16 @@ export function TutorialTour({ ctx, onExit, onPane }: { ctx: TourContext; onExit
   const spotlight = rect && rect.width > 0 ? rect : null;
   const cardStyle = spotlight ? placeCard(spotlight) : { left: "50%", bottom: "6rem", transform: "translateX(-50%)" };
 
+  // カードは DOM の末尾にあり、操作待ちの段の Tab はページ先頭へ戻って画面全体を抜けることになるので、案内先へ直接移す(Issue #208)
+  const tabToTarget = (e: React.KeyboardEvent) => {
+    if (e.key !== "Tab" || e.shiftKey || satisfied || !spotlight) return;
+    const area = document.querySelector<HTMLElement>(`[data-tour="${step.target}"]`);
+    const field = area?.matches(FOCUSABLE) ? area : area?.querySelector<HTMLElement>(FOCUSABLE);
+    if (!field) return;
+    e.preventDefault();
+    field.focus();
+  };
+
   return (
     <div className="fixed inset-0 z-50 pointer-events-none" role="dialog" aria-modal="false" aria-label="チュートリアル">
       {spotlight ? (
@@ -115,7 +126,8 @@ export function TutorialTour({ ctx, onExit, onPane }: { ctx: TourContext; onExit
           <span>
             チュートリアル {index + 1} / {STEPS.length}
           </span>
-          <button type="button" className="underline" onClick={skip}>
+          {/* 操作待ちの段では「次へ」が無効なので、スキップがカードの最後の操作になる */}
+          <button type="button" className="underline" onClick={skip} onKeyDown={tabToTarget}>
             {last ? "閉じる" : "スキップ"}
           </button>
         </div>

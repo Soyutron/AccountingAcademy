@@ -23,7 +23,7 @@ scenario:
 
 ## 軽バンを記帳する
 軽バンの購入を、まだ帳簿に書いていませんでした。1,200,000 円を現金で払っています。
-軽バンは「車両運搬具」という勘定科目で、備品と同じ [[tangible_fixed_assets|有形固定資産]] です。払った日に全部費用にはしないことを思い出しながら、記帳してみましょう。
+軽バンは「[[vehicle|車両運搬具]]」という [[account_title|勘定科目]] で、備品と同じ [[tangible_fixed_assets|有形固定資産]] です。払った日に全部費用にはしないことを思い出しながら、記帳してみましょう。
 
 ```figure
 type: elements
@@ -63,7 +63,7 @@ success: 結果の表に車両運搬具 1,200,000 が現れ、現金が同じだ
 
 ## 1 年分を決める
 軽バンの 1,200,000 円を、何年に分けるか。この「何年使えるか」の見積もりを [[useful_life|耐用年数]] と呼びます。
-([[acquisition_cost|取得原価]] − [[residual_value|残存価額]])÷ 耐用年数 で毎年同じ金額を費用にする方法が [[straight_line_method|定額法]] です。耐用年数を動かして、1 年分の減価償却費が 200,000 円になる年数を探してみましょう。
+([[acquisition_cost|取得原価]] − [[residual_value|残存価額]])÷ 耐用年数 で毎年同じ金額を費用にする方法が [[straight_line_method|定額法]] です。耐用年数を動かして、1 年分の [[depreciation_expense|減価償却費]] が 200,000 円になる年数を探してみましょう。
 
 ```figure
 type: timeline
@@ -118,13 +118,21 @@ wrong_patterns:
     feedback: ここでは残存価額ゼロで計算します。1 年分 200,000 を月割りしましょう。
   - match: 50000
     feedback: 10 月から 3 月までは 6 か月です。200,000 × 6 ÷ 12 で計算してみましょう。
+  - match: 83333
+    feedback: 5 か月分で計算しています。10 月と 3 月の両端を入れて数えると、10 月から 3 月までは 6 か月です。
+  - match: 116666
+    feedback: 7 か月分で計算しています。10 月と 3 月の両端を入れて数えると、10 月から 3 月までは 6 か月です。
+  - match: 116667
+    feedback: 7 か月分で計算しています。10 月と 3 月の両端を入れて数えると、10 月から 3 月までは 6 か月です。
+  - match: 1100000
+    feedback: それは取得原価から初年度の費用を引いた帳簿価額です。問われているのは、減価償却費そのものの金額です。
 hint: 200,000 × 6 か月 ÷ 12 か月。
 success: 初年度は 100,000 円。買った日から決算日まで数えるのがコツです。
 ```
 
 ## 予想してから記帳する
 軽バンの減価償却費 100,000 円を記帳します。その前に、5 つの要素がどう動くか予想してみましょう。
-右に書く減価償却累計額が、負債ではなかったことを思い出してください。
+右に書く [[accumulated_depreciation|減価償却累計額]] が、負債ではなかったことを思い出してください。
 
 ```task
 type: predict
@@ -139,6 +147,9 @@ wrong_patterns:
     feedback: 減価償却累計額は右に書きますが、負債ではありません。資産のマイナスなので、資産が減ります。
   - match: { asset: none }
     feedback: 累計額は資産のマイナスです。軽バンの価値が減った分だけ、資産の合計は減ります。
+  - match: { asset: increase }
+    misconception: contra_increase_as_asset_increase
+    feedback: 減価償却累計額は増えますが、資産のマイナスです。マイナスが増えるので、資産の合計は減ります。
   - match: { expense: none }
     feedback: 減価償却費は費用です。使った 6 か月分の価値が費用になります。
   - match: { equity: none }
@@ -178,6 +189,21 @@ wrong_patterns:
   - match: { credit: [{ account: cash }] }
     misconception: depreciation_as_cash_outflow
     feedback: 現金はマシンを買ったときにもう減っています。減価償却ではお金は動きません。
+  - match: { credit: [{ account: vehicle }] }
+    misconception: direct_writeoff_vs_contra
+    feedback: 車両運搬具は軽バンの科目で、この問いはコーヒーマシンの減価償却です。それに間接法では、資産の科目を直接減らしません。
+  - match: { debit: [{ account: equipment }] }
+    misconception: direct_writeoff_vs_contra
+    feedback: 左に備品を書くと、マシンの金額が増えてしまいます。使った 6 か月分は費用なので、左には減価償却費を書きましょう。
+  - match: { credit: [{ account: accounts_payable_other }] }
+    misconception: expense_as_liability
+    feedback: 未払金は、後で払う義務を表す科目です。マシンの代金は買ったときに払い終えていて、減価償却で新しく払う相手は生まれません。
+  - match: { credit: [{ account: accounts_payable }] }
+    misconception: expense_as_liability
+    feedback: 買掛金は、商品の代金を後で払う義務を表す科目です。マシンの代金は買ったときに払い終えていて、減価償却で新しく払う相手は生まれません。
+  - match: { debit: [{ account: supplies_expense }] }
+    misconception: depreciation_as_supplies_expense
+    feedback: 消耗品費は、文房具のようにすぐ使い切る物の費用です。何年も使うマシンの使った分には、減価償却のための費用の科目があります。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。
 hint: 600,000 ÷ 6 年 = 100,000。それを 6 か月分にすると 50,000 です。

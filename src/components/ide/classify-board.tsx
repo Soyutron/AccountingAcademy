@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useRef, useState } from "react";
+import { type MouseEvent, type ReactNode, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { DndContext, type DragEndEvent, DragOverlay, MouseSensor, pointerWithin, TouchSensor, useDraggable, useDroppable, useSensor, useSensors } from "@dnd-kit/core";
 import { motion, useReducedMotion } from "motion/react";
@@ -63,11 +63,15 @@ function Pool({ children }: { children: ReactNode }) {
   );
 }
 
-function Bin({ element, children }: { element: Element; children: ReactNode }) {
+function Bin({ element, onPress, children }: { element: Element; onPress?: () => void; children: ReactNode }) {
   const { setNodeRef, isOver } = useDroppable({ id: element });
   const style = ELEMENT_STYLE[element];
+  // 余白を押す経路はポインタ専用で、キーボードと読み上げは見出しの button を使う。button の中のクリックはそれぞれの button が処理する
+  const onClick = onPress && ((e: MouseEvent) => {
+    if (!(e.target as HTMLElement).closest("button")) onPress();
+  });
   return (
-    <div ref={setNodeRef} data-drop={element} data-over={isOver || undefined} className={`rounded-md border p-2 min-h-20 ${style.border} ${style.bg} ${isOver ? `ring-2 ring-offset-1 brightness-95 ${style.ring}` : ""}`}>
+    <div ref={setNodeRef} data-drop={element} data-over={isOver || undefined} onClick={onClick} className={`rounded-md border p-2 min-h-20 ${onPress ? "cursor-pointer" : ""} ${style.border} ${style.bg} ${isOver ? `ring-2 ring-offset-1 brightness-95 ${style.ring}` : ""}`}>
       {children}
     </div>
   );
@@ -94,10 +98,14 @@ export function ClassifyBoard({ accounts, placed, onChange, wrong, disabled }: P
     const name = accounts.find((a) => a.id === id)?.name;
     setAnnouncement(to ? `${name}を${ELEMENT_STYLE[to].label}に入れました` : `${name}を候補に戻しました`);
   };
-  const place = (el: Element) => {
+  const place = (el: Element, byKeyboard: boolean) => {
     if (!selected) return;
-    move(selected, el);
-    setSelected(null);
+    flushSync(() => {
+      move(selected, el);
+      setSelected(null);
+    });
+    // focus() はプールまでスクロールするので、タップでは移さない(ページが跳ねる。Issue #223)
+    if (byKeyboard) poolChips.current?.querySelector<HTMLElement>("[data-chip]")?.focus();
   };
   const unplace = (id: string) => {
     // 箱の中の chip は消え、プールには別の DOM ノードとして描かれるので、描画後に移す(Issue #85)
@@ -147,11 +155,11 @@ export function ClassifyBoard({ accounts, placed, onChange, wrong, disabled }: P
         </Pool>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
           {ELEMENTS.map((el) => (
-            <Bin key={el} element={el}>
+            <Bin key={el} element={el} onPress={selected && !disabled ? () => place(el, false) : undefined}>
               <button
                 type="button"
                 aria-disabled={disabled || !selected}
-                onClick={() => !disabled && selected && place(el)}
+                onClick={(e) => !disabled && selected && place(el, e.detail === 0)}
                 className={`w-full text-left text-xs font-semibold mb-1 rounded hover:bg-background/70 px-1 min-h-10 ${ELEMENT_STYLE[el].text} ${selected ? "" : "opacity-70"}`}
               >
                 <span aria-hidden>{ELEMENT_STYLE[el].symbol} </span>
