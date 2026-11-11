@@ -40,7 +40,9 @@ export function TAccountFigure({ account, debit, credit }: { account: AccountInf
         {side("貸方", credit, inc === "credit")}
       </div>
       <div className="mt-1 text-right text-xs text-muted-foreground">
-        残高 {formatAmount(Math.abs(balance))}({balance >= 0 ? "借方" : "貸方"})
+        {/* 0 にはどちらの側もない */}
+        残高 {formatAmount(Math.abs(balance))}
+        {balance !== 0 && `(${balance > 0 ? "借方" : "貸方"})`}
       </div>
     </div>
   );
