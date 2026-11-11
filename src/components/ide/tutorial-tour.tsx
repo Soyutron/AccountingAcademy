@@ -56,7 +56,19 @@ const RESULT_STAGE = STEPS.findIndex((s) => s.target === "statements");
 // tutorial/first-entry で仕訳課題があるステップ
 const JOURNAL_UNIT_STEP = 1;
 
-export function TutorialTour({ ctx, onExit, onPane }: { ctx: TourContext; onExit: () => void; onPane: (pane: TourPane) => void }) {
+export function TutorialTour({
+  ctx,
+  pane,
+  paneLabels,
+  onExit,
+  onPane,
+}: {
+  ctx: TourContext;
+  pane: TourPane;
+  paneLabels: Record<TourPane, string>;
+  onExit: () => void;
+  onPane: (pane: TourPane) => void;
+}) {
   const [index, setIndex] = useState(0);
   const step = STEPS[index];
   const rect = useTargetRect(step.target, { reveal: true });
@@ -103,6 +115,9 @@ export function TutorialTour({ ctx, onExit, onPane }: { ctx: TourContext; onExit
   // 対象が画面に無い(スマートフォンで別タブ)ときはカードだけ出す
   const spotlight = rect && rect.width > 0 ? rect : null;
   const cardStyle = spotlight ? placeCard(spotlight) : { left: "50%", bottom: "6rem", transform: "translateX(-50%)" };
+  // 学習者が自分で別のタブへ移った時は、タップを打ち消さずに戻り方を示す(Issue #250)。
+  // PC 幅では対象が見えているので出さない
+  const awayPane = step.pane && pane !== step.pane && !spotlight ? step.pane : null;
 
   // カードは DOM の末尾にあり、操作待ちの段の Tab はページ先頭へ戻って画面全体を抜けることになるので、案内先へ直接移す(Issue #208)
   const tabToTarget = (e: React.KeyboardEvent) => {
@@ -134,6 +149,14 @@ export function TutorialTour({ ctx, onExit, onPane }: { ctx: TourContext; onExit
         <p id="tutorial-tour-title" className="font-semibold">{step.title}</p>
         <p id="tutorial-tour-body">{step.body}</p>
         {!satisfied && step.waiting && <p className="text-xs text-primary">{step.waiting}</p>}
+        {awayPane && (
+          <div className="flex items-center justify-between gap-2 rounded-md bg-muted/60 p-2 text-xs">
+            <span>「{paneLabels[awayPane]}」のタブに戻ると続けられます</span>
+            <Button size="sm" variant="outline" onClick={() => onPane(awayPane)}>
+              {paneLabels[awayPane]}に戻る
+            </Button>
+          </div>
+        )}
         <div className="flex justify-end gap-2 pt-1">
           {last ? (
             <>
