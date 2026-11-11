@@ -23,11 +23,23 @@ let cache: TutorialState | null = null;
 // 保存に失敗した変更は cache にしかないので、読み直して失わないようにする
 let unsaved = false;
 
+// 手で書き換えた値や古い形式でも落ちないよう、項目ごとに形を確かめて合わないものは既定に戻す(Issue #203)
+function parse(raw: string): TutorialState {
+  const value: unknown = JSON.parse(raw);
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return DEFAULT;
+  const { status, enabled, seen } = value as Record<string, unknown>;
+  return {
+    status: status === "pending" || status === "skipped" || status === "done" ? status : DEFAULT.status,
+    enabled: typeof enabled === "boolean" ? enabled : DEFAULT.enabled,
+    seen: Array.isArray(seen) && seen.every((id) => typeof id === "string") ? seen : DEFAULT.seen,
+  };
+}
+
 function read(): TutorialState {
   if (cache) return cache;
   try {
     const raw = localStorage.getItem(KEY);
-    cache = raw ? { ...DEFAULT, ...(JSON.parse(raw) as Partial<TutorialState>) } : DEFAULT;
+    cache = raw ? parse(raw) : DEFAULT;
   } catch {
     cache = DEFAULT;
   }
