@@ -24,6 +24,10 @@ security invoker
 set search_path = ''
 as $$
 begin
+  -- ステップ数は呼び出し側の値なので、0 以下で全部を戻させない
+  if p_step_count < 1 then
+    return;
+  end if;
   perform set_config('app.reset_out_of_range_step', 'on', true);
   update public.unit_progress
     set step = 0, updated_at = now()
