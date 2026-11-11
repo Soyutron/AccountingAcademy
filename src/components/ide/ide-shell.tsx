@@ -171,6 +171,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const focusStatus = useRef(false);
   // 誤答のとき、直す対象を下部パネルの上へ出す(Issue #180)
   const revealWrong = useRef(false);
+  // 「答えを見る」で正解を入れた後、確定ボタンを押すまで次の操作を案内する(Issue #195)
+  const [revealed, setRevealed] = useState(false);
   const bottomBar = useRef<HTMLDivElement>(null);
   // 採点を通らずに消えるボタンの移し先(Issue #85)
   const stepHeading = useRef<HTMLHeadingElement>(null);
@@ -392,6 +394,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     setCalcError(null);
     setParams({});
     setResult(null);
+    setRevealed(false);
     setAttempts(0);
     setShowHint(false);
     setTweakDone(false);
@@ -624,6 +627,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     }
     if (task.type === "classify") setPlaced(Object.fromEntries(task.accounts.map((id) => [id, accountMap.get(id)!.element])));
     setResult(null);
+    setRevealed(true);
     // 結果の表示を消すので、同じ誤答を入れ直して押したら採点し直して説明を出す(Issue #128)
     gradedAnswer.current = null;
     setRepeated(0);
@@ -657,6 +661,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     (result?.correct ?? false);
   const hint = "hint" in task ? task.hint : undefined;
   const canReveal = attempts >= 2 && canRevealAnswer(task.type) && !result?.correct;
+  const revealNote = revealed && !result ? `正解を入れました。「${task.type === "post" ? "記帳する" : "確認する"}」を押すと次へ進めます。` : null;
   const misIds = result && "misconceptions" in result ? result.misconceptions : result?.misconception ? [result.misconception] : [];
   const misList = misIds.flatMap((id) => misconceptions[id] ?? []);
   const helpCtx: HelpContext = { taskType: task.type, postedCount: visiblePosted.length, isLast, hasHint: Boolean(hint) };
@@ -1044,8 +1049,13 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       )}
       <div ref={bottomBar} className="border-t bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm flex flex-col gap-2 sticky bottom-0 max-h-[50dvh]">
         {/* 説明が長くても操作行を押し出さないよう、スクロールするのは説明だけにする(Issue #115) */}
-        {(result || saveError) && (
+        {(result || revealNote || saveError) && (
           <div className="min-h-0 overflow-y-auto space-y-2 border-b pb-2">
+          {revealNote && (
+            <p role="status" aria-live="polite" className="rounded-md bg-hint p-3 text-hint-fg">
+              {revealNote}
+            </p>
+          )}
           {result && (
             <div ref={statusBox} tabIndex={-1} role="status" aria-live="polite" className={`rounded-md p-3 space-y-2 focus:outline-none motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 ${result.correct ? "bg-ok text-ok-fg" : "bg-hint text-hint-fg"}`}>
               {/* 正解はアイコンと見出しを大きくして、色だけに頼らず「もう一歩」と見分けられるようにする */}
@@ -1104,7 +1114,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
             </Button>
           )}
           <span className="flex-1" />
-          {!done && <span className="text-xs text-muted-foreground">課題ができると次へ進めます</span>}
+          {!done && !revealNote && <span className="text-xs text-muted-foreground">課題ができると次へ進めます</span>}
           {stepIndex > 0 && (
             <Button
               variant="ghost"
