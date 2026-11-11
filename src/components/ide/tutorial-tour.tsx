@@ -45,7 +45,7 @@ const STEPS: TourStep[] = [
   { target: "post-button", pane: "work", title: "記帳する", body: "「記帳する」を押します(金額欄で Enter でも記帳できます)。", done: (c) => c.postedCount >= 1, waiting: "「記帳する」を押してください", autoAdvance: true },
   { target: "statements", pane: "result", title: "ここは結果", body: "貸借対照表に現金と資本金が現れ、▲ が付きました。記帳のたびにここが動きます。科目名に触れると意味が出ます。" },
   { target: "shape", pane: "result", title: "会社のかたち", body: "上の帯は、左の資産が右の負債と純資産でまかなわれている様子です。帯の幅が記帳で変わっていきます。" },
-  { target: "hint", pane: "guide", title: "迷ったら", body: "「ヒントを見る」で手がかりが出ます。2 回間違えると「答えを見る」も使えます。" },
+  { target: "hint", pane: "guide", title: "迷ったら", body: "「ヒントを見る」で手がかりが出ます。答えを変えて 2 回間違えると「答えを見る」も使えます。" },
   { target: "help-button", title: "困ったら「使い方」", body: "右上の「使い方」と見出し横の ? で、いつでも説明を読めます。「使い方」からこのチュートリアルもやり直せます。" },
   { title: "できました", body: "使い方は以上です。ここからは 3 級パスの最初の単元で、カフェを開業するところから始めましょう。" },
 ];

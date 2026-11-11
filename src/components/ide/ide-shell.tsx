@@ -148,6 +148,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const answered = useRef(new Map<number, unknown>());
   // このステップで最後に採点した答え。同じ答えの連打(ダブルクリック)は 1 回の回答として扱う(Issue #15)
   const gradedAnswer = useRef<string | null>(null);
+  const gradedAt = useRef(0);
+  // 同じ答えで押し直した回数。無反応に見えないよう案内を出し、押すたびに出し直す(Issue #178)
+  const [repeated, setRepeated] = useState(0);
   // 自由記帳で最後に記帳した下書き。同じ仕訳を入れ直して記帳するのは正当なので、内容ではなくインスタンスで同一ティックの連打を弾く(Issue #158)
   const freePostedDraft = useRef<EditableEntry | null>(null);
   // 保存済みの step。見直しや案内前の「次へ」で保存する step を下げないために持つ
@@ -394,6 +397,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     setPulseNext(false);
     answeredStep.current = null;
     gradedAnswer.current = null;
+    setRepeated(0);
     setViewUpto(null);
     setPane("guide");
     // observe の仕訳はステップに入った時点で自動的に記帳する
@@ -504,8 +508,14 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     // 答えを変えずに押し直したときは採点も記録もしない(答えを変えれば数える)
     const alreadyGraded = (answer: unknown) => {
       const key = JSON.stringify(answer);
-      if (gradedAnswer.current === key) return true;
+      if (gradedAnswer.current === key) {
+        // ダブルクリックの 2 回目まで案内すると、1 回しか答えていないのに「同じ答え」と言われる
+        if (Date.now() - gradedAt.current > 500) setRepeated((n) => n + 1);
+        return true;
+      }
       gradedAnswer.current = key;
+      gradedAt.current = Date.now();
+      setRepeated(0);
       return false;
     };
     switch (task.type) {
@@ -597,6 +607,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     setResult(null);
     // 結果の表示を消すので、同じ誤答を入れ直して押したら採点し直して説明を出す(Issue #128)
     gradedAnswer.current = null;
+    setRepeated(0);
   };
 
   // 課題の post ステップは採点が不一致を誤解として返すが、自由記帳には採点が無いのでここで止める(Issue #42)
@@ -1023,6 +1034,11 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
                 {result.correct ? <CheckCircle2 className="size-5" aria-hidden /> : <CircleAlert className="size-4" aria-hidden />}
                 {result.correct ? "できました" : "もう一歩"}
               </p>
+              {!result.correct && repeated > 0 && (
+                <p key={repeated} className="font-semibold motion-safe:animate-in motion-safe:fade-in">
+                  さっきと同じ答えです。どこかを変えて、もう一度試してみましょう。
+                </p>
+              )}
               <p className="whitespace-pre-wrap">{result.feedback}</p>
               {task.type === "post" && !result.correct && gradedEntry && (
                 <div className="rounded bg-background/70 p-2">
