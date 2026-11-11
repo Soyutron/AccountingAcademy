@@ -504,7 +504,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     switch (task.type) {
       case "post": {
         if (!draftReady || alreadyGraded(entryDraft)) return;
-        const r = gradePost(task, entryDraft);
+        const r = gradePost(task, entryDraft, accountMap);
         if (r.correct) {
           focusStatus.current = true;
           answeredStep.current = stepIndex;
