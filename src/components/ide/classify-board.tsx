@@ -43,6 +43,7 @@ function Chip({ account, selected, wrong, pressed, disabled, onPress }: ChipProp
       transition={{ layout: { duration: 0.2 } }}
       type="button"
       data-chip={account.id}
+      data-wrong={wrong || undefined}
       disabled={disabled}
       onClick={onPress}
       aria-pressed={pressed}

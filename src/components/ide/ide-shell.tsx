@@ -169,6 +169,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   // 採点で押したボタンが消えるときは、フォーカスが body に落ちないよう結果へ移す(復元や誤答では動かさない)
   const statusBox = useRef<HTMLDivElement>(null);
   const focusStatus = useRef(false);
+  // 誤答のとき、直す対象を下部パネルの上へ出す(Issue #180)
+  const revealWrong = useRef(false);
+  const bottomBar = useRef<HTMLDivElement>(null);
   // 採点を通らずに消えるボタンの移し先(Issue #85)
   const stepHeading = useRef<HTMLHeadingElement>(null);
   const hintText = useRef<HTMLParagraphElement>(null);
@@ -496,6 +499,18 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     statusBox.current?.focus();
   }, [gradedResult]);
 
+  // スマホ幅では誤答の説明でパネルが画面の半分まで伸び、「(間違い)」の科目や「記帳する」がその裏に残る(Issue #180)。
+  // lg 以上はタブ列が display: none(offsetParent が null)で、ペインごとにスクロールするので動かさない
+  useEffect(() => {
+    if (!gradedResult || !revealWrong.current) return;
+    revealWrong.current = false;
+    const target = workPane.current?.querySelector(task.type === "classify" ? "[data-wrong]" : '[data-tour="post-button"]');
+    const bar = bottomBar.current;
+    if (!target || !bar || !paneTabs.current?.offsetParent) return;
+    const overlap = target.getBoundingClientRect().bottom - bar.getBoundingClientRect().top;
+    if (overlap > 0) window.scrollBy({ top: overlap + 8 });
+  }, [gradedResult, task.type]);
+
   // スマホ幅ではペインがページごとスクロールするので、押したボタンの位置のままだと結果の先頭とタブ列が画面の上に隠れる(Issue #169)。
   // lg 以上はタブ列が display: none で、scrollIntoView は何もしない
   const showResultPane = () => {
@@ -539,7 +554,10 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           celebrate();
         }
         if (r.correct) showResultPane();
-        else setPane("work");
+        else {
+          revealWrong.current = true;
+          setPane("work");
+        }
         break;
       }
       case "predict": {
@@ -587,6 +605,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           answeredStep.current = stepIndex;
           answered.current.set(stepIndex, placed);
         }
+        if (!r.correct) revealWrong.current = true;
         setGradedPlaced(placed);
         setResult(r);
         setAttempts((k) => k + 1);
@@ -1023,7 +1042,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           onPane={setPane}
         />
       )}
-      <div className="border-t bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm flex flex-col gap-2 sticky bottom-0 max-h-[50dvh]">
+      <div ref={bottomBar} className="border-t bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm flex flex-col gap-2 sticky bottom-0 max-h-[50dvh]">
         {/* 説明が長くても操作行を押し出さないよう、スクロールするのは説明だけにする(Issue #115) */}
         {(result || saveError) && (
           <div className="min-h-0 overflow-y-auto space-y-2 border-b pb-2">
