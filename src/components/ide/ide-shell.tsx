@@ -1133,7 +1133,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
               variant="ghost"
               size="sm"
               onClick={() => {
-                if (draftHasBothSides && !result?.correct && !window.confirm("入力中の仕訳は消えます。前のステップに戻りますか?")) return;
+                if (touched && !result?.correct && !window.confirm("入力中の仕訳は消えます。前のステップに戻りますか?")) return;
                 stepTo(stepIndex - 1);
               }}
             >
