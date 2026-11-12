@@ -80,7 +80,8 @@ type Pane = "guide" | "work" | "result";
 const CHANGE_LABELS: Record<Change, string> = { increase: "増える", decrease: "減る", none: "変わらない" };
 const PANES: Pane[] = ["guide", "work", "result"];
 const PANE_LABELS: Record<Pane, string> = { guide: "ガイド", work: "ワークスペース", result: "結果" };
-const FOCUS_TARGET_CLASS = "focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring";
+// スマホ幅ではフォーカスで画面内へ移したときに、上に固定したタブ列(高さ45px)の下へ潜らせない(Issue #240)
+const FOCUS_TARGET_CLASS = "scroll-mt-12 lg:scroll-mt-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring";
 
 // URLの ?tour=1でチュートリアルを強制的に始める(「使い方」からのやり直し)
 const noop = () => () => {};
@@ -546,12 +547,17 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     if (overlap > 0) window.scrollBy({ top: overlap + 8 });
   }, [gradedResult, task.type]);
 
-  // スマホ幅ではペインがページごとスクロールするので、押したボタンの位置のままだと結果の先頭とタブ列が画面の上に隠れる(Issue #169)。
-  // lg以上はタブ列がdisplay: noneで、scrollIntoViewは何もしない
-  const showResultPane = () => {
-    flushSync(() => setPane("result"));
-    paneTabs.current?.scrollIntoView({ block: "nearest" });
+  // スマホ幅ではペインがページごとスクロールし、タブ列は上に固定される。切り替えた先のペインが固定したタブ列の下に潜らないよう、
+  // ペインの先頭がタブ列の真下に来るまで戻す(Issue #169、#240)。lg以上はタブ列がdisplay: noneで何もしない
+  const switchPane = (p: Pane) => {
+    flushSync(() => setPane(p));
+    const tabs = paneTabs.current;
+    const section = document.getElementById(`pane-${p}`);
+    if (!tabs?.offsetParent || !section) return;
+    const hidden = tabs.getBoundingClientRect().bottom - section.getBoundingClientRect().top;
+    if (hidden > 0) window.scrollBy({ top: -hidden });
   };
+  const showResultPane = () => switchPane("result");
 
   const check = () => {
     if (answeredStep.current === stepIndex) return;
@@ -752,7 +758,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
         />
       </div>
 
-      <div ref={paneTabs} className="lg:hidden grid grid-cols-3 border-b text-sm" role="tablist" aria-label="ペインの切り替え">
+      <div ref={paneTabs} className="lg:hidden sticky top-0 z-30 grid grid-cols-3 border-b bg-background text-sm" role="tablist" aria-label="ペインの切り替え">
         {PANES.map((p, i) => (
           <button
             key={p}
@@ -762,10 +768,10 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
             aria-selected={pane === p}
             aria-controls={`pane-${p}`}
             tabIndex={pane === p ? 0 : -1}
-            onClick={() => setPane(p)}
+            onClick={() => switchPane(p)}
             onKeyDown={(e) => {
-              if (e.key === "ArrowRight") setPane(PANES[(i + 1) % PANES.length]);
-              if (e.key === "ArrowLeft") setPane(PANES[(i + PANES.length - 1) % PANES.length]);
+              if (e.key === "ArrowRight") switchPane(PANES[(i + 1) % PANES.length]);
+              if (e.key === "ArrowLeft") switchPane(PANES[(i + PANES.length - 1) % PANES.length]);
             }}
             className={`min-h-11 ${pane === p ? "border-b-2 border-primary font-medium" : "text-muted-foreground"}`}
           >
