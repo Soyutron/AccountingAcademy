@@ -339,10 +339,13 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       unsavedProgress.current = !(await setUnitProgress(unit.id, last ? "completed" : "started", top));
     });
   // 回答前の進捗は保存されない(Issue #214)ので、最初の回答でサインインしたら、いまの位置もそのユーザーで残す
-  const record = (r: GradeResult, answer: unknown) =>
-    save(() => recordAttempt({ unitId: unit.id, exerciseId: `${unit.id}#${stepIndex}`, correct: r.correct, misconceptionId: r.misconception, answer }), true).then(() => {
+  // 回答した時点で記録のある学習者になる。別タブのlocalStorage.clearでtutorialがpendingに戻っても初回バナーを出さない(Issue #246)
+  const record = (r: GradeResult, answer: unknown) => {
+    setNoRecord(false);
+    return save(() => recordAttempt({ unitId: unit.id, exerciseId: `${unit.id}#${stepIndex}`, correct: r.correct, misconceptionId: r.misconception, answer }), true).then(() => {
       if (unsavedProgress.current) saveProgress(savedStep.current);
     });
+  };
 
   // 条件を動かすたびに式を評価し、目標に届いた瞬間に1回だけ記録する
   const onTweakChange = (values: Record<string, number>) => {
