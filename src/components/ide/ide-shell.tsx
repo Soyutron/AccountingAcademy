@@ -156,6 +156,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const freePostedDraft = useRef<EditableEntry | null>(null);
   // 保存済みのstep。見直しや案内前の「次へ」で保存するstepを下げないために持つ
   const savedStep = useRef(0);
+  const unsavedProgress = useRef(false);
   // 失敗した回答は最新の1件だけ持ち、次の保存の前に再送する。進捗は次のupsertが最新で上書きするので持たない
   const failedAttempt = useRef<(() => Promise<void>) | null>(null);
   // 帳簿をさかのぼる: 何件目までの記帳で財務諸表を見るか(nullは最新)。記帳したら結果が見えるよう最新に戻す
@@ -320,8 +321,16 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     setPulseNext(!big);
   };
 
+  const saveProgress = (top: number) =>
+    save(async () => {
+      const last = top === unit.steps.length - 1;
+      unsavedProgress.current = !(await setUnitProgress(unit.id, last ? "completed" : "started", top));
+    });
+  // 回答前の進捗は保存されない(Issue #214)ので、最初の回答でサインインしたら、いまの位置もそのユーザーで残す
   const record = (r: GradeResult, answer: unknown) =>
-    save(() => recordAttempt({ unitId: unit.id, exerciseId: `${unit.id}#${stepIndex}`, correct: r.correct, misconceptionId: r.misconception, answer }), true);
+    save(() => recordAttempt({ unitId: unit.id, exerciseId: `${unit.id}#${stepIndex}`, correct: r.correct, misconceptionId: r.misconception, answer }), true).then(() => {
+      if (unsavedProgress.current) saveProgress(savedStep.current);
+    });
 
   // 条件を動かすたびに式を評価し、目標に届いた瞬間に1回だけ記録する
   const onTweakChange = (values: Record<string, number>) => {
@@ -419,8 +428,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     const top = Math.max(index, reached, savedStep.current);
     setReached(Math.max(index, reached));
     savedStep.current = top;
-    const last = top === unit.steps.length - 1;
-    save(() => setUnitProgress(unit.id, last ? "completed" : "started", top));
+    saveProgress(top);
   };
 
   // 「次へ」「前へ」の後はTabが新しいステップから続くよう、見出しへ移す。ツアー中は続きの操作が吹き出しにあるので動かさない

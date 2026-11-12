@@ -24,10 +24,25 @@ async function replaceSession(context: BrowserContext, build: (session: Session)
 
 const breakSignature = (session: Session) => ({ ...session, access_token: `${session.access_token.slice(0, -6)}AAAAAA` });
 
-// 新しいゲストで1回保存し、そのユーザーIDを返す
+// ステップ1から進んでステップ2の仕訳に答える。匿名サインインは最初の回答で行う(Issue #214)
+async function answerStep2AndExpectSaved(page: Page) {
+  const work = page.getByRole("region", { name: "ワークスペース" });
+  await next(page).click();
+  await work.getByLabel("借方の科目1").fill("現金");
+  await work.getByLabel("借方の金額1").fill("1000000");
+  await work.getByLabel("貸方の科目1").fill("資本金");
+  await work.getByLabel("貸方の金額1").fill("1000000");
+  const saved = page.waitForResponse((r) => r.url().includes("/rest/v1/attempts") && r.request().method() === "POST" && r.status() !== 401);
+  await work.getByRole("button", { name: "記帳する" }).click();
+  expect((await saved).ok()).toBe(true);
+  await expect(page.getByText(/保存エラー/)).toHaveCount(0);
+}
+
+// 新しいゲストで回答と進捗を保存し、そのユーザーIDを返す
 async function startGuest(page: Page, context: BrowserContext) {
   await page.goto(unit);
   await page.waitForLoadState("networkidle");
+  await answerStep2AndExpectSaved(page);
   const saved = page.waitForResponse((r) => r.url().includes("/rest/v1/unit_progress") && r.request().method() === "POST");
   await next(page).click();
   expect((await saved).ok()).toBe(true);
@@ -62,7 +77,7 @@ test("access_tokenの署名が無効でも、refresh_tokenが有効なら同じ�
   expect(decode((await authCookie(context))!.value).user.id).toBe(userId);
 });
 
-test("refresh_tokenも無効なら、閲覧ではユーザーを作らず、次の保存で新しいゲストになる", async ({ page, context }) => {
+test("refresh_tokenも無効なら、閲覧ではユーザーを作らず、次の回答で新しいゲストになる", async ({ page, context }) => {
   const userId = await startGuest(page, context);
   await replaceSession(context, (s) => ({ ...breakSignature(s), refresh_token: "invalid-refresh-token" }));
   let signups = 0;
@@ -74,7 +89,7 @@ test("refresh_tokenも無効なら、閲覧ではユーザーを作らず、次�
   expect(signups).toBe(0);
 
   const denied = watchDenied(page);
-  await clickNextAndExpectSaved(page);
+  await answerStep2AndExpectSaved(page);
   expect(denied).toEqual([]);
   expect(signups).toBe(1);
   expect(decode((await authCookie(context))!.value).user.id).not.toBe(userId);
@@ -91,9 +106,12 @@ test("開いたままセッションが無効になっても、保存を1回や�
   await work.getByLabel("貸方の科目1").fill("当座預金");
   await work.getByLabel("貸方の金額1").fill("30000");
   const posted = page.waitForResponse((r) => r.url().includes("/rest/v1/attempts") && r.request().method() === "POST");
+  // 最初の回答の後に続けて送る進捗(Issue #214)も済ませてから、セッションを壊す
+  const progress = page.waitForResponse((r) => r.url().includes("/rest/v1/unit_progress") && r.request().method() === "POST");
   await work.getByRole("button", { name: "記帳する" }).click();
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   expect((await posted).ok()).toBe(true);
+  expect((await progress).ok()).toBe(true);
   const userId = decode((await authCookie(context))!.value).user.id;
 
   await replaceSession(context, breakSignature);
@@ -118,7 +136,7 @@ for (const [label, session] of malformed) {
     await page.reload();
     await page.waitForLoadState("networkidle");
 
-    await clickNextAndExpectSaved(page);
+    await answerStep2AndExpectSaved(page);
     expect(decode((await authCookie(context))!.value).user.id).toMatch(/^[0-9a-f-]{36}$/);
     // refresh_tokenが空だとauth-jsの起動時処理(_emitInitialSession)がcatchなしで投げるが、アプリからは捕まえられず保存にも影響しない
     expect(errors.filter((e) => !e.includes("_emitInitialSession"))).toEqual([]);

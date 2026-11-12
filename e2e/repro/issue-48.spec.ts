@@ -11,8 +11,11 @@ test("続きからで再開した正解済みのpostステップは、前へ→�
   await work.getByLabel("借方の金額1").fill("30000");
   await work.getByLabel("貸方の科目1").fill("現金");
   await work.getByLabel("貸方の金額1").fill("30000");
+  // 回答前の位置は最初の回答の後に保存される(Issue #214)ので、その保存を待ってから開き直す
+  const progress = page.waitForResponse((r) => r.request().method() === "POST" && r.url().includes("/rest/v1/unit_progress"));
   await work.getByRole("button", { name: "記帳する" }).click();
   await expect(done).toBeVisible();
+  await progress;
   await expect(async () => {
     await page.reload();
     await page.getByRole("button", { name: "続きから" }).click({ timeout: 3000 });

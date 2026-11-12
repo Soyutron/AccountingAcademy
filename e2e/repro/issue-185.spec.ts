@@ -12,13 +12,18 @@ async function post(page: Page, debit: [string, string], credit: [string, string
   await work.getByRole("button", { name: "記帳する" }).click();
 }
 
-// 未回答のステップ2まで保存して再読み込みし、案内を残したまま手で解く
+// 未正解のステップ2まで保存して再読み込みし、案内を残したまま手で解く
 async function solveStep2WithoutResume(page: Page) {
   await page.goto(UNIT);
   await page.getByRole("button", { name: "今はしない" }).click();
   const next = page.getByRole("button", { name: "次へ →" });
-  await Promise.all([page.waitForResponse((r) => r.url().includes("/unit_progress") && r.request().method() === "POST"), next.click()]);
+  // 回答前の進捗は保存しない(Issue #214)ので、誤答してステップ2を保存する
+  await next.click();
   await expect(page.getByText("ステップ2 / 10")).toBeVisible();
+  await Promise.all([
+    page.waitForResponse((r) => r.url().includes("/unit_progress") && r.request().method() === "POST"),
+    post(page, ["現金", "1000000"], ["借入金", "1000000"]),
+  ]);
 
   await page.reload();
   await expect(page.getByRole("button", { name: "続きから" })).toBeVisible();
