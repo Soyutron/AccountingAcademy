@@ -318,7 +318,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       setSaveError(
         error instanceof CookieBlockedError
           ? "このブラウザはCookieを保存できないため、進捗を残せません。Cookieを許可すると保存されるようになります。"
-          : "保存できませんでした。ページを再読み込みしてから、もう一度お試しください。",
+          : "保存できませんでした。このまま続けると、次の操作で保存し直します。",
       );
     } else if (!failedAttempt.current && !failedProgress.current) setSaveError(null);
   };
