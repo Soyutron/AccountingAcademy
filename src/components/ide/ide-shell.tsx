@@ -140,6 +140,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   // 再開地点より前の、達成済みのステップとその保存済みの答え。「続きから」でansweredに渡す(Issue #175)
   const resumeAnswered = useRef(new Map<number, unknown>());
   const [saveError, setSaveError] = useState<string | null>(null);
+  // 保存の成功で消えるsaveErrorとは分ける。読み込み直すまで「続きから」が出ないことを知らせ続ける
+  const [loadError, setLoadError] = useState(false);
   const [tweakDone, setTweakDone] = useState(false);
   // 回答を確定したステップ。同一ティックの連打ではstateが更新前なので、refで同期的に弾く
   const answeredStep = useRef<number | null>(null);
@@ -267,7 +269,10 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           setResumeSolved((p.solved[unit.id]?.includes(saved.step) ?? false) || (unit.steps[saved.step].task.type === "predict" && answer !== undefined));
         }
       })
-      .catch((e: Error) => console.error(e));
+      .catch((e: Error) => {
+        console.error(e);
+        setLoadError(true);
+      });
   }, [unit.id, unit.steps.length]);
 
   // 「← 前へ」で戻ってもpostedには後のステップの仕訳が残るので、画面の帳簿と残高は表示中のステップまでで出す
@@ -1076,7 +1081,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       )}
       <div ref={bottomBar} className="border-t bg-background px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-sm flex flex-col gap-2 sticky bottom-0 max-h-[50dvh]">
         {/* 説明が長くても操作行を押し出さないよう、スクロールするのは説明だけにする(Issue #115) */}
-        {(result || revealNote || saveError) && (
+        {(result || revealNote || saveError || loadError) && (
           <div className="min-h-0 overflow-y-auto space-y-2 border-b pb-2">
           {revealNote && (
             <p role="status" aria-live="polite" className="rounded-md bg-hint p-3 text-hint-fg">
@@ -1130,6 +1135,11 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
           {saveError && (
             <p role="alert" className="text-error-fg">
               保存エラー: {saveError}
+            </p>
+          )}
+          {loadError && (
+            <p role="alert" className="text-error-fg">
+              学習の記録を読み込めませんでした。前回の続きから始めるには、ページを再読み込みしてください。
             </p>
           )}
           </div>
