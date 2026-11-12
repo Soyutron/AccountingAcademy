@@ -157,8 +157,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   // 保存済みのstep。見直しや案内前の「次へ」で保存するstepを下げないために持つ
   const savedStep = useRef(0);
   const unsavedProgress = useRef(false);
-  // 失敗した回答は最新の1件だけ持ち、次の保存の前に再送する。進捗は次のupsertが最新で上書きするので持たない
+  // 失敗した回答と進捗は最新の1件ずつ持ち、次の保存で再送する。進捗は後勝ちのupsertなので、新しい進捗を送るときは古い方を捨てる
   const failedAttempt = useRef<(() => Promise<void>) | null>(null);
+  const failedProgress = useRef<(() => Promise<void>) | null>(null);
   // 帳簿をさかのぼる: 何件目までの記帳で財務諸表を見るか(nullは最新)。記帳したら結果が見えるよう最新に戻す
   const [viewUpto, setViewUpto] = useState<number | null>(null);
   // 取引の流れのアニメーション。記帳が成功した仕訳を次の描画で測って飛ばす
@@ -293,23 +294,28 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     } catch (e) {
       console.error(e);
       // Cookieが書けない間は再送しても失敗するだけなので持ち越さない
-      if (isAttempt && !(e instanceof CookieBlockedError)) failedAttempt.current = fn;
+      if (!(e instanceof CookieBlockedError)) (isAttempt ? failedAttempt : failedProgress).current = fn;
       return e;
     }
   };
   const save = async (fn: () => Promise<void>, isAttempt = false) => {
     const retry = failedAttempt.current;
+    const retryProgress = isAttempt ? failedProgress.current : null;
     failedAttempt.current = null;
+    failedProgress.current = null;
     // 再開時は最後の回答が勝つので、再送を先に終えてから新しい保存を送る
     const retryFailure = retry ? await trySave(retry, true) : null;
-    const failure = (await trySave(fn, isAttempt)) ?? retryFailure;
-    if (failure) {
+    // 進捗の再送は回答の後に送る。回答の保存で匿名サインインした直後でも同じユーザーで書ける
+    const failure = await trySave(fn, isAttempt);
+    const progressFailure = retryProgress ? await trySave(retryProgress, false) : null;
+    const error = failure ?? retryFailure ?? progressFailure;
+    if (error) {
       setSaveError(
-        failure instanceof CookieBlockedError
+        error instanceof CookieBlockedError
           ? "このブラウザはCookieを保存できないため、進捗を残せません。Cookieを許可すると保存されるようになります。"
           : "保存できませんでした。ページを再読み込みしてから、もう一度お試しください。",
       );
-    } else if (!failedAttempt.current) setSaveError(null);
+    } else if (!failedAttempt.current && !failedProgress.current) setSaveError(null);
   };
   const celebrate = (index = stepIndex) => {
     if (celebratedSteps.current.has(index)) return;
