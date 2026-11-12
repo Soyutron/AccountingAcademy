@@ -115,6 +115,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [gradedEntry, setGradedEntry] = useState<JournalEntry | null>(null);
   // 問題文の金額を挿入したあと、描画後にその金額欄へフォーカスとカーソルを戻す
   const amountCaret = useRef<{ field: string; pos: number } | null>(null);
+  const autoFocusedAmount = useRef<HTMLInputElement | null>(null);
   const [effect, setEffect] = useState<Partial<EffectAnswer>>({});
   const [params, setParams] = useState<Record<string, number>>({});
   const [placed, setPlaced] = useState<Partial<Record<string, Element>>>({});
@@ -459,7 +460,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const insertAmount = (digits: string) => {
     const active = document.activeElement;
     let target: { side: Side; index: number; start: number; end: number } | undefined;
-    if (active instanceof HTMLInputElement && active.dataset.amountField) {
+    // 直前の挿入でこちらがフォーカスを当てただけの欄は、学習者が選んだ欄として扱わない(Issue #210)
+    if (active instanceof HTMLInputElement && active.dataset.amountField && active !== autoFocusedAmount.current) {
       const [side, index] = active.dataset.amountField.split("-");
       const start = active.selectionStart ?? active.value.length;
       target = { side: side as Side, index: Number(index), start, end: active.selectionEnd ?? start };
@@ -485,8 +487,17 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     if (!caret) return;
     amountCaret.current = null;
     const input = document.querySelector<HTMLInputElement>(`[data-amount-field="${caret.field}"]`);
-    input?.focus();
-    input?.setSelectionRange(caret.pos, caret.pos);
+    if (!input) return;
+    input.focus();
+    input.setSelectionRange(caret.pos, caret.pos);
+    autoFocusedAmount.current = input;
+    // 学習者が欄を押す・打つ・離れたら、以後はその欄のカーソル位置に挿入する(Issue #7)
+    const controller = new AbortController();
+    const release = () => {
+      if (autoFocusedAmount.current === input) autoFocusedAmount.current = null;
+      controller.abort();
+    };
+    for (const type of ["pointerdown", "keydown", "blur"]) input.addEventListener(type, release, { signal: controller.signal });
   }, [draft]);
   const draftHasBothSides = entryDraft.debit.length > 0 && entryDraft.credit.length > 0;
   const draftIncomplete = [...draft.debit, ...draft.credit].some((l) => isIncompleteLine(l, accounts));
