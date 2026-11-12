@@ -7,6 +7,15 @@ const UNIT = "bookkeeping-basics/five-elements";
 test("範囲外の保存stepでも、進めたあとのreloadで「続きから」が出る", async ({ page, context }) => {
   await page.addInitScript(() => localStorage.setItem("tutorial-state", JSON.stringify({ status: "done", enabled: true })));
   await page.goto(`/units/${UNIT}`);
+  const work = page.getByRole("region", { name: "ワークスペース" });
+  // 匿名サインインと進捗の保存は最初の回答の後(Issue #214)
+  await page.getByRole("button", { name: "次へ →" }).click();
+  await work.getByLabel("借方の科目1").fill("現金");
+  await work.getByLabel("借方の金額1").fill("1000000");
+  await work.getByLabel("貸方の科目1").fill("資本金");
+  await work.getByLabel("貸方の金額1").fill("1000000");
+  await work.getByRole("button", { name: "記帳する", exact: true }).click();
+  await expect(page.getByText("できました", { exact: true })).toBeVisible();
   const saved = page.waitForResponse((r) => r.url().includes("/rest/v1/unit_progress") && r.request().method() === "POST");
   await page.getByRole("button", { name: "次へ →" }).click();
   await saved;
@@ -18,7 +27,6 @@ test("範囲外の保存stepでも、進めたあとのreloadで「続きから�
   await page.reload();
   await page.waitForLoadState("networkidle");
   await page.getByRole("button", { name: "次へ →" }).click();
-  const work = page.getByRole("region", { name: "ワークスペース" });
   await work.getByLabel("借方の科目1").fill("現金");
   await work.getByLabel("借方の金額1").fill("1000000");
   await work.getByLabel("貸方の科目1").fill("資本金");

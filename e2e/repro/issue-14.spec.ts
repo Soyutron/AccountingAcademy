@@ -26,20 +26,13 @@ async function postFirstEntry(page: Page) {
   await saved;
 }
 
-test("Cookieが消えた後の保存は、新しいゲストとして続けられる", async ({ context, page }) => {
-  const denied = watchDenied(page);
+// ステップ2からステップ4へ進んで仕訳に答え、回答の保存結果を返す
+async function postStep4Entry(page: Page) {
   const work = page.getByRole("region", { name: "ワークスペース" });
-  await page.goto(unit);
-  await postFirstEntry(page);
-  await context.clearCookies();
-
-  const progress = page.waitForResponse((r) => r.request().method() === "POST" && r.url().includes("/rest/v1/unit_progress"));
   await page.getByRole("button", { name: "次へ →" }).click();
   await expect(page.getByText("ステップ3 / 9")).toBeVisible();
-  expect((await progress).status()).toBe(201);
   await page.getByRole("button", { name: "次へ →" }).click();
   await expect(page.getByText("ステップ4 / 9")).toBeVisible();
-  // 新しいゲストとして回答が保存される
   await work.getByLabel("借方の科目1").fill("通信費");
   await work.getByLabel("借方の金額1").fill("4000");
   await work.getByRole("button", { name: "行を追加" }).first().click();
@@ -53,7 +46,17 @@ test("Cookieが消えた後の保存は、新しいゲストとして続けら�
   const attempt = page.waitForResponse((r) => r.request().method() === "POST" && r.url().includes("/rest/v1/attempts"));
   await work.getByRole("button", { name: "記帳する" }).click();
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
-  expect((await attempt).status()).toBe(201);
+  return attempt;
+}
+
+test("Cookieが消えた後の保存は、新しいゲストとして続けられる", async ({ context, page }) => {
+  const denied = watchDenied(page);
+  await page.goto(unit);
+  await postFirstEntry(page);
+  await context.clearCookies();
+
+  // 回答前の進捗では匿名ユーザーを作らない(Issue #214)。新しいゲストとして回答が保存される
+  expect((await postStep4Entry(page)).status()).toBe(201);
   expect(denied).toEqual([]);
   await expect(page.getByText(/保存エラー/)).toHaveCount(0);
 });
@@ -67,9 +70,11 @@ test("別タブで新しいゲストに入れ替わっても、古いタブの�
   await expect(b.getByText("ステップ1 / 9")).toBeVisible();
   const deniedB = watchDenied(b);
   await context.clearCookies();
-  // Aが新しいゲストになる
+  // Aが次の回答で新しいゲストになり、進んで進捗の行を作る
+  expect((await postStep4Entry(a)).status()).toBe(201);
+  const aProgress = a.waitForResponse((r) => r.request().method() === "POST" && r.url().includes("/rest/v1/unit_progress"));
   await a.getByRole("button", { name: "次へ →" }).click();
-  await expect(a.getByText("ステップ3 / 9")).toBeVisible();
+  expect((await aProgress).ok()).toBe(true);
   // Bは古いuser_idではなく、いまのセッション(新しいゲスト)で書く
   const progress = b.waitForResponse((r) => r.request().method() === "POST" && r.url().includes("/rest/v1/unit_progress"));
   await b.getByRole("button", { name: "次へ →" }).click();

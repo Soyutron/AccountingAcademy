@@ -2,7 +2,7 @@ import { isAuthRetryableFetchError, type Session } from "@supabase/supabase-js";
 import { createClient } from "./supabase/client";
 
 // 学習者の回答と進捗の保存(docs/architecture.md 3.2 / 5章)。
-// 匿名サインインは閲覧時ではなく最初の書き込みの直前に行う。
+// 匿名サインインは閲覧時ではなく最初の回答の書き込みの直前に行う。
 
 export type UnitStatus = "started" | "completed";
 
@@ -107,16 +107,32 @@ async function ensureUserId(): Promise<string> {
   return signInPromise;
 }
 
-// 401はトークンが無効という合図。再読み込みしても同じCookieが読まれるだけなので、ここでセッションを立て直して1回やり直す
-async function writeAsUser<T extends { status: number }>(write: (userId: string) => PromiseLike<T>): Promise<T> {
-  const result = await write(await ensureUserId());
+// 進捗だけでは匿名ユーザーを作らない(Issue #214)。最初の回答のサインインが進行中なら、その完了を待って同じユーザーで書く
+async function existingUserId(): Promise<string | null> {
+  const session = await loadSession();
+  if (session) return session.user.id;
+  // 回答しても保存できない環境なので、進捗でも回答と同じ案内を出す(Issue #137)
+  if (!canStoreCookie()) throw new CookieBlockedError("Cookieを保存できないため進捗を保存しません");
+  return signInPromise;
+}
+
+// 401はトークンが無効という合図。再読み込みしても同じCookieが読まれるだけなので、ここでセッションを立て直して1回やり直す。
+// ユーザーが無ければ書かずにnullを返す
+async function writeAsUser<T extends { status: number }>(
+  write: (userId: string) => PromiseLike<T>,
+  getUserId: () => Promise<string | null> = ensureUserId,
+): Promise<T | null> {
+  const userId = await getUserId();
+  if (!userId) return null;
+  const result = await write(userId);
   if (result.status !== 401) return result;
   await recoverSession();
-  return write(await ensureUserId());
+  const retryId = await getUserId();
+  return retryId ? write(retryId) : null;
 }
 
 export async function recordAttempt(record: AttemptRecord): Promise<void> {
-  const { error } = await writeAsUser((userId) =>
+  const result = await writeAsUser((userId) =>
     supabase.from("attempts").insert({
       user_id: userId,
       unit_id: record.unitId,
@@ -127,16 +143,20 @@ export async function recordAttempt(record: AttemptRecord): Promise<void> {
       content_version: process.env.NEXT_PUBLIC_CONTENT_VERSION ?? "unknown",
     }),
   );
-  if (error) throw new Error(`回答の保存に失敗しました: ${error.message}`);
+  if (result?.error) throw new Error(`回答の保存に失敗しました: ${result.error.message}`);
 }
 
-export async function setUnitProgress(unitId: string, status: UnitStatus, step: number): Promise<void> {
-  const { error } = await writeAsUser((userId) =>
-    supabase
-      .from("unit_progress")
-      .upsert({ user_id: userId, unit_id: unitId, status, step, updated_at: new Date().toISOString() }),
+/** まだ回答していない閲覧者(セッションが無い)の進捗は保存せずfalseを返す */
+export async function setUnitProgress(unitId: string, status: UnitStatus, step: number): Promise<boolean> {
+  const result = await writeAsUser(
+    (userId) =>
+      supabase
+        .from("unit_progress")
+        .upsert({ user_id: userId, unit_id: unitId, status, step, updated_at: new Date().toISOString() }),
+    existingUserId,
   );
-  if (error) throw new Error(`進捗の保存に失敗しました: ${error.message}`);
+  if (result?.error) throw new Error(`進捗の保存に失敗しました: ${result.error.message}`);
+  return result !== null;
 }
 
 // 後退防止のトリガーがあるので、ステップを減らした単元の範囲外のstepはupsertでは下げられない(Issue #197)
