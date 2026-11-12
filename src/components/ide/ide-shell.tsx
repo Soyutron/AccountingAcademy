@@ -150,6 +150,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [reached, setReached] = useState(0);
   // このセッションで正解(predictは回答)したステップとその答え。「← 前へ」で戻ってから戻ってきたときに達成状態を復元する(Issue #16)
   const answered = useRef(new Map<number, unknown>());
+  // 離れたステップの誤答回数。「← 前へ」→「次へ →」で戻っても「答えを見る」を離れる前と揃える(Issue #247)
+  const stepAttempts = useRef(new Map<number, number>());
   // このステップで最後に採点した答え。同じ答えの連打(ダブルクリック)は1回の回答として扱う(Issue #15)
   const gradedAnswer = useRef<string | null>(null);
   const gradedAt = useRef(0);
@@ -422,7 +424,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
     setParams({});
     setResult(null);
     setRevealed(false);
-    setAttempts(0);
+    stepAttempts.current.set(stepIndex, attempts);
+    setAttempts(stepAttempts.current.get(index) ?? 0);
     setShowHint(false);
     setTweakDone(false);
     // 祝福の札は「次へ進める」案内なので、進んだ先のステップに残さない
