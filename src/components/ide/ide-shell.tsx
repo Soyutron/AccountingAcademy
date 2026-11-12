@@ -67,6 +67,8 @@ interface Props {
   misconceptions: Record<string, MisconceptionInfo>;
   // ステップごとの説明文(サーバーでMarkdownを描画済み)
   narratives: ReactNode[];
+  // チュートリアル単元だけに渡す、戻り先にできる単元のidと名前
+  returnTitles?: Record<string, string>;
 }
 
 interface Posted {
@@ -88,6 +90,10 @@ const noop = () => () => {};
 function readForceTour(): boolean {
   return new URLSearchParams(window.location.search).get("tour") === "1";
 }
+// 初回バナーから来たときの元の単元id(Issue #224)
+function readReturnFrom(): string | null {
+  return new URLSearchParams(window.location.search).get("from");
+}
 
 /** ステップを飛ばして再開するとき、そこまでの仕訳を課題の答えから復元する */
 function replayEntries(steps: IdeStep[], upto: number): Posted[] {
@@ -107,7 +113,7 @@ function isRepeatedClick(e: MouseEvent<HTMLElement>) {
   return e.detail > 1;
 }
 
-export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) {
+export function IdeShell({ unit, accounts, misconceptions, narratives, returnTitles }: Props) {
   const accountMap = useMemo(() => new Map(accounts.map((a) => [a.id, a])), [accounts]);
   const [stepIndex, setStepIndex] = useState(0);
   const [posted, setPosted] = useState<Posted[]>(() => replayEntries(unit.steps, 0));
@@ -201,6 +207,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
   const [tourExited, setTourExited] = useState(false);
   const [tourKey, setTourKey] = useState(0);
   const tourActive = isTutorialUnit && !tourExited && (tutorial.status === "pending" || forceTour || tourKey > 0);
+  const returnFrom = useSyncExternalStore(noop, readReturnFrom, () => null);
+  const returnTitle = returnFrom ? returnTitles?.[returnFrom] : undefined;
   const exitTour = () => {
     setTourExited(true);
     if (!forceTour) return;
@@ -789,12 +797,20 @@ export function IdeShell({ unit, accounts, misconceptions, narratives }: Props) 
       <div className="grid flex-1 min-h-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)]">
         <section id="pane-guide" role="region" aria-label="ガイド" className={`${paneClass("guide")} bg-surface-guide lg:border-r`} data-tour="guide">
           <h2 ref={stepHeading} tabIndex={-1} className={`text-lg font-semibold mb-2 ${FOCUS_TARGET_CLASS}`}>{step.title}</h2>
+          {/* ツアーを抜けたあと、学ぶつもりだった単元へ戻れるようにする。チュートリアルを続ける道も残すので自動では戻さない(Issue #224) */}
+          {isTutorialUnit && returnTitle && !tourActive && (
+            <p className="mb-3 text-sm">
+              <Link href={`/units/${returnFrom}`} className="underline">
+                「{returnTitle}」へ戻る
+              </Link>
+            </p>
+          )}
           {!isTutorialUnit && noRecord && tutorial.status !== "done" && tutorial.enabled && (
             <div className="mb-3 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm flex flex-wrap items-center gap-2" role="note">
               <span className="flex-1">初めてですか? 2分のチュートリアルで、実際に1件記帳しながら使い方を覚えられます。</span>
               <Button size="sm" asChild>
                 {/* skippedでもバナーは出るので、statusに頼らずツアーを始める(Issue #165) */}
-                <Link href={`/units/${TUTORIAL_UNIT_ID}?tour=1`}>はじめる</Link>
+                <Link href={`/units/${TUTORIAL_UNIT_ID}?tour=1&from=${encodeURIComponent(unit.id)}`}>はじめる</Link>
               </Button>
               <Button
                 size="sm"

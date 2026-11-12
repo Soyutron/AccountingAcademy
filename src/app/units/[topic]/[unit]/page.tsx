@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { units } from "#content";
-import { dependsOnUnit, glossaryAccountList, misconceptionMap, nextUnit, unitMap } from "@/lib/content";
+import { dependsOnUnit, glossaryAccountList, misconceptionMap, nextUnit, sortedTopics, unitMap } from "@/lib/content";
 import { Markdown } from "@/components/markdown";
 import { IdeShell, type MisconceptionInfo } from "@/components/ide/ide-shell";
 
@@ -23,6 +23,10 @@ export default async function UnitPage({ params }: { params: Promise<{ topic: st
   const unit = unitMap.get(`${topicId}/${unitSlug}`);
   if (!unit) notFound();
   const next = nextUnit(unit);
+  // 非表示テーマ(チュートリアル)にだけ、バナーから来た単元へ戻るリンクの宛先を渡す。
+  // ?from=の値をこの一覧で検証し、任意のURLへ飛ばさない(Issue #224)
+  const shownTopics = new Set(sortedTopics.map((t) => t.id));
+  const returnTitles = shownTopics.has(unit.topic) ? undefined : Object.fromEntries(units.filter((u) => shownTopics.has(u.topic)).map((u) => [u.id, u.title]));
 
   const misconceptions: Record<string, MisconceptionInfo> = {};
   for (const m of misconceptionMap.values()) {
@@ -43,6 +47,7 @@ export default async function UnitPage({ params }: { params: Promise<{ topic: st
       }}
       accounts={glossaryAccountList}
       misconceptions={misconceptions}
+      returnTitles={returnTitles}
       narratives={unit.steps.map((s, i) => (
         <Markdown key={i} body={s.narrative} />
       ))}
