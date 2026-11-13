@@ -129,14 +129,17 @@ function ShapeBars({ st }: { st: ReturnType<typeof buildStatements> }) {
 
 function Group({ element, lines, diff, accounts, children }: { element: Element; lines: StatementLine[]; diff: Map<string, number>; accounts: ReadonlyMap<string, GlossaryAccount>; children?: React.ReactNode }) {
   return (
-    <div className="mb-2">
+    <div className="mb-2" data-element={element}>
       <div className="mb-0.5">
         <ElementBadge element={element} size="xs" />
       </div>
       {lines.length === 0 && !children && <div className="text-xs text-muted-foreground/60 px-1">—</div>}
       {lines.map((l) => {
         const account = accounts.get(l.account);
-        return <Row key={l.account} id={l.account} name={account ? <AccountName account={account} /> : l.name} amount={l.amount} delta={diff.get(l.account) ?? 0} magnitude={l.contra} />;
+        const name = account ? <AccountName account={account} /> : l.name;
+        // 逆側の部に並ぶ仮勘定は、残高の符号を反転して載せているので増減も反転する
+        const delta = (diff.get(l.account) ?? 0) * (account && account.element !== element ? -1 : 1);
+        return <Row key={l.account} id={l.account} name={l.temporary ? <>{name}(仮)</> : name} amount={l.amount} delta={delta} magnitude={l.contra} />;
       })}
       {children}
     </div>

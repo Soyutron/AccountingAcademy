@@ -38,10 +38,10 @@ test("成功文の仕入と当期純利益の額が損益計算書と一致し�
   expect(await plAmount("仕入")).toBe("125,000");
   await next.click();
 
-  await work.getByPlaceholder("金額(円)").fill("78500");
+  await work.getByPlaceholder("金額(円)").fill("-71500");
   await work.getByRole("button", { name: "確認する" }).click();
   await expect(done).toBeVisible();
-  expect(await plAmount("当期純利益")).toBe("78,500");
+  expect(await plAmount("当期純損失")).toBe("71,500");
   await next.click();
 
   // 決算の後に翌期の取引を記帳させるステップが無い

@@ -66,23 +66,37 @@ test("仕訳と計算の誤答に、なぜ違うかの説明が出る", async ({
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   await nextBtn(page).click();
   await toStep(page, 4);
-  await fill(page, "当座預金", "売掛金", 60000);
-  await expect(status(page)).toBeVisible();
-  await expect.soft(status(page), "ステップ4当座預金/売掛金").not.toContainText(GENERIC);
-  await fill(page, "普通預金", "売掛金", 60000);
+  const work = page.getByRole("region", { name: "ワークスペース" });
+  const amount = page.getByPlaceholder("金額(円)");
+  for (const v of ["140000", "20000"]) {
+    await amount.fill(v);
+    await work.getByRole("button", { name: "確認する" }).click();
+    await expect(status(page)).toBeVisible();
+    await page.waitForTimeout(300);
+    await expect.soft(status(page), `ステップ4 ${v}`).not.toContainText(CALC_GENERIC);
+  }
+  await amount.fill("40000");
+  await work.getByRole("button", { name: "確認する" }).click();
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   await nextBtn(page).click();
   await toStep(page, 5);
+  await fill(page, "当座預金", "売掛金", 60000);
+  await expect(status(page)).toBeVisible();
+  await expect.soft(status(page), "ステップ5当座預金/売掛金").not.toContainText(GENERIC);
+  await fill(page, "普通預金", "売掛金", 60000);
+  await expect(page.getByText("できました", { exact: true })).toBeVisible();
+  await nextBtn(page).click();
+  await toStep(page, 6);
   for (const [d, c] of [["買掛金", "普通預金"], ["買掛金", "売掛金"], ["買掛金", "仕入"], ["未払金", "現金"], ["借入金", "現金"]]) {
     await fill(page, d, c, 40000);
     await expect(status(page)).toBeVisible();
     await page.waitForTimeout(300);
-    await expect.soft(status(page), `ステップ5 ${d}/${c}`).not.toContainText(GENERIC);
+    await expect.soft(status(page), `ステップ6 ${d}/${c}`).not.toContainText(GENERIC);
   }
   await fill(page, "買掛金", "現金", 40000);
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   await nextBtn(page).click();
-  await toStep(page, 6);
+  await toStep(page, 7);
   const board = page.getByRole("group", { name: "仕分けボード" });
   const place = async (chip: string, box: string) => {
     await board.locator(`[data-chip="${chip}"]`).click();
@@ -93,22 +107,11 @@ test("仕訳と計算の誤答に、なぜ違うかの説明が出る", async ({
   await place("sales", "収益");
   await place("purchases", "費用");
   await place("bank_deposit", "資産");
-  const work = page.getByRole("region", { name: "ワークスペース" });
   await work.getByRole("button", { name: "確認する" }).click();
   await expect(status(page)).toBeVisible();
-  await expect.soft(page.getByText("よくある思い込み: 売掛金と買掛金の取り違え"), "ステップ6売掛金と買掛金の入れ替え").toBeVisible();
+  await expect.soft(page.getByText("よくある思い込み: 売掛金と買掛金の取り違え"), "ステップ7売掛金と買掛金の入れ替え").toBeVisible();
   await place("accounts_receivable", "資産");
   await place("accounts_payable", "負債");
   await work.getByRole("button", { name: "確認する" }).click();
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
-  await nextBtn(page).click();
-  await toStep(page, 7);
-  const amount = page.getByPlaceholder("金額(円)");
-  for (const v of ["140000", "20000"]) {
-    await amount.fill(v);
-    await work.getByRole("button", { name: "確認する" }).click();
-    await expect(status(page)).toBeVisible();
-    await page.waitForTimeout(300);
-    await expect.soft(status(page), `ステップ7 ${v}`).not.toContainText(CALC_GENERIC);
-  }
 });

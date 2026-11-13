@@ -34,7 +34,11 @@ test("post課題: さかのぼったまま記帳すると、結果ペインが�
   await work.getByRole("button", { name: "予想して記帳する" }).click();
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   await next.click();
-  await expect(page.getByText("ステップ4 / 8")).toBeVisible();
+  await work.getByPlaceholder("金額(円)").fill("40000");
+  await work.getByRole("button", { name: "確認する" }).click();
+  await expect(page.getByText("できました", { exact: true })).toBeVisible();
+  await next.click();
+  await expect(page.getByText("ステップ5 / 8")).toBeVisible();
 
   await rewind();
   await post("普通預金", "売掛金", "60000");

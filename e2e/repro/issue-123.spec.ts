@@ -6,7 +6,7 @@ async function assetRows(page: Page) {
   return rows.evaluateAll((els) => els.map((e) => e.getAttribute("data-account")));
 }
 
-test("「掛けで売る、掛けで買う」のステップ5と次の単元で資産の行順が流動性の順に一致する", async ({ page }) => {
+test("「掛けで売る、掛けで買う」のステップ6と次の単元で資産の行順が流動性の順に一致する", async ({ page }) => {
   const work = page.getByRole("region", { name: "ワークスペース" });
   const next = page.getByRole("button", { name: "次へ →" });
   const post = async (debit: [string, number], credit: [string, number]) => {
@@ -35,10 +35,16 @@ test("「掛けで売る、掛けで買う」のステップ5と次の単元で�
 
   await next.click();
   await expect(page.getByText("ステップ4 /")).toBeVisible();
-  await post(["普通預金", 60000], ["売掛金", 60000]);
+  await work.getByPlaceholder("金額(円)").fill("40000");
+  await work.getByRole("button", { name: "確認する" }).click();
+  await expect(page.getByText("できました", { exact: true })).toBeVisible();
 
   await next.click();
   await expect(page.getByText("ステップ5 /")).toBeVisible();
+  await post(["普通預金", 60000], ["売掛金", 60000]);
+
+  await next.click();
+  await expect(page.getByText("ステップ6 /")).toBeVisible();
   await post(["買掛金", 40000], ["現金", 40000]);
   expect(await assetRows(page)).toEqual(["cash", "bank_deposit", "equipment"]);
 

@@ -1,6 +1,6 @@
 import { type Page, expect, test } from "@playwright/test";
 
-// 掛けで売る、掛けで買う のステップ4(代金が普通預金に振り込まれる)まで正解で進める
+// 掛けで売る、掛けで買う のステップ5(代金が普通預金に振り込まれる)まで正解で進める
 async function openDepositStep(page: Page) {
   await page.goto("/units/merchandise/credit-transactions");
   const work = page.getByRole("region", { name: "ワークスペース" });
@@ -17,6 +17,10 @@ async function openDepositStep(page: Page) {
   const pred: Record<string, string> = { 資産: "増える", 負債: "変わらない", 純資産: "増える", 収益: "増える", 費用: "変わらない" };
   for (const [el, v] of Object.entries(pred)) await work.getByLabel(`${el}の予想`, { exact: true }).selectOption({ label: v });
   await page.getByRole("button", { name: "予想して記帳する" }).click();
+  await ok();
+  await next();
+  await work.getByPlaceholder("金額(円)").fill("40000");
+  await work.getByRole("button", { name: "確認する" }).click();
   await ok();
   await next();
   return work;

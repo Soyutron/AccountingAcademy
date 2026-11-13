@@ -20,12 +20,12 @@ function entry(debit: string, credit: string, amount: number) {
 
 describe.each([
   { step: 1, debit: "purchases", credit: "sales", amount: 40000, contains: "買掛金", misconception: undefined },
-  { step: 3, debit: "checking_account", credit: "accounts_receivable", amount: 60000, contains: "普通預金", misconception: "deposit_kinds_confused" },
-  { step: 4, debit: "accounts_payable", credit: "bank_deposit", amount: 40000, contains: "現金", misconception: "deposit_is_cash" },
-  { step: 4, debit: "accounts_payable", credit: "accounts_receivable", amount: 40000, contains: "現金", misconception: undefined },
-  { step: 4, debit: "accounts_payable", credit: "purchases", amount: 40000, contains: "現金", misconception: undefined },
-  { step: 4, debit: "accounts_payable_other", credit: "cash", amount: 40000, contains: "買掛金", misconception: "trade_as_nontrade" },
-  { step: 4, debit: "loans_payable", credit: "cash", amount: 40000, contains: "買掛金", misconception: undefined },
+  { step: 4, debit: "checking_account", credit: "accounts_receivable", amount: 60000, contains: "普通預金", misconception: "deposit_kinds_confused" },
+  { step: 5, debit: "accounts_payable", credit: "bank_deposit", amount: 40000, contains: "現金", misconception: "deposit_is_cash" },
+  { step: 5, debit: "accounts_payable", credit: "accounts_receivable", amount: 40000, contains: "現金", misconception: undefined },
+  { step: 5, debit: "accounts_payable", credit: "purchases", amount: 40000, contains: "現金", misconception: undefined },
+  { step: 5, debit: "accounts_payable_other", credit: "cash", amount: 40000, contains: "買掛金", misconception: "trade_as_nontrade" },
+  { step: 5, debit: "loans_payable", credit: "cash", amount: 40000, contains: "買掛金", misconception: undefined },
 ])("仕訳 ステップ$step: 左$debit / 右$credit", ({ step, debit, credit, amount, contains, misconception }) => {
   it("なぜ違うかの説明を返す", () => {
     const result = gradePost(task(step, "post"), entry(debit, credit, amount));
@@ -52,12 +52,12 @@ describe("仕訳の既存の判定は変わらない", () => {
     expect(result.feedback).toContain("商品以外");
   });
 
-  it("ステップ5の左の売掛金はreceivable_payable_confusedのまま(#121)", () => {
-    const result = gradePost(task(4, "post"), entry("accounts_receivable", "cash", 40000));
+  it("ステップ6の左の売掛金はreceivable_payable_confusedのまま(#121)", () => {
+    const result = gradePost(task(5, "post"), entry("accounts_receivable", "cash", 40000));
     expect(result.misconception).toBe("receivable_payable_confused");
   });
 
-  it.each([1, 3, 4])("ステップ%iの正解は正解のまま", (step) => {
+  it.each([1, 4, 5])("ステップ%iの正解は正解のまま", (step) => {
     const t = task(step, "post");
     expect(gradePost(t, t.answer).correct).toBe(true);
   });
@@ -91,8 +91,8 @@ describe("会社に掛けで納品する(ステップ3の予想)", () => {
   });
 });
 
-describe("権利と義務を分ける(ステップ6の分類)", () => {
-  const t = task(5, "classify");
+describe("権利と義務を分ける(ステップ7の分類)", () => {
+  const t = task(6, "classify");
   const right = { sales: "revenue", purchases: "expense", bank_deposit: "asset" } as const;
 
   it("売掛金と買掛金を入れ替えるとreceivable_payable_confusedが付く", () => {
@@ -108,12 +108,12 @@ describe("権利と義務を分ける(ステップ6の分類)", () => {
   });
 });
 
-describe("ここまでのもうけ(ステップ7の計算)", () => {
-  const t = task(6, "calc");
+describe("ここまでのもうけ(ステップ4の計算)", () => {
+  const t = task(3, "calc");
 
   it.each([
     [140000, "家賃"],
-    [20000, "ここまで"],
+    [20000, "お金"],
   ])("%iには、なぜ違うかの説明を返す", (value, contains) => {
     const result = gradeCalc(t, value);
     expect(result.correct).toBe(false);
@@ -122,7 +122,7 @@ describe("ここまでのもうけ(ステップ7の計算)", () => {
   });
 
   it("説明に正解の金額を書かない(#182)", () => {
-    for (const value of [140000, 20000]) expect(gradeCalc(t, value).feedback).not.toContain("90,000");
+    for (const value of [140000, 20000]) expect(gradeCalc(t, value).feedback).not.toContain("40,000");
   });
 
   it("正解は正解のまま", () => {

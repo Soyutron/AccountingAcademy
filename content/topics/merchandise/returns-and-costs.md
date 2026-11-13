@@ -10,14 +10,14 @@ requires: [merchandise/credit-transactions]
 scenario:
   company: カフェ「マメノキ」
   opening:
-    - { account: cash, amount: 730000 }
+    - { account: cash, amount: 630000 }
     - { account: bank_deposit, amount: 60000 }
     - { account: equipment, amount: 600000 }
     - { account: loans_payable, amount: 300000 }
     - { account: capital_stock, amount: 1000000 }
     - { account: sales, amount: 230000 }
     - { account: purchases, amount: 90000 }
-    - { account: rent_expense, amount: 50000 }
+    - { account: rent_expense, amount: 150000 }
 ---
 
 ## 届いた豆に問題が
