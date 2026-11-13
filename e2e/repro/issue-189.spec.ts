@@ -30,7 +30,7 @@ test("利益と損失をまたいだ行の増減は純資産の向きで読め�
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   const profit = netIncomeRow("当期純利益");
   await expect(profit).toContainText("70,000");
-  await expect(profit).toContainText("▲");
+  await expect(profit).toContainText("+");
   await expect(profit).toContainText("増加90,000");
 
   await next.click();
@@ -52,8 +52,8 @@ test("利益と損失をまたいだ行の増減は純資産の向きで読め�
   await journal("給料", "現金", "100000");
   const loss = netIncomeRow("当期純損失");
   await expect(loss).toContainText("30,000");
-  await expect(loss).toContainText("▼");
+  await expect(loss).toContainText("−");
   await expect(loss).toContainText("減少100,000");
-  await expect(loss).not.toContainText("▲");
+  await expect(loss).not.toContainText("+");
   await expect(loss).not.toContainText("増加");
 });
