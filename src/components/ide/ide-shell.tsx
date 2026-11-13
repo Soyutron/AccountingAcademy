@@ -10,7 +10,7 @@ import { ElementBadge } from "@/components/element-badge";
 import { AccountName } from "@/components/account-name";
 import { CheckCircle2, CircleAlert } from "lucide-react";
 import { type EditableEntry, emptyEntry, fromJournalEntry, isIncompleteLine, parseAmount, toJournalEntry } from "@/lib/journal-editable";
-import { type ClassifyResult, type EffectAnswer, type GradeResult, type PredictResult, type Task, canRevealAnswer, classifyBoard, gradeCalc, gradeClassify, gradePost, gradePredict, gradeTweak, predictElements } from "@/lib/grading";
+import { type ClassifyResult, type DebugAnswer, type EffectAnswer, type GradeResult, type PredictResult, type Task, canRevealAnswer, classifyBoard, gradeCalc, gradeClassify, gradeDebug, gradePost, gradePredict, gradeTweak, predictElements } from "@/lib/grading";
 import { evaluateFormula } from "@/lib/formulas";
 import { type OpeningLine, computeBalances, diffBalances } from "@/lib/ledger";
 import { CookieBlockedError, fetchProgress, recordAttempt, resetOutOfRangeStep, setUnitProgress } from "@/lib/progress";
@@ -109,8 +109,21 @@ function replayEntries(steps: IdeStep[], upto: number): Posted[] {
     if (t.type === "observe") t.entries.forEach((e) => posted.push({ step: i, memo: e.memo ?? s.title, entry: e }));
     if (t.type === "post") posted.push({ step: i, memo: t.transaction, entry: t.answer });
     if (t.type === "predict") posted.push({ step: i, memo: t.transaction, entry: t.entry });
+    if (t.type === "debug") t.entries.forEach((e, j) => posted.push({ step: i, memo: e.memo ?? s.title, entry: j === t.answer.index ? t.answer.entry : e }));
   });
   return posted;
+}
+
+/** debugのステップの記帳のうち、index行目を直した仕訳に置き換える。行の見出し(memo)は元の行のまま */
+function fixDebugRow(posted: Posted[], step: number, index: number, entry: JournalEntry): Posted[] {
+  let row = 0;
+  return posted.map((p) => (p.step === step && row++ === index ? { ...p, entry } : p));
+}
+
+/** debugの行を仕訳エディタに読み込む。空の側には空行を1つ置き、そのまま書き足せるようにする */
+function editableRow(entry: JournalEntry, accounts: ReadonlyMap<string, AccountInfo>): EditableEntry {
+  const e = fromJournalEntry(entry, accounts);
+  return { debit: e.debit.length ? e.debit : [{ accountName: "", amount: "" }], credit: e.credit.length ? e.credit : [{ accountName: "", amount: "" }] };
 }
 
 // 同じタブで単元を離れて戻ったとき(戻る・reload・他ページから)に、離れる前のステップと入力途中の答えを戻す(Issue #83)。
@@ -129,6 +142,8 @@ interface SessionSnapshot {
   stepAttempts: [number, number][];
   // 未正解のステップで最後に採点した答え(JSON)。戻したあとも誤答の説明を出し、同じ答えを二重に記録しない
   gradedAnswer: string | null;
+  // debugで選んでいる行
+  debugRow?: number | null;
 }
 const sessionKey = (unitId: string) => `ide-session:${unitId}`;
 function readSession(unitId: string): SessionSnapshot | null {
@@ -162,6 +177,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
   // classifyを最後に採点したときの配置。採点後に移した科目を見分ける(Issue #66)
   const [gradedPlaced, setGradedPlaced] = useState<Partial<Record<string, string>>>({});
   const [calcValue, setCalcValue] = useState("");
+  // debugで選んだ行(0始まり)。選ぶとその行が仕訳エディタに読み込まれる
+  const [debugRow, setDebugRow] = useState<number | null>(null);
   // calcの入力が金額として読めないときの理由。採点も記録もしない(Issue #43)
   const [calcError, setCalcError] = useState<string | null>(null);
   // 直近の採点結果そのもの。画面に出すのは、これから導出するresult
@@ -448,6 +465,15 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
       setPlaced(placement);
       setResult(gradeClassify(t, placement, accountMap));
     }
+    if (t.type === "debug") {
+      const saved = answer as DebugAnswer | undefined;
+      const fixed = saved && gradeDebug(t, saved).correct ? saved : t.answer;
+      answered.current.set(index, fixed);
+      setDebugRow(fixed.index);
+      setDraft(fromJournalEntry(fixed.entry, accountMap));
+      setPosted((prev) => fixDebugRow(prev, index, fixed.index, fixed.entry));
+      setResult(gradeDebug(t, fixed));
+    }
     if (t.type === "tweak") {
       setTweakDone(true);
       const values = answer as Record<string, number> | undefined;
@@ -468,6 +494,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
     setPlaced({});
     setCalcValue("");
     setCalcError(null);
+    setDebugRow(null);
     setParams({});
     setResult(null);
     setRevealed(false);
@@ -483,8 +510,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
     setRepeated(0);
     setViewUpto(null);
     setPane("guide");
-    // observeの仕訳はステップに入った時点で自動的に記帳する
-    if (target.task.type === "observe" && target.task.entries.length > 0) {
+    // observeの仕訳はステップに入った時点で自動的に記帳する。debugの仕訳も、誤りを含んだまま記帳済みとして積む
+    if ((target.task.type === "observe" || target.task.type === "debug") && target.task.entries.length > 0) {
       const entries = target.task.entries;
       setPosted((prev) => (prev.some((p) => p.step === index) ? prev : [...prev, ...entries.map((e) => ({ step: index, memo: e.memo ?? target.title, entry: e }))]));
     }
@@ -547,8 +574,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
         setPlaced(s.placed);
         setCalcValue(s.calcValue);
         setParams(s.params);
+        setDebugRow(s.debugRow ?? null);
         const t = unit.steps[s.stepIndex].task;
-        if (s.gradedAnswer && (t.type === "post" || t.type === "calc" || t.type === "classify")) {
+        if (s.gradedAnswer && (t.type === "post" || t.type === "calc" || t.type === "classify" || t.type === "debug")) {
           gradedAnswer.current = s.gradedAnswer;
           const graded = JSON.parse(s.gradedAnswer);
           if (t.type === "post") {
@@ -559,6 +587,10 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
           if (t.type === "classify") {
             setGradedPlaced(graded);
             setResult(gradeClassify(t, graded, accountMap));
+          }
+          if (t.type === "debug") {
+            setGradedEntry(graded.index === t.answer.index ? graded.entry : null);
+            setResult(gradeDebug(t, graded, accountMap));
           }
         }
       }
@@ -584,6 +616,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
       answered: [...answered.current],
       stepAttempts: [...stepAttempts.current],
       gradedAnswer: answered.current.has(stepIndex) ? null : gradedAnswer.current,
+      debugRow,
     };
     try {
       window.sessionStorage.setItem(sessionKey(unit.id), JSON.stringify(snapshot));
@@ -591,7 +624,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
       // 保存できないブラウザでは従来どおりDBの「続きから」だけで再開する
     }
     // answered・gradedAnswerはrefなので、採点のたびに書き直すためgradedResultとtweakDoneを依存に入れる
-  }, [sessionLoaded, isTutorialUnit, unit.id, stepIndex, reached, posted, draft, effect, placed, calcValue, params, attempts, gradedResult, tweakDone]);
+  }, [sessionLoaded, isTutorialUnit, unit.id, stepIndex, reached, posted, draft, effect, placed, calcValue, params, debugRow, attempts, gradedResult, tweakDone]);
 
   const entryDraft = toJournalEntry(draft, accounts, unit.currency);
 
@@ -646,7 +679,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
   const missingSides = [entryDraft.debit.length === 0 && "借方", entryDraft.credit.length === 0 && "貸方"].filter(Boolean);
   const touched = [...draft.debit, ...draft.credit].some((l) => l.accountName.trim() || l.amount.trim());
   // 未確定の行はentryDraftから落ちるので、先に見ないと入力済みの側を「足りない側」と案内してしまう(Issue #97)
-  const sideHint = draftReady || !touched ? null : draftIncomplete ? "入力が途中の行があります。科目と金額をそろえるか、その行を削除すると記帳できます。" : `${missingSides.join("と")}にも科目と金額を入れると記帳できます。`;
+  const submitVerb = task.type === "debug" ? "確認" : "記帳";
+  const sideHint = draftReady || !touched ? null : draftIncomplete ? `入力が途中の行があります。科目と金額をそろえるか、その行を削除すると${submitVerb}できます。` : `${missingSides.join("と")}にも科目と金額を入れると${submitVerb}できます。`;
   const askedElements = task.type === "predict" ? predictElements(task) : ELEMENTS;
   const predictReady = askedElements.every((el) => effect[el]);
 
@@ -661,7 +695,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
   useEffect(() => {
     if (!gradedResult || !revealWrong.current) return;
     revealWrong.current = false;
-    const target = workPane.current?.querySelector(task.type === "classify" ? "[data-wrong]" : '[data-tour="post-button"]');
+    const target = workPane.current?.querySelector(task.type === "classify" ? "[data-wrong]" : task.type === "debug" ? '[data-tour="task-debug"] button[type="submit"]' : '[data-tour="post-button"]');
     const bar = bottomBar.current;
     if (!target || !bar || !paneTabs.current?.offsetParent) return;
     const overlap = target.getBoundingClientRect().bottom - bar.getBoundingClientRect().top;
@@ -717,6 +751,33 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
         }
         if (r.correct) showResultPane();
         else {
+          revealWrong.current = true;
+          setPane("work");
+        }
+        break;
+      }
+      case "debug": {
+        if (debugRow === null || !draftReady) return;
+        const answer: DebugAnswer = { index: debugRow, entry: entryDraft };
+        if (alreadyGraded(answer)) return;
+        const r = gradeDebug(task, answer, accountMap);
+        if (r.correct) {
+          focusStatus.current = true;
+          answeredStep.current = stepIndex;
+          answered.current.set(stepIndex, answer);
+        }
+        // 行の選び間違いには仕訳の比較を出さない。比べる相手の仕訳が無い
+        setGradedEntry(debugRow === task.answer.index ? entryDraft : null);
+        setResult(r);
+        setAttempts((n) => n + 1);
+        record(r, answer);
+        if (r.correct) {
+          setPosted((prev) => fixDebugRow(prev, stepIndex, debugRow, entryDraft));
+          setViewUpto(null);
+          setPendingFlight(entryDraft);
+          celebrate();
+          showResultPane();
+        } else {
           revealWrong.current = true;
           setPane("work");
         }
@@ -785,6 +846,10 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
       setCalcError(null);
     }
     if (task.type === "classify") setPlaced(classifyAnswer(task, accountMap));
+    if (task.type === "debug") {
+      setDebugRow(task.answer.index);
+      setDraft(fromJournalEntry(task.answer.entry, accountMap));
+    }
     setResult(null);
     setRevealed(true);
     // 結果の表示を消すので、同じ誤答を入れ直して押したら採点し直して説明を出す(Issue #128)
@@ -1055,6 +1120,66 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
               )}
             </div>
           )}
+          {task.type === "debug" && (
+            <form
+              className="space-y-3"
+              data-tour="task-debug"
+              onSubmit={(e) => {
+                e.preventDefault();
+                check();
+              }}
+            >
+              <fieldset disabled={result?.correct === true} className="space-y-1">
+                <legend className="mb-1 flex items-center gap-1 text-sm font-semibold">
+                  誤りのある行を選ぶ
+                  <HelpIcon topic="debug" />
+                </legend>
+                <ol className="space-y-1 text-xs">
+                  {visiblePosted
+                    .filter((p) => p.step === stepIndex)
+                    .map((p, i) => (
+                      <li key={i}>
+                        <label className="flex cursor-pointer items-start gap-2 rounded border px-2 py-1 has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                          <input
+                            type="radio"
+                            name="debug-row"
+                            className="mt-0.5"
+                            aria-label={`${i + 1}行目: ${p.memo}`}
+                            checked={debugRow === i}
+                            onChange={() => {
+                              setDebugRow(i);
+                              setDraft(editableRow(task.entries[i], accountMap));
+                              setRevealed(false);
+                            }}
+                          />
+                          <span className="min-w-0 flex-1">
+                            <PostedEntry posted={p} accounts={accountMap} />
+                          </span>
+                        </label>
+                      </li>
+                    ))}
+                </ol>
+              </fieldset>
+              {debugRow === null ? (
+                <p className="text-xs text-muted-foreground">行を選ぶと、その仕訳をここで直せます。</p>
+              ) : (
+                <div className="space-y-2">
+                  <h3 className="text-sm font-semibold">{debugRow + 1}行目を直す</h3>
+                  <JournalEditor accounts={accounts} value={draft} onChange={setDraft} readOnly={result?.correct === true} currency={unit.currency} />
+                  {!result?.correct && (
+                    <Button type="submit" disabled={!draftReady} aria-describedby={sideHint ? "debug-side-hint" : undefined}>
+                      確認する
+                    </Button>
+                  )}
+                  {!result?.correct && sideHint && (
+                    <p id="debug-side-hint" className="text-xs text-muted-foreground">
+                      {sideHint}
+                    </p>
+                  )}
+                </div>
+              )}
+            </form>
+          )}
           {task.type === "calc" && (
             <form
               className="space-y-2 max-w-xs"
@@ -1130,29 +1255,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
               <ol className="space-y-1 text-xs">
                 {visiblePosted.map((p, i) => (
                   <li key={i} className={`rounded border px-2 py-1 ${p.step === stepIndex ? "border-primary/50 bg-primary/5 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1" : ""}`}>
-                    <div className="text-muted-foreground">{p.memo}</div>
-                    <div className="grid grid-cols-2 gap-2 font-mono tabular-nums">
-                      <div className="space-x-1">
-                        {p.entry.debit.map((l, j) => {
-                          const a = accountMap.get(l.account);
-                          return (
-                            <span key={j}>
-                              {a ? <AccountName account={a} /> : l.account} {l.amount.toLocaleString("ja-JP")}
-                            </span>
-                          );
-                        })}
-                      </div>
-                      <div className="text-right space-x-1">
-                        {p.entry.credit.map((l, j) => {
-                          const a = accountMap.get(l.account);
-                          return (
-                            <span key={j}>
-                              {a ? <AccountName account={a} /> : l.account} {l.amount.toLocaleString("ja-JP")}
-                            </span>
-                          );
-                        })}
-                      </div>
-                    </div>
+                    <PostedEntry posted={p} accounts={accountMap} />
                   </li>
                 ))}
               </ol>
@@ -1255,9 +1358,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
                 </p>
               )}
               <p className="whitespace-pre-wrap">{result.feedback}</p>
-              {task.type === "post" && !result.correct && gradedEntry && (
+              {(task.type === "post" || task.type === "debug") && !result.correct && gradedEntry && (
                 <div className="rounded bg-background/70 p-2">
-                  <ImpactCompare yours={gradedEntry} expected={task.answer} accounts={accountMap} />
+                  <ImpactCompare yours={gradedEntry} expected={task.type === "post" ? task.answer : task.answer.entry} accounts={accountMap} />
                 </div>
               )}
               {task.type === "predict" && <PredictCompare predicted={effect} elements={askedElements} entry={task.entry} accounts={accountMap} />}
@@ -1400,6 +1503,32 @@ function TaskText({ text, onAmount, currency }: { text: string; onAmount?: (digi
   );
 }
 
+/** 記帳済みの仕訳1件。debugの写し忘れの行は片側が空になる */
+function PostedEntry({ posted, accounts }: { posted: Posted; accounts: ReadonlyMap<string, GlossaryAccount> }) {
+  const side = (lines: JournalEntry["debit"]) =>
+    lines.length === 0 ? (
+      <span className="text-muted-foreground">—</span>
+    ) : (
+      lines.map((l, j) => {
+        const a = accounts.get(l.account);
+        return (
+          <span key={j}>
+            {a ? <AccountName account={a} /> : l.account} {l.amount.toLocaleString("ja-JP")}
+          </span>
+        );
+      })
+    );
+  return (
+    <>
+      <div className="text-muted-foreground">{posted.memo}</div>
+      <div className="grid grid-cols-2 gap-2 font-mono tabular-nums">
+        <div className="space-x-1">{side(posted.entry.debit)}</div>
+        <div className="text-right space-x-1">{side(posted.entry.credit)}</div>
+      </div>
+    </>
+  );
+}
+
 /** classifyの模範解答の配置 */
 function classifyAnswer(task: Extract<Task, { type: "classify" }>, accounts: ReadonlyMap<string, AccountInfo>): Record<string, string> {
   return Object.fromEntries(classifyBoard(task, accounts).items.map((i) => [i.id, i.answer]));
@@ -1418,6 +1547,8 @@ function TaskBox({ task, onAmount, currency }: { task: Task; onAmount?: (digits:
         return { title: task.labels ? "項目を箱に分けましょう" : "科目を5つの箱に分けましょう", body: null };
       case "calc":
         return { title: "金額を答えましょう", body: task.question };
+      case "debug":
+        return { title: "誤りのある行を見つけて直しましょう", body: null };
       case "observe":
         return null;
     }

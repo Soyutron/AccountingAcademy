@@ -169,6 +169,16 @@ export const HELP_TOPICS: HelpTopic[] = [
     when: (c) => c.taskType === "calc",
   },
   {
+    id: "debug",
+    category: "task",
+    title: "誤りの行を直す",
+    target: "task-debug",
+    pane: "work",
+    short: "記帳済みの一覧から誤りのある行を選び、仕訳を直して「確認する」を押します。",
+    body: "記帳済みの一覧から誤りのある行を選ぶと、その仕訳が下の仕訳帳に読み込まれます。足りない科目と金額を書き足すか直して、「確認する」を押します。結果の試算で左右の合計が合っていないことが手がかりです。直せた行は帳簿の中で置き換わり、左右がそろいます。",
+    when: (c) => c.taskType === "debug",
+  },
+  {
     id: "tweak",
     category: "task",
     title: "条件を変える",
@@ -214,7 +224,7 @@ export function helpTopic(id: string): HelpTopic {
 }
 
 // 初めて画面に出たときに案内を出す課題の種類(docs/help-design.md 5.2)
-export const FIRST_TIME_IDS = ["predict", "classify", "calc", "tweak", "sandbox"] as const;
+export const FIRST_TIME_IDS = ["predict", "classify", "calc", "debug", "tweak", "sandbox"] as const;
 
 /** 現在のステップで初出の案内を出す話題。該当しなければnull */
 export function firstTimeTopic(ctx: HelpContext): HelpTopic | null {

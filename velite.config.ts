@@ -1,6 +1,6 @@
 import { parse as parseYaml } from "yaml";
 import { defineConfig, s, z } from "velite";
-import { classifyErrors, pathErrors, scenarioAccountErrors, unitAccountIds, unitKindErrors } from "./src/lib/content-checks";
+import { classifyErrors, debugErrors, pathErrors, scenarioAccountErrors, unitAccountIds, unitKindErrors } from "./src/lib/content-checks";
 
 // コンテンツのスキーマと横断検査。構造の定義はdocs/content-model.md、画面と学習フローはdocs/ide-design.mdが正本
 
@@ -55,6 +55,13 @@ const journalEntry = s.object({
   memo: s.string().optional(),
   debit: s.array(journalLine).min(1),
   credit: s.array(journalLine).min(1),
+});
+// debugのentriesだけは写し忘れ(片側が空)を書けるようにする。貸借の不一致はprepareのdebugErrorsが1行だけに絞る
+const looseJournalEntry = s.object({
+  date: s.string().optional(),
+  memo: s.string().optional(),
+  debit: s.array(journalLine),
+  credit: s.array(journalLine),
 });
 const journalLinePattern = s.object({ account: s.string().optional(), amount: s.number().int().optional() });
 const effect = s.object({ asset: change, liability: change, equity: change, revenue: change, expense: change });
@@ -132,6 +139,15 @@ export const taskSchema = s.discriminatedUnion("type", [
     question: s.string(),
     answer: s.number().int(),
     wrong_patterns: s.array(wrongPattern(s.number().int())).default([]),
+  }),
+  s.object({
+    ...taskBase,
+    type: s.literal("debug"),
+    // 記帳済みの仕訳。1行だけ誤りがある(Issue #263)
+    entries: s.array(looseJournalEntry).min(2),
+    // indexは0始まりの誤りの行、entryは直した仕訳
+    answer: s.object({ index: s.number().int().min(0), entry: journalEntry }),
+    wrong_patterns: s.array(wrongPattern(s.object({ index: s.number().int().min(0) }))).default([]),
   }),
 ]);
 export type Task = z.infer<typeof taskSchema>;
@@ -484,6 +500,11 @@ export default defineConfig({
               requireMisconception(p.misconception, w);
               if (p.match === t.answer) errors.push(`${w}: 正解と同じ値が誤答パターンにある`);
             });
+            break;
+          case "debug":
+            debugErrors(t).forEach((e) => errors.push(`${w}: ${e}`));
+            [...t.entries, t.answer.entry].forEach((e) => [...e.debit, ...e.credit].forEach((l) => requireAccount(l.account, w)));
+            t.wrong_patterns.forEach((p) => requireMisconception(p.misconception, w));
             break;
         }
       });

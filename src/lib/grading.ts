@@ -26,7 +26,7 @@ const PREDICT_WRONG = "予想と実際の動きが違いました。下の表で
 
 /** 2回誤答すると「答えを見る」が出る課題か。predictは1回で進み、tweakは目標に合わせるだけなので誤答が重ならない */
 export function canRevealAnswer(type: Task["type"]): boolean {
-  return type === "post" || type === "calc" || type === "classify";
+  return type === "post" || type === "calc" || type === "classify" || type === "debug";
 }
 
 function ok(task: { success?: string }): GradeResult {
@@ -71,6 +71,24 @@ export function gradePost(task: TaskOf<"post">, entry: JournalEntry, accounts?: 
     if (ELEMENTS.every((el) => yours[el] === expected[el])) return ng(SAME_IMPACT);
   }
   return ng();
+}
+
+// debugのentriesは誤りの行のほかは貸借がそろっている(prepareで検査)
+const DEBUG_ROW_BALANCED = "その行は借方と貸方の両側がそろっています。片方のページにしか書いていない行を探しましょう。";
+
+export interface DebugAnswer {
+  index: number;
+  entry: JournalEntry;
+}
+
+/** debug: 選んだ行と直した仕訳を採点する。行の選び間違いはwrong_patternsで、行が合っていれば仕訳をpostと同じく比べる(Issue #263) */
+export function gradeDebug(task: TaskOf<"debug">, answer: DebugAnswer, accounts?: ReadonlyMap<string, AccountInfo>): GradeResult {
+  if (answer.index !== task.answer.index) {
+    const pattern = task.wrong_patterns.find((p) => p.match.index === answer.index);
+    return ng(pattern?.feedback ?? DEBUG_ROW_BALANCED, pattern?.misconception);
+  }
+  const r = gradePost({ type: "post", transaction: "", answer: task.answer.entry, alternatives: [], wrong_patterns: [] }, answer.entry, accounts);
+  return r.correct ? ok(task) : r;
 }
 
 export interface PredictResult extends GradeResult {

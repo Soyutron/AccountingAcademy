@@ -78,3 +78,27 @@ export function classifyErrors(t: ClassifyForCheck, misconceptionIds: ReadonlySe
   }
   return errors;
 }
+
+interface DebugForCheck {
+  entries: { debit: { amount: number }[]; credit: { amount: number }[] }[];
+  answer: { index: number; entry: { debit: { amount: number }[]; credit: { amount: number }[] } };
+  wrong_patterns: { match: { index: number } }[];
+}
+
+/** debugの行の参照と、誤りの行が1つだけであることを検査する。科目と誤解はprepareが単元の科目で検査する(Issue #263) */
+export function debugErrors(t: DebugForCheck): string[] {
+  const errors: string[] = [];
+  const sum = (lines: { amount: number }[]) => lines.reduce((s, l) => s + l.amount, 0);
+  const balanced = (e: DebugForCheck["answer"]["entry"]) => sum(e.debit) === sum(e.credit);
+  const inRange = (i: number) => i < t.entries.length;
+  if (!inRange(t.answer.index)) errors.push(`answer.index ${t.answer.index}がentriesの範囲外`);
+  if (!balanced(t.answer.entry)) errors.push("answer.entryの借方合計と貸方合計が一致しない");
+  for (const p of t.wrong_patterns) {
+    if (!inRange(p.match.index)) errors.push(`wrong_patternsのindex ${p.match.index}がentriesの範囲外`);
+    if (p.match.index === t.answer.index) errors.push(`wrong_patternsのindex ${p.match.index}がanswer.indexと同じ`);
+  }
+  const unbalanced = t.entries.flatMap((e, i) => (balanced(e) ? [] : [i]));
+  if (unbalanced.length !== 1) errors.push(`entriesの貸借が合わない行が${unbalanced.length}個ある(1個にする)`);
+  else if (inRange(t.answer.index) && unbalanced[0] !== t.answer.index) errors.push(`貸借が合わない行${unbalanced[0]}がanswer.index ${t.answer.index}と違う`);
+  return errors;
+}
