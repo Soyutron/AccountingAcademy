@@ -28,6 +28,7 @@ answer:
   credit: [{ account: capital_stock, amount: 100000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: debit_means_increase
     feedback: 現金は左(借方)で増えます。左右を入れ替えてみましょう。
   - match: { unbalanced: true }
     feedback: 左右の金額を同じにします。

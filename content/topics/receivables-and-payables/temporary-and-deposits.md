@@ -61,6 +61,7 @@ wrong_patterns:
     misconception: net_pay_is_salary
     feedback: 給料は差し引く前の100,000円です。預かった3,000円は預り金として右に書きます。
   - match: { swapped: true }
+    misconception: debit_means_increase
     feedback: 給料は費用なので左、普通預金と預り金は右です。
   - match: { credit: [{ account: cash, amount: 97000 }] }
     feedback: 手取りは普通預金から振り込みました。
@@ -84,7 +85,7 @@ success: 給料100,000が費用に、預り金3,000が負債に並びました�
 
 ## 預かった税金を納める
 翌月、預かっていた所得税3,000円を税務署に現金で納めました。
-これは店の費用ではありません。預かっていたお金を、本人の代わりに渡しただけです。預り金という義務が消え、現金が減ります。記帳の前に、5つの箱がどう動くか予想してみましょう。
+店の現金は出ていきました。でも、これは給料と同じ「店が使ったお金」でしょうか。給料の日に負った「代わりに納める義務」は、納めた後どうなるでしょうか。記帳の前に、5つの箱がどう動くか予想してみましょう。
 
 ```task
 type: predict
@@ -105,7 +106,7 @@ wrong_patterns:
   - match: { equity: decrease }
     feedback: 現金と預り金が同じだけ減るので、純資産は変わりません。
 hint: 預り金(負債)と現金(資産)が同じだけ減ります。費用にはなりません。
-success: 預り金が消えました。給料の費用は、払った月の100,000円だけです。
+success: 預り金という義務が消え、現金が同じだけ減りました。預かっていたお金を本人の代わりに渡しただけなので、店の費用にはなりません。給料の費用は、払った月の100,000円だけです。
 ```
 
 ## スタッフの代わりに払う
@@ -120,6 +121,7 @@ answer:
   credit: [{ account: cash, amount: 2000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 増えるのは立替金(権利)なので左、減るのは現金なので右です。
   - match: { debit: [{ account: shipping_expense }] }
     misconception: advance_for_others_is_expense
@@ -150,6 +152,7 @@ answer:
   credit: [{ account: cash, amount: 20000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 増えるのは仮払金なので左、減るのは現金なので右です。
   - match: { debit: [{ account: travel_expense }] }
     misconception: suspense_is_expense
@@ -200,7 +203,7 @@ success: 仮払金が消え、旅費交通費18,000が費用に、現金2,000が
 
 ## 正体不明の入金
 普通預金の通帳を見ると、50,000円の入金がありました。でも、誰から何のお金か分かりません。
-分かるまで放っておくわけにはいきません。[[cash_over_and_short|現金過不足]]と同じ「仮の置き場」の考え方で、正体が分かるまで「[[suspense_receipt|仮受金]]」という負債に置きます。返すことになるかもしれないお金だからです。記帳の前に、5つの箱がどう動くか予想してみましょう。
+分かるまで放っておくわけにはいきません。こういうお金のために、[[cash_over_and_short|現金過不足]]と同じ「仮の置き場」の考え方で使う「[[suspense_receipt|仮受金]]」という負債の科目があります。返すことになるかもしれないお金だからです。通帳の残高は増えましたが、これは売上でしょうか。記帳の前に、5つの箱がどう動くか予想してみましょう。
 
 ```task
 type: predict
@@ -218,7 +221,7 @@ wrong_patterns:
   - match: { asset: none }
     feedback: 普通預金は実際に増えています。資産は増えます。
 hint: 普通預金(資産)と仮受金(負債)が同じだけ増えます。
-success: 仮受金50,000が負債に並びました。正体が分かったら、本来の科目へ移します。
+success: 普通預金が増え、同じだけ仮受金50,000が負債に並びました。売上にはしていません。正体が分かったら、本来の科目へ移します。
 ```
 
 ## 正体が分かった
@@ -233,6 +236,7 @@ answer:
   credit: [{ account: accounts_receivable_other, amount: 50000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: debit_means_increase
     feedback: 仮受金を消すので左、未収入金を減らすので右です。
   - match: { credit: [{ account: sales }] }
     misconception: receivable_collection_is_sale
@@ -271,5 +275,5 @@ success: 立替金と仮払金は資産、預り金と仮受金は負債。ど�
 
 ## ふりかえり
 他人の代わりに払ったお金は立替金(資産)、他人から預かったお金は預り金(負債)。いくら何に使うかが決まっていないお金は仮払金(資産)、正体の分からない入金は仮受金(負債)。どれも、店のもうけや費用ではありません。
-現金過不足と同じで、仮の科目は「分かるまで置いておく場所」です。分かった日に本来の科目へ移し、決算の日には残さないようにします。
+現金過不足と同じで、仮の科目は「分かるまで置いておく場所」です。分かった日に本来の科目へ移し、[[closing|決算]]の日には残さないようにします。
 これで、現金・預金と債権・債務のテーマは終わりです。次は固定資産のテーマで、「買った年に全部費用にしない」考え方を学びます。

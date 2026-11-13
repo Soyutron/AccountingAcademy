@@ -25,6 +25,8 @@ async function solveStep2WithoutResume(page: Page) {
     post(page, ["現金", "1000000"], ["借入金", "1000000"]),
   ]);
 
+  await page.evaluate(() => sessionStorage.clear());
+
   await page.reload();
   await expect(page.getByRole("button", { name: "続きから" })).toBeVisible();
   await next.click();
@@ -52,7 +54,7 @@ test("手で解いて先へ進んでから「続きから」で戻っても、�
   await next.click();
   await expect(page.getByText("ステップ3 / 10")).toBeVisible();
   const work = page.getByRole("region", { name: "ワークスペース" });
-  for (const el of ["資産", "負債", "純資産", "収益", "費用"]) await work.getByLabel(`${el}の予想`, { exact: true }).selectOption("none");
+  for (const el of ["資産"]) await work.getByLabel(`${el}の予想`, { exact: true }).selectOption("none");
   await work.getByRole("button", { name: "予想して記帳する" }).click();
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   await next.click();

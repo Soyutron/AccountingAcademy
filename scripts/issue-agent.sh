@@ -27,6 +27,7 @@
 #   ISSUE_LOG_DIR         ログ置き場(既定logs/issue-agent)
 #   ISSUE_E2E_PORT        関門のE2Eが本番ビルドを起動するポート(既定3100。issue-loopが並列のワーカーごとに変える)
 #   ISSUE_IMPL_MODEL      実装側のモデル(既定opus)
+#   ISSUE_CONTENT_MODEL   area:contentのIssueで実装側に使うモデル(既定fable。コンテンツの作成・改訂はFableが担当する方針、2026-11-14)
 #   ISSUE_REVIEW_MODEL    レビュー側のモデル(既定fable)
 set -u
 cd "$(dirname "$0")/.."
@@ -238,7 +239,9 @@ case " $labels " in
   *" agent:in-progress "*|*" agent:needs-human "*)
     [ "${ISSUE_FORCE:-0}" = 1 ] || { log "Issue #${ISSUE}は処理中か人手待ちです($labels)。引き継ぐならISSUE_FORCE=1"; exit 6; } ;;
 esac
-log "Issue #$ISSUE: $title"
+# コンテンツ(単元・概念・誤解の文章)はFableが書く。コードの修正はopusで足りる
+case " $labels " in *" area:content "*) IMPL_MODEL="${ISSUE_CONTENT_MODEL:-fable}" ;; esac
+log "Issue #$ISSUE: $title(実装$IMPL_MODEL / レビュー$REVIEW_MODEL)"
 gh issue edit "$ISSUE" --add-label agent:in-progress --remove-label agent:needs-human >/dev/null \
   || { log "ラベルを付けられません。scripts/labels.shを先に実行してください"; exit 5; }
 

@@ -13,7 +13,7 @@ const post = async (page: Page, debit: string, credit: string, amount: string) =
 };
 
 const predictAll = async (page: Page) => {
-  for (const name of ["資産", "負債", "純資産", "収益", "費用"]) {
+  for (const name of ["資産"]) {
     await page.getByLabel(`${name}の予想`, { exact: true }).selectOption("none");
   }
   await page.getByRole("button", { name: "予想して記帳する" }).click();
@@ -88,6 +88,7 @@ test("「今はしない」「続きから」はステップの見出しへ、�
   await next.click();
   await expect(page.getByText("ステップ3 / 10")).toBeVisible();
   await page.waitForTimeout(1000);
+  await page.evaluate(() => sessionStorage.clear());
   await page.reload();
   const resume = page.getByRole("button", { name: "続きから" });
   await resume.focus();

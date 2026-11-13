@@ -35,6 +35,8 @@ test("過去の回答が1000件以上あっても、正解したステップを�
   });
   expect(res.status()).toBe(201);
 
+  await page.evaluate(() => sessionStorage.clear());
+
   await page.reload();
   await page.getByRole("button", { name: "続きから" }).click();
   await expect(page.getByRole("status").filter({ hasText: "できました" })).toBeVisible();

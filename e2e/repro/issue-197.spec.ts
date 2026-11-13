@@ -24,6 +24,8 @@ test("範囲外の保存stepでも、進めたあとのreloadで「続きから�
   const userId = JSON.parse(Buffer.from(decodeURIComponent(token).replace(/^base64-/, ""), "base64url").toString()).user.id;
   db(`update unit_progress set step=10 where user_id='${userId}' and unit_id='${UNIT}'`);
 
+  await page.evaluate(() => sessionStorage.clear());
+
   await page.reload();
   await page.waitForLoadState("networkidle");
   await page.getByRole("button", { name: "次へ →" }).click();
@@ -37,6 +39,8 @@ test("範囲外の保存stepでも、進めたあとのreloadで「続きから�
   await page.getByRole("button", { name: "次へ →" }).click();
   await advanced;
   await expect(page.getByText("ステップ3 / 10")).toBeVisible();
+
+  await page.evaluate(() => sessionStorage.clear());
 
   await page.reload();
   await page.waitForLoadState("networkidle");

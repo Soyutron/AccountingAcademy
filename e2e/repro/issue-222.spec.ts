@@ -18,6 +18,7 @@ test("進捗の読み込みに失敗したら、その旨を画面で知らせ�
 
   await page.route("**/rest/v1/unit_progress?select=*", (route) => route.fulfill({ status: 500, contentType: "application/json", body: '{"message":"boom"}' }));
   const failed = page.waitForResponse((r) => r.url().includes("/rest/v1/unit_progress?select=") && r.status() === 500);
+  await page.evaluate(() => sessionStorage.clear());
   await page.reload();
   await failed;
   await expect(page.getByText("ステップ1 / 10")).toBeVisible();
@@ -25,6 +26,7 @@ test("進捗の読み込みに失敗したら、その旨を画面で知らせ�
 
   // 障害が戻れば案内は消え、「続きから」が出る
   await page.unroute("**/rest/v1/unit_progress?select=*");
+  await page.evaluate(() => sessionStorage.clear());
   await page.reload();
   await expect(page.getByRole("button", { name: /続きから/ })).toBeVisible();
   await expect(page.getByRole("alert").filter({ hasText: /読み込|進捗/ })).toHaveCount(0);

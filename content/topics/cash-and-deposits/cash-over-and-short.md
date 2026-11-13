@@ -37,6 +37,7 @@ highlight: 2
 ## 帳簿を実際に合わせる
 まず、帳簿の現金を実際の297,000円に直します。右に「現金3,000」と書いて減らします。
 左には何を書くでしょう。理由はまだ分かりません。そこで、正体が分かるまで差額を預けておく科目を使います。これが[[cash_over_and_short|現金過不足]]です。足りなかったときは左に書きます。
+現金過不足のように、原因が分かるまで差額を仮に置いておく科目を「仮勘定」と呼びます。資産でも負債でもなく、原因が分かれば本来の科目へ移し、決算の財務諸表には残しません。
 
 ```task
 type: post
@@ -46,6 +47,7 @@ answer:
   credit: [{ account: cash, amount: 3000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 現金は実際より多く書かれているので、右で減らします。差額の現金過不足は左です。
   - match: { debit: [{ account: miscellaneous_loss }] }
     misconception: shortage_is_loss
@@ -61,7 +63,7 @@ success: 現金が297,000になり、差額の3,000が現金過不足に預け�
 
 ## 原因が1つ分かった
 レシートを調べると、切手代2,000円を払ったのに記帳していませんでした。切手代は「[[communication_expense|通信費]]」という費用の科目で記録します。
-3,000円のうち2,000円の正体が分かったので、その分を現金過不足から通信費へ移します。左に通信費2,000、右に現金過不足2,000。記帳の前に、5つの箱がどう動くか予想してみましょう。
+3,000円のうち2,000円の正体が分かったので、その分を現金過不足から通信費へ移します。現金過不足は仮の置き場なので、ここでは費用と純資産の動きだけを予想してみましょう。仮の置き場にあった2,000円が「使ったお金」だと分かると、利益はどうなるでしょうか。
 
 ```task
 type: predict
@@ -70,17 +72,16 @@ entry:
   debit: [{ account: communication_expense, amount: 2000 }]
   credit: [{ account: cash_over_and_short, amount: 2000 }]
 answer: { asset: decrease, liability: none, equity: decrease, revenue: none, expense: increase }
+elements: [expense, equity]
 wrong_patterns:
-  - match: { asset: none }
-    feedback: 預けておいた現金過不足(資産)が2,000減ります。現金はもう減らしてあるので、ここでは動きません。
   - match: { expense: none }
     feedback: 切手代は会社が使ったお金です。通信費という費用が増えます。
   - match: { equity: none }
     feedback: 費用が増えると当期純利益が減り、そのぶん純資産も減ります。
   - match: { expense: decrease }
     feedback: 切手代は使ったお金なので、通信費(費用)は減らずに増えます。
-hint: 現金過不足(資産)が減り、通信費(費用)が増えます。費用が増えれば利益も純資産も減ります。
-success: 通信費が損益計算書に現れ、現金過不足は1,000に減りました。残りの1,000円は、まだ正体が分かりません。
+hint: 現金過不足(仮の置き場)から2,000が出て、通信費(費用)が増えます。費用が増えれば利益も純資産も減ります。
+success: 左に通信費2,000、右に現金過不足2,000の仕訳です。通信費が損益計算書に現れて利益が減り、現金過不足は1,000に減りました。残りの1,000円は、まだ正体が分かりません。
 ```
 
 ## まだ分からない分
@@ -100,7 +101,7 @@ success: 残りは1,000円。原因を探し続けますが、決算の日まで
 ```
 
 ## 決算で片づける
-決算の日になっても、残り1,000円の正体は分かりませんでした。現金過不足は「仮の置き場」なので、財務諸表には残せません。
+[[closing|決算]]の日になっても、残り1,000円の正体は分かりませんでした。現金過不足は「仮の置き場」なので、財務諸表には残せません。
 分からないまま減った1,000円は、「雑損」という費用にします。逆に多かった場合は「雑益」という収益です。この片づけ方を[[miscellaneous_loss_gain|雑損・雑益]]への振り替えと呼びます。
 
 ```task
@@ -111,6 +112,7 @@ answer:
   credit: [{ account: cash_over_and_short, amount: 1000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 現金過不足を消すので右、雑損(費用)が増えるので左です。
   - match: { credit: [{ account: cash }] }
     feedback: 現金はもう実際の金額に直してあります。消すのは現金過不足のほうです。

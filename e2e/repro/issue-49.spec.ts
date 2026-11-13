@@ -7,6 +7,7 @@ test("tweakの達成後にreloadしても、続きからで達成時の値とで
   const done = page.getByRole("status").filter({ hasText: "できました" });
   const attempt = (id: string) => page.waitForResponse((r) => r.request().method() === "POST" && r.url().includes("/rest/v1/attempts") && r.request().postDataJSON()?.exercise_id === id);
   const resume = async () => {
+    await page.evaluate(() => sessionStorage.clear());
     await page.reload();
     // 進捗の取得は非同期なので、案内が出るまで待つ
     await page.getByRole("button", { name: "続きから" }).click();

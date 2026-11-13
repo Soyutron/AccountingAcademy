@@ -6,6 +6,12 @@ misconceptions:
     correct: 増減の側は要素によって決まる。資産・費用は借方で増え、負債・純資産・収益は貸方で増える
     concepts: [five_elements, debit_credit]
     remediation: bookkeeping-basics/five-elements
+  - id: outflow_on_debit
+    name: お金が出ていく側を左に書く
+    description: 減る科目や払う科目を左(借方)、増える科目や受け取る科目を右(貸方)に書くと思っている。資産と費用は左で増え、右で減るので、向きが逆になる
+    correct: 左(借方)は増えた資産や費用、右(貸方)は減った資産。お金が出ていく(減る)現金や預金は右に書き、代わりに増えた資産や費用を左に書く
+    concepts: [debit_credit, journal_entry]
+    remediation: bookkeeping-basics/five-elements
   - id: cash_is_only_asset
     name: 資産は現金だけ
     description: 現金や預金だけを資産と考え、建物や備品、売掛金のような形の違う財産を資産とみなしていない

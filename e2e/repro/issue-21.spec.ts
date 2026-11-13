@@ -23,6 +23,8 @@ test("2回誤答後に再訪しても答えを見るが使える", async ({ page
   await wrong("100000");
   await expect(page.getByRole("button", { name: "答えを見る" })).toBeVisible();
 
+  await page.evaluate(() => sessionStorage.clear());
+
   await page.reload();
   await page.getByRole("button", { name: "続きから" }).click();
   await expect(page.getByText("ステップ2 / 10")).toBeVisible();

@@ -35,6 +35,8 @@ test("predictを誤答して記帳したあとreloadしても、記帳と「次�
   await expect(next).toHaveAttribute("aria-disabled", "false");
   await saved;
 
+  await page.evaluate(() => sessionStorage.clear());
+
   await page.reload();
   await page.getByRole("button", { name: "続きから" }).click();
   await expect(page.getByText("ステップ6 / 9")).toBeVisible();

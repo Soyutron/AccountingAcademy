@@ -10,13 +10,13 @@ requires: [merchandise/three-account-method]
 scenario:
   company: カフェ「マメノキ」
   opening:
-    - { account: cash, amount: 770000 }
+    - { account: cash, amount: 720000 }
     - { account: equipment, amount: 600000 }
     - { account: loans_payable, amount: 300000 }
     - { account: capital_stock, amount: 1000000 }
     - { account: sales, amount: 170000 }
     - { account: purchases, amount: 50000 }
-    - { account: rent_expense, amount: 50000 }
+    - { account: rent_expense, amount: 100000 }
 ---
 
 ## 代金は月末に
@@ -105,6 +105,33 @@ hint: 売上(収益)が増え、受け取る権利(資産)が増えます。収�
 success: 豆を渡した時点で、お店の義務は果たされ、代金を受け取る権利が確定します。だから納品の日が売上になり、入金はその権利がお金に変わるだけです。左に現れた「売掛金」がこの権利で、現金と同じ資産の箱に入ります。
 ```
 
+## ここまでのもうけ
+結果の[[income_statement|損益計算書]]で、ここまでの[[net_income|当期純利益]]を読んでみましょう。掛けで納品した60,000円は、まだ1円も振り込まれていませんが、もう売上に入っています。
+掛けで仕入れた40,000円も、まだ払っていないのに仕入に入っています。家賃は毎月末に50,000円を払っているので、[[rent_expense|支払家賃]]は先月までの2か月分です。収益の合計から費用の合計を引いて答えてみましょう。
+
+```task
+type: calc
+question: 掛けの代金がまだ動いていない今の時点で、当期純利益はいくらですか(円)
+answer: 40000
+wrong_patterns:
+  - match: 20000
+    misconception: revenue_only_when_cash
+    feedback: お金が動いた取引だけで計算しています。掛けで納品した分も売上、掛けで仕入れた分も仕入です。代金を受け取る前、払う前から収益と費用に入っています。
+  - match: -20000
+    misconception: revenue_only_when_cash
+    feedback: 掛けで納品した60,000も売上です。お金が入る前から収益に入っています。
+  - match: 80000
+    feedback: 掛けで仕入れた分も仕入(費用)です。費用から引き忘れていませんか。
+  - match: 230000
+    feedback: それは売上の合計です。費用(仕入90,000と支払家賃100,000)を引きましょう。
+  - match: 140000
+    feedback: 費用は仕入だけではありません。支払家賃も引いていますか。
+  - match: 90000
+    feedback: 支払家賃を1か月分しか引いていません。家賃は毎月末に払っているので、先月までの2か月分100,000が費用です。
+hint: 売上230,000 − 仕入90,000 − 支払家賃100,000。
+success: 当期純利益は40,000円。掛けの代金はまだ1円も動いていないのに、掛けの売上も仕入も、取引の日にちゃんと数えられています。
+```
+
 ## 月末、代金が振り込まれる
 月末になり、会社から60,000円が[[bank_deposit|普通預金]](銀行に預けてあるお金)に振り込まれました。納品の日に左に書いた「後で受け取る権利」が[[accounts_receivable|売掛金]]です。その権利が、預金というお金に変わった瞬間です。
 売上はもう納品の日に記録してあります。ここで売上をもう一度書いてしまうと、二重になってしまいます。何が増えて何が減るかだけを書いてみましょう。
@@ -117,6 +144,7 @@ answer:
   credit: [{ account: accounts_receivable, amount: 60000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 増えた預金は左、減った売掛金は右です。左右を入れ替えてみましょう。
   - match: { credit: [{ account: sales }] }
     misconception: receivable_collection_is_sale
@@ -192,30 +220,6 @@ misconceptions:
     asset: purchase_is_asset
 hint: 売掛金と普通預金は資産、買掛金は負債、売上は収益、仕入は費用です。
 success: 売掛金は受け取る権利なので資産、買掛金は払う義務なので負債。売上と仕入は、代金がいつ動くかに関係なく収益と費用です。
-```
-
-## ここまでのもうけ
-結果の[[income_statement|損益計算書]]で、ここまでの[[net_income|当期純利益]]を読んでみましょう。掛けで納品した60,000円は、お金が振り込まれる前から売上に入っていました。
-掛けで仕入れた40,000円も、払う前から仕入に入っています。収益の合計から費用の合計を引いて答えてみましょう。
-
-```task
-type: calc
-question: 3か月目が終わった時点の当期純利益はいくらですか(円)
-answer: 90000
-wrong_patterns:
-  - match: 30000
-    misconception: revenue_only_when_cash
-    feedback: 掛けで納品した60,000も売上です。お金が入る前から収益に入っています。
-  - match: 130000
-    feedback: 掛けで仕入れた40,000も仕入(費用)です。費用から引き忘れていませんか。
-  - match: 230000
-    feedback: それは売上の合計です。費用(仕入90,000と家賃50,000)を引きましょう。
-  - match: 140000
-    feedback: 費用は仕入だけではありません。支払家賃も引いていますか。
-  - match: 20000
-    feedback: それは掛けで売った分と掛けで仕入れた分の差だけです。問いは、ここまでの売上と費用のすべてから求める当期純利益です。
-hint: 売上230,000 − 仕入90,000 − 支払家賃50,000。
-success: 当期純利益は90,000円。掛けの売上も仕入も、取引の日にちゃんと数えられていますね。
 ```
 
 ## ふりかえり

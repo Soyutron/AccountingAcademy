@@ -12,9 +12,8 @@ function ide(page: Page) {
     await work.getByRole("button", { name: "記帳する" }).click();
   };
   const passed = () => expect(status.getByText("できました", { exact: true })).toBeVisible();
-  const predict = async (values: string[]) => {
-    const labels = ["資産", "負債", "純資産", "収益", "費用"];
-    for (let i = 0; i < 5; i++) await work.getByLabel(`${labels[i]}の予想`, { exact: true }).selectOption({ label: values[i] });
+  const predict = async (values: string[], labels = ["資産", "負債", "純資産", "収益", "費用"]) => {
+    for (let i = 0; i < values.length; i++) await work.getByLabel(`${labels[i]}の予想`, { exact: true }).selectOption({ label: values[i] });
     await work.getByRole("button", { name: "予想して記帳する" }).click();
   };
   const calc = async (value: string) => {
@@ -38,7 +37,7 @@ test("最初の単元・三分法・現金過不足の自然な誤答に、汎�
   await post("現金", "資本金", "1000000");
   await passed();
   await next.click();
-  await predict(["増える", "増える", "変わらない", "変わらない", "変わらない"]);
+  await predict(["増える"]);
   await next.click();
   await specific("普通預金", "借入金", "300000", "現金で受け取って");
   await post("現金", "借入金", "300000");
@@ -66,7 +65,7 @@ test("最初の単元・三分法・現金過不足の自然な誤答に、汎�
   await post("現金過不足", "現金", "3000");
   await passed();
   await next.click();
-  await predict(["減る", "変わらない", "減る", "変わらない", "増える"]);
+  await predict(["増える", "減る"], ["費用", "純資産"]);
   await next.click();
   await calc("1000");
   await next.click();

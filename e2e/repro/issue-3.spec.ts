@@ -5,6 +5,7 @@ test("正解直後にreloadしても「続きから」で達成状態と仕訳�
   const work = page.getByRole("region", { name: "ワークスペース" });
   const next = page.getByRole("button", { name: "次へ →" });
   const resume = async () => {
+    await page.evaluate(() => sessionStorage.clear());
     await page.reload();
     // 進捗の取得は非同期なので、案内が出るまで待つ
     await page.getByRole("button", { name: "続きから" }).click();
@@ -32,7 +33,7 @@ test("正解直後にreloadしても「続きから」で達成状態と仕訳�
   // predictステップでも、予想をやり直さずに済む
   await next.click();
   await expect(page.getByText("ステップ3 / 10")).toBeVisible();
-  for (const el of ["資産", "負債", "純資産", "収益", "費用"]) await work.getByLabel(`${el}の予想`, { exact: true }).selectOption("none");
+  for (const el of ["資産"]) await work.getByLabel(`${el}の予想`, { exact: true }).selectOption("none");
   const predicted = attempt("bookkeeping-basics/five-elements#2");
   await work.getByRole("button", { name: "予想して記帳する" }).click();
   await expect(page.getByRole("button", { name: "予想して記帳する" })).toHaveCount(0);

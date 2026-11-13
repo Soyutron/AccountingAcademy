@@ -19,7 +19,7 @@ test("単元の最後のステップに着くと、単元完了の札が1枚だ�
   };
   await next();
   await post("現金", "資本金", "1000000");
-  for (const el of ["資産", "負債", "純資産", "収益", "費用"]) {
+  for (const el of ["資産"]) {
     await page.getByLabel(`${el}の予想`, { exact: true }).selectOption({ label: "変わらない" });
   }
   await page.getByRole("button", { name: "予想して記帳する" }).click();

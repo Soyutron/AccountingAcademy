@@ -64,11 +64,16 @@ describe("預かったお金、仮のお金 ステップ8(正体が分かった)
 });
 
 describe("既存の判定を崩さない", () => {
-  it.each([3, 4, 7])("ステップ%iの正解は正解のまま、貸借逆はswappedの説明のまま", (index) => {
+  // 貸借逆の誤解は#257で付けた。資産だけの仕訳はoutflow_on_debit、負債を含むステップ8はdebit_means_increase
+  it.each([
+    [3, "outflow_on_debit"],
+    [4, "outflow_on_debit"],
+    [7, "debit_means_increase"],
+  ])("ステップ%iの正解は正解のまま、貸借逆はswappedの説明のまま", (index, misconception) => {
     const task = postTask(index);
     expect(gradePost(task, task.answer).correct).toBe(true);
     const swapped = gradePost(task, { debit: task.answer.credit, credit: task.answer.debit });
-    expect(swapped.misconception).toBeUndefined();
+    expect(swapped.misconception).toBe(misconception);
     expect(swapped.feedback).toContain("右です");
   });
 });

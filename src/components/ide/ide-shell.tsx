@@ -10,7 +10,7 @@ import { ElementBadge } from "@/components/element-badge";
 import { AccountName } from "@/components/account-name";
 import { CheckCircle2, CircleAlert } from "lucide-react";
 import { type EditableEntry, emptyEntry, fromJournalEntry, isIncompleteLine, parseAmount, toJournalEntry } from "@/lib/journal-editable";
-import { type ClassifyResult, type EffectAnswer, type GradeResult, type PredictResult, type Task, canRevealAnswer, gradeCalc, gradeClassify, gradePost, gradePredict, gradeTweak } from "@/lib/grading";
+import { type ClassifyResult, type EffectAnswer, type GradeResult, type PredictResult, type Task, canRevealAnswer, gradeCalc, gradeClassify, gradePost, gradePredict, gradeTweak, predictElements } from "@/lib/grading";
 import { evaluateFormula } from "@/lib/formulas";
 import { type OpeningLine, computeBalances, diffBalances } from "@/lib/ledger";
 import { CookieBlockedError, fetchProgress, recordAttempt, resetOutOfRangeStep, setUnitProgress } from "@/lib/progress";
@@ -107,6 +107,33 @@ function replayEntries(steps: IdeStep[], upto: number): Posted[] {
   return posted;
 }
 
+// 同じタブで単元を離れて戻ったとき(戻る・reload・他ページから)に、離れる前のステップと入力途中の答えを戻す(Issue #83)。
+// タブを閉じれば消え、次に開いたときはDBの進捗から「続きから」を出す
+interface SessionSnapshot {
+  stepIndex: number;
+  reached: number;
+  posted: Posted[];
+  draft: EditableEntry;
+  effect: Partial<EffectAnswer>;
+  placed: Partial<Record<string, Element>>;
+  calcValue: string;
+  params: Record<string, number>;
+  attempts: number;
+  answered: [number, unknown][];
+  stepAttempts: [number, number][];
+  // 未正解のステップで最後に採点した答え(JSON)。戻したあとも誤答の説明を出し、同じ答えを二重に記録しない
+  gradedAnswer: string | null;
+}
+const sessionKey = (unitId: string) => `ide-session:${unitId}`;
+function readSession(unitId: string): SessionSnapshot | null {
+  try {
+    const raw = window.sessionStorage.getItem(sessionKey(unitId));
+    return raw ? (JSON.parse(raw) as SessionSnapshot) : null;
+  } catch {
+    return null;
+  }
+}
+
 // ダブルクリックの2回目は、1回目で描画された次のステップや同じ位置の最終ステップのリンクに当たる(Issue #198)。
 // ブラウザの数えるクリック回数で見分けるので、キーボード(detail 0)と普通の1回押しは妨げない
 function isRepeatedClick(e: MouseEvent<HTMLElement>) {
@@ -139,6 +166,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
   // 初回バナーの判定。進捗を読み終えるまではfalseにして、記録のある学習者にバナーが一瞬出ないようにする
   const [noRecord, setNoRecord] = useState(false);
   const [resumeStep, setResumeStep] = useState<number | null>(null);
+  // sessionStorageから戻したときは、DBの進捗で「続きから」を出さない(Issue #83)
+  const restoredSession = useRef(false);
+  const [sessionLoaded, setSessionLoaded] = useState(false);
   const [resumeSolved, setResumeSolved] = useState(false);
   // 再開するステップの最後の回答。predictは誤答でも進めるので、その予想を復元する(Issue #10)
   const [resumeAnswer, setResumeAnswer] = useState<unknown>(undefined);
@@ -267,7 +297,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
         // ステップを減らした単元では保存値が範囲外になる。そのまま持つと最後に着いても完了にならないので無視し、DBの値も戻す(再開できるように)
         if (saved && saved.step < unit.steps.length) savedStep.current = saved.step;
         else if (saved) resetOutOfRangeStep(unit.id, unit.steps.length).catch((e: Error) => console.error(e));
-        if (saved && saved.step > 0 && saved.step < unit.steps.length) {
+        if (saved && saved.step > 0 && saved.step < unit.steps.length && !restoredSession.current) {
           const answer = p.answers[unit.id]?.[saved.step];
           resumeAnswered.current = new Map(
             Object.entries(p.answers[unit.id] ?? {})
@@ -487,6 +517,73 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
     restoreStep(resumeStep, type === "predict" || type === "tweak" ? resumeAnswer : undefined);
   };
 
+  // サーバー描画はステップ1なので、復元はマウント後に行う。チュートリアルはツアーがステップ1からの台本なので戻さない
+  /* eslint-disable react-hooks/set-state-in-effect -- sessionStorageはマウント後にしか読めない */
+  useEffect(() => {
+    const s = isTutorialUnit ? null : readSession(unit.id);
+    if (s && s.stepIndex < unit.steps.length) {
+      // 何もしていないステップ1の状態しか無ければ、DBの進捗の「続きから」を出す
+      restoredSession.current = s.stepIndex > 0 || s.reached > 0 || s.answered.length > 0;
+      answered.current = new Map(s.answered);
+      stepAttempts.current = new Map(s.stepAttempts);
+      setStepIndex(s.stepIndex);
+      setReached(s.reached);
+      setPosted(s.posted);
+      setAttempts(s.attempts);
+      const answer = answered.current.get(s.stepIndex);
+      if (answer !== undefined) restoreStep(s.stepIndex, answer);
+      else {
+        setDraft(s.draft);
+        setEffect(s.effect);
+        setPlaced(s.placed);
+        setCalcValue(s.calcValue);
+        setParams(s.params);
+        const t = unit.steps[s.stepIndex].task;
+        if (s.gradedAnswer && (t.type === "post" || t.type === "calc" || t.type === "classify")) {
+          gradedAnswer.current = s.gradedAnswer;
+          const graded = JSON.parse(s.gradedAnswer);
+          if (t.type === "post") {
+            setGradedEntry(graded);
+            setResult(gradePost(t, graded, accountMap));
+          }
+          if (t.type === "calc") setResult(gradeCalc(t, graded));
+          if (t.type === "classify") {
+            setGradedPlaced(graded);
+            setResult(gradeClassify(t, graded, accountMap));
+          }
+        }
+      }
+    }
+    setSessionLoaded(true);
+    // マウント時に1回だけ読む
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
+  // 読む前に書くと、StrictModeの2回目のマウントや復元前の描画が空の状態で上書きしてしまう
+  useEffect(() => {
+    if (!sessionLoaded || isTutorialUnit) return;
+    const snapshot: SessionSnapshot = {
+      stepIndex,
+      reached,
+      posted,
+      draft,
+      effect,
+      placed,
+      calcValue,
+      params,
+      attempts,
+      answered: [...answered.current],
+      stepAttempts: [...stepAttempts.current],
+      gradedAnswer: answered.current.has(stepIndex) ? null : gradedAnswer.current,
+    };
+    try {
+      window.sessionStorage.setItem(sessionKey(unit.id), JSON.stringify(snapshot));
+    } catch {
+      // 保存できないブラウザでは従来どおりDBの「続きから」だけで再開する
+    }
+    // answered・gradedAnswerはrefなので、採点のたびに書き直すためgradedResultとtweakDoneを依存に入れる
+  }, [sessionLoaded, isTutorialUnit, unit.id, stepIndex, reached, posted, draft, effect, placed, calcValue, params, attempts, gradedResult, tweakDone]);
+
   const entryDraft = toJournalEntry(draft, accounts);
 
   // 問題文の金額を仕訳帳の金額欄に入れる(Issue #7)。フォーカス中の金額欄のカーソル位置に挿入し、
@@ -541,7 +638,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
   const touched = [...draft.debit, ...draft.credit].some((l) => l.accountName.trim() || l.amount.trim());
   // 未確定の行はentryDraftから落ちるので、先に見ないと入力済みの側を「足りない側」と案内してしまう(Issue #97)
   const sideHint = draftReady || !touched ? null : draftIncomplete ? "入力が途中の行があります。科目と金額をそろえるか、その行を削除すると記帳できます。" : `${missingSides.join("と")}にも科目と金額を入れると記帳できます。`;
-  const predictReady = ELEMENTS.every((el) => effect[el]);
+  const askedElements = task.type === "predict" ? predictElements(task) : ELEMENTS;
+  const predictReady = askedElements.every((el) => effect[el]);
 
   useEffect(() => {
     if (!gradedResult || !focusStatus.current) return;
@@ -617,7 +715,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
       }
       case "predict": {
         if (!predictReady) return;
-        const r = gradePredict(task, effect as EffectAnswer);
+        const r = gradePredict(task, effect);
         focusStatus.current = true;
         answeredStep.current = stepIndex;
         answered.current.set(stepIndex, effect);
@@ -904,7 +1002,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
               <JournalEditor accounts={accounts} value={fromJournalEntry(task.entry, accountMap)} readOnly showImpact={result !== null} />
               <fieldset disabled={result !== null} className="grid gap-2 sm:grid-cols-5">
                 <legend className="text-sm font-semibold mb-1">記帳すると、それぞれどう動くと思いますか</legend>
-                {ELEMENTS.map((el) => (
+                {askedElements.map((el) => (
                   <label key={el} className="text-sm space-y-1">
                     <ElementBadge element={el} />
                     <select aria-label={`${ELEMENT_LABELS[el]}の予想`} className="block h-8 w-full rounded-md border bg-background px-2 py-1 text-base md:text-sm" value={effect[el] ?? ""} onChange={(e) => setEffect({ ...effect, [el]: e.target.value as Change })}>
@@ -925,7 +1023,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
               )}
               {result === null && !predictReady && (
                 <p id="predict-hint" className="text-xs text-muted-foreground">
-                  5つすべて選ぶと記帳できます。動かないと思う要素は「変わらない」を選びます。
+                  {askedElements.length === ELEMENTS.length ? "5つすべて選ぶと記帳できます。動かないと思う要素は「変わらない」を選びます。" : "予想を選ぶと記帳できます。動かないと思うなら「変わらない」を選びます。"}
                 </p>
               )}
             </div>
@@ -1134,7 +1232,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
                   <ImpactCompare yours={gradedEntry} expected={task.answer} accounts={accountMap} />
                 </div>
               )}
-              {task.type === "predict" && <PredictCompare predicted={effect as EffectAnswer} entry={task.entry} accounts={accountMap} />}
+              {task.type === "predict" && <PredictCompare predicted={effect} elements={askedElements} entry={task.entry} accounts={accountMap} />}
               {"wrong" in result && result.wrong.length > 0 && (
                 <ul className="list-disc pl-5 space-y-0.5">
                   {result.wrong.map((w) => (
@@ -1315,7 +1413,7 @@ function TaskReminder({ task, onAmount }: { task: Task; onAmount?: (digits: stri
   );
 }
 
-function PredictCompare({ predicted, entry, accounts }: { predicted: EffectAnswer; entry: JournalEntry; accounts: ReadonlyMap<string, AccountInfo> }) {
+function PredictCompare({ predicted, elements, entry, accounts }: { predicted: Partial<EffectAnswer>; elements: readonly Element[]; entry: JournalEntry; accounts: ReadonlyMap<string, AccountInfo> }) {
   const impact = computeImpact(entry, accounts);
   return (
     <table className="w-full text-xs">
@@ -1327,13 +1425,13 @@ function PredictCompare({ predicted, entry, accounts }: { predicted: EffectAnswe
         </tr>
       </thead>
       <tbody>
-        {ELEMENTS.map((el) => {
+        {elements.map((el) => {
           const actual = toChange(el === "equity" ? impact.equityTotal : impact[el]);
           const differs = predicted[el] !== actual;
           return (
             <tr key={el} className={differs ? "text-diff-fg font-medium" : ""}>
               <td className="py-0.5"><ElementBadge element={el} size="xs" /></td>
-              <td className="text-right">{CHANGE_LABELS[predicted[el]]}</td>
+              <td className="text-right">{predicted[el] ? CHANGE_LABELS[predicted[el]] : "—"}</td>
               <td className="text-right">{CHANGE_LABELS[actual]}</td>
             </tr>
           );

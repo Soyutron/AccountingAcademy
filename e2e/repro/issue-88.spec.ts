@@ -19,7 +19,7 @@ test("390pxの総勘定元帳でT勘定の借方と貸方が画面幅に収ま�
   // ここで現金の貸方にも摘要が入る
   await page.getByRole("button", { name: "次へ →" }).click();
   await page.locator("#tab-work").click();
-  for (const label of ["資産", "負債", "純資産", "収益", "費用"]) await work.getByLabel(`${label}の予想`, { exact: true }).selectOption("none");
+  for (const label of ["資産"]) await work.getByLabel(`${label}の予想`, { exact: true }).selectOption("none");
   await work.getByRole("button", { name: "予想して記帳する" }).click();
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
 

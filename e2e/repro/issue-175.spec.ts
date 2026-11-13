@@ -27,6 +27,7 @@ async function nextAndSave(page: Page) {
 }
 
 async function resumeAfterReload(page: Page, label: string) {
+  await page.evaluate(() => sessionStorage.clear());
   await page.reload();
   await page.getByRole("button", { name: "続きから" }).click();
   await expect(page.getByText(label)).toBeVisible();
@@ -64,7 +65,7 @@ test("続きから → 前へを重ねても、ステップごとの答えが戻
   await expect(done).toBeVisible();
   await next.click();
   await expect(page.getByText("ステップ3 / 10")).toBeVisible();
-  for (const [el, v] of [["資産", "decrease"], ["負債", "none"], ["純資産", "none"], ["収益", "none"], ["費用", "none"]])
+  for (const [el, v] of [["資産", "decrease"]])
     await work.getByLabel(`${el}の予想`, { exact: true }).selectOption(v);
   await work.getByRole("button", { name: /予想/ }).click();
   await expect(page.getByRole("status").filter({ hasText: "もう一歩" })).toBeVisible();
@@ -102,6 +103,7 @@ test("正解したあとに誤答を重ねたステップは、最後の誤答�
   await expect(page.getByText("ステップ3 / 10")).toBeVisible();
 
   // 「続きから」を押さず手で進めると、正解済みのステップにも答えられる
+  await page.evaluate(() => sessionStorage.clear());
   await page.reload();
   await expect(page.getByRole("button", { name: "続きから" })).toBeVisible();
   await next.click();
