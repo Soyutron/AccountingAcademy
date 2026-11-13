@@ -32,8 +32,8 @@ describe("売れ残りと売上原価", () => {
 
   it("決算後の当期純利益の誤答に誤解IDが付く", () => {
     const income = task<"calc">(4);
-    expect(gradeCalc(income, 78500).correct).toBe(true);
-    expect(gradeCalc(income, 93500).misconception).toBe("beginning_inventory_forgotten");
-    expect(gradeCalc(income, 71500).misconception).toBe("purchases_equal_cogs");
+    expect(gradeCalc(income, -71500).correct).toBe(true);
+    expect(gradeCalc(income, -56500).misconception).toBe("beginning_inventory_forgotten");
+    expect(gradeCalc(income, -78500).misconception).toBe("purchases_equal_cogs");
   });
 });
