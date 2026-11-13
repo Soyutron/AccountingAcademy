@@ -177,7 +177,13 @@ misconceptions:
   - id: purchases_equal_cogs
     name: 仕入の合計がそのまま売上原価
     description: 1年に仕入れた金額の全部が、売った商品の原価だと思っている
-    correct: 売れ残った商品の分は、まだ費用ではない。仕入の合計から期末の商品を引いた金額が売上原価で、売れ残りは繰越商品(資産)として次の期に持ち越す
+    correct: 売れ残った商品の分は、まだ費用ではない。期首の商品と仕入の合計から期末の商品を引いた金額が売上原価で、売れ残りは繰越商品(資産)として次の期に持ち越す
+    concepts: [cost_of_goods_sold, ending_inventory]
+    remediation: merchandise/cost-of-goods-sold
+  - id: beginning_inventory_forgotten
+    name: 期首の商品を売上原価に入れ忘れる
+    description: 前の期から持ち越した商品(期首の商品)を忘れ、この期の仕入から売れ残りを引いただけで売上原価を求めてしまう
+    correct: 期首の商品もこの期に売る商品の一部。売上原価は期首の商品 + 当期の仕入 − 期末の売れ残りで、決算では「仕入 / 繰越商品」で期首の商品を仕入に入れてから売れ残りを取り出す
     concepts: [cost_of_goods_sold, ending_inventory]
     remediation: merchandise/cost-of-goods-sold
   - id: inventory_transfer_as_transaction
