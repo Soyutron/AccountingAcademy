@@ -121,6 +121,8 @@ interface SessionSnapshot {
   attempts: number;
   answered: [number, unknown][];
   stepAttempts: [number, number][];
+  // 未正解のステップで最後に採点した答え(JSON)。戻したあとも誤答の説明を出し、同じ答えを二重に記録しない
+  gradedAnswer: string | null;
 }
 const sessionKey = (unitId: string) => `ide-session:${unitId}`;
 function readSession(unitId: string): SessionSnapshot | null {
@@ -520,7 +522,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
   useEffect(() => {
     const s = isTutorialUnit ? null : readSession(unit.id);
     if (s && s.stepIndex < unit.steps.length) {
-      restoredSession.current = true;
+      // 何もしていないステップ1の状態しか無ければ、DBの進捗の「続きから」を出す
+      restoredSession.current = s.stepIndex > 0 || s.reached > 0 || s.answered.length > 0;
       answered.current = new Map(s.answered);
       stepAttempts.current = new Map(s.stepAttempts);
       setStepIndex(s.stepIndex);
@@ -535,6 +538,20 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
         setPlaced(s.placed);
         setCalcValue(s.calcValue);
         setParams(s.params);
+        const t = unit.steps[s.stepIndex].task;
+        if (s.gradedAnswer && (t.type === "post" || t.type === "calc" || t.type === "classify")) {
+          gradedAnswer.current = s.gradedAnswer;
+          const graded = JSON.parse(s.gradedAnswer);
+          if (t.type === "post") {
+            setGradedEntry(graded);
+            setResult(gradePost(t, graded, accountMap));
+          }
+          if (t.type === "calc") setResult(gradeCalc(t, graded));
+          if (t.type === "classify") {
+            setGradedPlaced(graded);
+            setResult(gradeClassify(t, graded, accountMap));
+          }
+        }
       }
     }
     setSessionLoaded(true);
@@ -557,12 +574,14 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
       attempts,
       answered: [...answered.current],
       stepAttempts: [...stepAttempts.current],
+      gradedAnswer: answered.current.has(stepIndex) ? null : gradedAnswer.current,
     };
     try {
       window.sessionStorage.setItem(sessionKey(unit.id), JSON.stringify(snapshot));
     } catch {
       // 保存できないブラウザでは従来どおりDBの「続きから」だけで再開する
     }
+    // answered・gradedAnswerはrefなので、採点のたびに書き直すためgradedResultとtweakDoneを依存に入れる
   }, [sessionLoaded, isTutorialUnit, unit.id, stepIndex, reached, posted, draft, effect, placed, calcValue, params, attempts, gradedResult, tweakDone]);
 
   const entryDraft = toJournalEntry(draft, accounts);
