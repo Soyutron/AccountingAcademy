@@ -28,6 +28,7 @@
 
 ### 1.1 分野(当面の案)
 簿記の構造 / 資産 / 負債・純資産 / 収益・費用 / 決算 / 原価計算 / 連結・企業結合 / 税務会計 / 会計制度と理論。
+試験範囲の外に、会計の歴史(`history`)と不正会計(`forensics`)を置く(ADR 0009、7章)。
 分野はナビゲーション用の分類であり、知識の正本はテーマ以下。
 
 ### 1.2 深さ(level)
@@ -278,3 +279,44 @@ Supabaseの`unit_progress` / `attempts`に保存する(architecture.md 4章)。�
 - 表(`|`区切り)の中では`[[id|表示語]]`が使えないことが分かり、検査を追加した(3.3)。
 - 用語ポップオーバーはPCのホバーとスマートフォンのタップの両方で動く。本文の用語リンクの多さ(初出のみ強調するか)と、`effect` / `statement`が「理解した感」を与えるかは、β のテスターで確かめる。
 - 概念マップはまだ作っていない。テーマ単位で足りるかは実装時に判断する。
+
+## 7. 試験範囲外の単元(歴史・不正会計)
+ADR 0009で決めた。分野`history`(時代ごとのテーマ)と`forensics`(手口ごとのテーマ)に置き、パスは目的別パスとして持つ。知識の正本がテーマ軸であることは変わらない。
+
+### 7.1 単元のfrontmatterに足す項目
+```yaml
+kind: history            # lesson(既定)| history | forensics
+sources:                 # kindがhistory / forensicsでは必須。深さ3〜4でも必須にする(ビジョン7.1)
+  - title: ルカ・パチョーリ『スンマ』(1494年)第9部第11論
+    note: 覚え書き・仕訳帳・元帳の3帳簿。原典はパブリックドメイン
+scenario:
+  company: ヴェネツィアの商人バルトロメオの店
+  era: 1385年3月、ヴェネツィア     # 時代と舞台。ガイドの冒頭と帳簿ペインの見出しに出す
+  currency: ドゥカート              # 金額の単位。既定は円。表示と入力の解釈(「円」の除去など)をこの単位に寄せる
+  view: none                       # 帳簿ペインの段階。none | ledger | statements(既定)。docs/ide-design.md 11章
+  accounts:                        # この単元だけで使う勘定科目(人名勘定、航海ごとの商品勘定)。全体マスタには載せない
+    - { id: giovanni, name: ジョヴァンニ, element: asset, why: 相手がこちらに負う残高を置く人名勘定です。 }
+  opening: []
+```
+
+### 7.2 課題の条件
+- `kind: lesson`は従来どおり、postかpredictが1つ以上。
+- `kind: history` / `forensics`は、種類を問わずtaskが1つ以上。読み物だけの単元は作れない。
+- classifyは箱を任意にできる。`accounts`の代わりに`labels`(箱のIDと表示名)と`items`(並べる項目のID・表示・正解の箱)を書く。`misconceptions`は`項目 → 間違えた箱 → 誤解ID`。`accounts`を書いた従来の形は、箱を5要素とみなす。
+- debug(バグ探し。M3)は、`entries`(記帳済みの仕訳。1件だけ誤りがあり、片側が空でもよい)の中から誤りの行を指し、直す課題。`answer`は`index`(0始まり)と`entry`(直した仕訳)。`wrong_patterns`の`match`は`{ index }`。学習者が行を選び、仕訳を直して確認すると、試算の左右がそろう。原稿の例は`birth-of-double-entry/venture-profit-and-double-entry`の「写し忘れを見つける」。
+- observeの`entries`は`scenario.accounts`の科目も使える。historyの単元では、現代の科目(`cash`など)と単元限定の科目を混ぜてよい。
+
+### 7.3 パスのfrontmatter
+`exam`を任意にし、試験に紐づかないパスは`era`(時代順の説明)を持てる。`exam`と`era`の両方を省いたパスは拒否する。
+
+### 7.4 執筆とレビューのルール
+- 史実は著作物ではないが、通史や解説書の文章は転記しない(ADR 0007)。一次資料がパブリックドメインなら引用できる。
+- 年号・人名・帳簿名は、`sources`に挙げた一次資料か通史で照合する。「ヴェネツィアで複式簿記が発明された」のような通説の誤りを書かない。
+- 不正会計で実在企業を扱う単元は、第三者委員会の調査報告書など公開資料を`sources`に持ち、報告書が認定した事実と単元の推測を本文で分ける。初期は架空の事例だけにする。
+- 歴史パスの最初の節は`bookkeeping-basics/five-elements`。歴史単元は現代の5要素と借方・貸方を前提にしてよく、複式簿記を教え直さない。
+
+### 7.5 ビルド検査に足すもの
+- `kind`ごとのtaskの条件(7.2)。
+- `kind`が`history` / `forensics`、または`level`が3以上の単元に`sources`がある。
+- `scenario.accounts`のIDが全体マスタと重ならず、その単元のtaskと`opening`からだけ参照される。
+- labels付きclassifyの`items`の`answer`が`labels`に存在し、`misconceptions`のキーが`items`と`labels`に存在する。
