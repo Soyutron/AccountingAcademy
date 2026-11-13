@@ -27,6 +27,8 @@ test("記帳したことのある学習者には、別の単元でも開き直�
   await expect(page.getByRole("heading", { level: 2 })).toBeVisible();
   await expect(banner).toHaveCount(0);
 
+  // 同じタブではsessionStorageから戻るので、タブを開き直したときのDBの経路を確かめる
+  await page.evaluate(() => sessionStorage.clear());
   await page.goto(UNIT);
   const guide = page.getByRole("region", { name: "ガイド" });
   await expect(guide.getByText(/前回はステップ\d+まで進みました/)).toBeVisible();
