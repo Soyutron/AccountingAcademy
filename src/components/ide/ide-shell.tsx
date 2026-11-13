@@ -10,7 +10,7 @@ import { ElementBadge } from "@/components/element-badge";
 import { AccountName } from "@/components/account-name";
 import { CheckCircle2, CircleAlert } from "lucide-react";
 import { type EditableEntry, emptyEntry, fromJournalEntry, isIncompleteLine, parseAmount, toJournalEntry } from "@/lib/journal-editable";
-import { type ClassifyResult, type EffectAnswer, type GradeResult, type PredictResult, type Task, canRevealAnswer, gradeCalc, gradeClassify, gradePost, gradePredict, gradeTweak } from "@/lib/grading";
+import { type ClassifyResult, type EffectAnswer, type GradeResult, type PredictResult, type Task, canRevealAnswer, gradeCalc, gradeClassify, gradePost, gradePredict, gradeTweak, predictElements } from "@/lib/grading";
 import { evaluateFormula } from "@/lib/formulas";
 import { type OpeningLine, computeBalances, diffBalances } from "@/lib/ledger";
 import { CookieBlockedError, fetchProgress, recordAttempt, resetOutOfRangeStep, setUnitProgress } from "@/lib/progress";
@@ -541,7 +541,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
   const touched = [...draft.debit, ...draft.credit].some((l) => l.accountName.trim() || l.amount.trim());
   // 未確定の行はentryDraftから落ちるので、先に見ないと入力済みの側を「足りない側」と案内してしまう(Issue #97)
   const sideHint = draftReady || !touched ? null : draftIncomplete ? "入力が途中の行があります。科目と金額をそろえるか、その行を削除すると記帳できます。" : `${missingSides.join("と")}にも科目と金額を入れると記帳できます。`;
-  const predictReady = ELEMENTS.every((el) => effect[el]);
+  const askedElements = task.type === "predict" ? predictElements(task) : ELEMENTS;
+  const predictReady = askedElements.every((el) => effect[el]);
 
   useEffect(() => {
     if (!gradedResult || !focusStatus.current) return;
@@ -617,7 +618,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
       }
       case "predict": {
         if (!predictReady) return;
-        const r = gradePredict(task, effect as EffectAnswer);
+        const r = gradePredict(task, effect);
         focusStatus.current = true;
         answeredStep.current = stepIndex;
         answered.current.set(stepIndex, effect);
@@ -904,7 +905,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
               <JournalEditor accounts={accounts} value={fromJournalEntry(task.entry, accountMap)} readOnly showImpact={result !== null} />
               <fieldset disabled={result !== null} className="grid gap-2 sm:grid-cols-5">
                 <legend className="text-sm font-semibold mb-1">記帳すると、それぞれどう動くと思いますか</legend>
-                {ELEMENTS.map((el) => (
+                {askedElements.map((el) => (
                   <label key={el} className="text-sm space-y-1">
                     <ElementBadge element={el} />
                     <select aria-label={`${ELEMENT_LABELS[el]}の予想`} className="block h-8 w-full rounded-md border bg-background px-2 py-1 text-base md:text-sm" value={effect[el] ?? ""} onChange={(e) => setEffect({ ...effect, [el]: e.target.value as Change })}>
@@ -925,7 +926,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
               )}
               {result === null && !predictReady && (
                 <p id="predict-hint" className="text-xs text-muted-foreground">
-                  5つすべて選ぶと記帳できます。動かないと思う要素は「変わらない」を選びます。
+                  {askedElements.length === ELEMENTS.length ? "5つすべて選ぶと記帳できます。動かないと思う要素は「変わらない」を選びます。" : "予想を選ぶと記帳できます。動かないと思うなら「変わらない」を選びます。"}
                 </p>
               )}
             </div>
@@ -1134,7 +1135,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
                   <ImpactCompare yours={gradedEntry} expected={task.answer} accounts={accountMap} />
                 </div>
               )}
-              {task.type === "predict" && <PredictCompare predicted={effect as EffectAnswer} entry={task.entry} accounts={accountMap} />}
+              {task.type === "predict" && <PredictCompare predicted={effect} elements={askedElements} entry={task.entry} accounts={accountMap} />}
               {"wrong" in result && result.wrong.length > 0 && (
                 <ul className="list-disc pl-5 space-y-0.5">
                   {result.wrong.map((w) => (
@@ -1315,7 +1316,7 @@ function TaskReminder({ task, onAmount }: { task: Task; onAmount?: (digits: stri
   );
 }
 
-function PredictCompare({ predicted, entry, accounts }: { predicted: EffectAnswer; entry: JournalEntry; accounts: ReadonlyMap<string, AccountInfo> }) {
+function PredictCompare({ predicted, elements, entry, accounts }: { predicted: Partial<EffectAnswer>; elements: readonly Element[]; entry: JournalEntry; accounts: ReadonlyMap<string, AccountInfo> }) {
   const impact = computeImpact(entry, accounts);
   return (
     <table className="w-full text-xs">
@@ -1327,13 +1328,13 @@ function PredictCompare({ predicted, entry, accounts }: { predicted: EffectAnswe
         </tr>
       </thead>
       <tbody>
-        {ELEMENTS.map((el) => {
+        {elements.map((el) => {
           const actual = toChange(el === "equity" ? impact.equityTotal : impact[el]);
           const differs = predicted[el] !== actual;
           return (
             <tr key={el} className={differs ? "text-diff-fg font-medium" : ""}>
               <td className="py-0.5"><ElementBadge element={el} size="xs" /></td>
-              <td className="text-right">{CHANGE_LABELS[predicted[el]]}</td>
+              <td className="text-right">{predicted[el] ? CHANGE_LABELS[predicted[el]] : "—"}</td>
               <td className="text-right">{CHANGE_LABELS[actual]}</td>
             </tr>
           );

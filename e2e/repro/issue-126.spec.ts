@@ -11,7 +11,7 @@ test("predictの定義外の誤答で、やり直せないのに「もう一度�
   await work.getByRole("button", { name: "記帳する" }).click();
   await expect(page.getByRole("status")).toContainText("できました");
   await page.getByRole("button", { name: "次へ →" }).click();
-  for (const [element, label] of [["資産", "増える"], ["負債", "増える"], ["純資産", "増える"], ["収益", "変わらない"], ["費用", "変わらない"]]) {
+  for (const [element, label] of [["資産", "増える"]]) {
     await work.getByRole("combobox", { name: `${element}の予想`, exact: true }).selectOption({ label });
   }
   await work.getByRole("button", { name: "予想して記帳する" }).click();

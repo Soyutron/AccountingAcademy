@@ -35,7 +35,7 @@ async function walk(page: Page, unitId: string, target: number) {
       await fillEntry(page, { debit: t.answer.debit.map((l: { account: string; amount: number }) => ({ ...l, account: nameOf(l.account) })), credit: t.answer.credit.map((l: { account: string; amount: number }) => ({ ...l, account: nameOf(l.account) })) });
       await w.getByRole("button", { name: "記帳する" }).click();
     } else if (t.type === "predict") {
-      for (const [k, v] of Object.entries(t.answer)) await w.getByLabel(`${LABEL[k]}の予想`, { exact: true }).selectOption(v as string);
+      for (const [k, v] of Object.entries(t.answer).filter(([k]) => !t.elements || t.elements.includes(k))) await w.getByLabel(`${LABEL[k]}の予想`, { exact: true }).selectOption(v as string);
       await w.getByRole("button", { name: "予想して記帳する" }).click();
     } else if (t.type === "calc") {
       await w.getByPlaceholder("金額(円)").fill(String(t.answer));

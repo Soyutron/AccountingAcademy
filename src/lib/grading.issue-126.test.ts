@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { type Change, ELEMENTS } from "./accounting";
 import { unitMap } from "./content";
-import { type EffectAnswer, gradePredict, type TaskOf } from "./grading";
+import { type EffectAnswer, gradePredict, predictElements, type TaskOf } from "./grading";
 
 // Issue #126: predictは1回限りなのに、定義外の誤答に「もう一度試して」と案内していた
 const predictSteps = [...unitMap.values()].flatMap((unit) =>
@@ -18,7 +18,7 @@ function matchedPatterns(task: TaskOf<"predict">, answer: EffectAnswer) {
 }
 
 function wrongAnswers(task: TaskOf<"predict">): EffectAnswer[] {
-  return allAnswers.filter((a) => !ELEMENTS.every((el) => a[el] === task.answer[el]));
+  return allAnswers.filter((a) => !predictElements(task).every((el) => a[el] === task.answer[el]));
 }
 
 describe("predictの誤答の案内", () => {

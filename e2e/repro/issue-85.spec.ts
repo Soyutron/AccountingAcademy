@@ -13,7 +13,7 @@ const post = async (page: Page, debit: string, credit: string, amount: string) =
 };
 
 const predictAll = async (page: Page) => {
-  for (const name of ["資産", "負債", "純資産", "収益", "費用"]) {
+  for (const name of ["資産"]) {
     await page.getByLabel(`${name}の予想`, { exact: true }).selectOption("none");
   }
   await page.getByRole("button", { name: "予想して記帳する" }).click();

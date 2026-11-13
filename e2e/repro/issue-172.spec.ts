@@ -13,21 +13,36 @@ test("用語集の純資産と資本金の短い定義に株主を使わない",
   await expect(page.getByText("会社の持ち主(株主)が出したお金")).toHaveCount(0);
 });
 
-test("ステップ3で費用が増えると予想したときの見方に発生主義が出ない", async ({ page }) => {
+test("備品を費用と取り違えたときの見方に発生主義が出ない", async ({ page }) => {
+  test.setTimeout(60_000);
   await page.goto("/units/bookkeeping-basics/five-elements");
-  await page.getByRole("button", { name: "次へ →" }).click({ timeout: 15000 });
   const work = page.getByRole("region", { name: "ワークスペース" });
-  await work.getByLabel("借方の科目1").fill("現金");
-  await work.getByLabel("借方の金額1").fill("1000000");
-  await work.getByLabel("貸方の科目1").fill("資本金");
-  await work.getByLabel("貸方の金額1").fill("1000000");
-  await work.getByRole("button", { name: "記帳する" }).click();
-  await expect(page.getByText("できました", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "次へ →" }).click();
-
-  for (const n of ["資産", "負債", "純資産", "収益"]) await page.getByLabel(`${n}の予想`, { exact: true }).selectOption({ label: "変わらない" });
-  await page.getByLabel("費用の予想", { exact: true }).selectOption({ label: "増える" });
+  const next = () => page.getByRole("button", { name: "次へ →" }).click({ timeout: 15000 });
+  const post = async (dr: string, cr: string, amount: string) => {
+    await work.getByLabel("借方の科目1").fill(dr);
+    await work.getByLabel("借方の金額1").fill(amount);
+    await work.getByLabel("貸方の科目1").fill(cr);
+    await work.getByLabel("貸方の金額1").fill(amount);
+    await work.getByRole("button", { name: "記帳する" }).click();
+    await expect(page.getByRole("status").getByText("できました", { exact: true })).toBeVisible();
+    await next();
+  };
+  await next();
+  await post("現金", "資本金", "1000000");
+  await work.getByLabel("資産の予想", { exact: true }).selectOption({ label: "変わらない" });
   await work.getByRole("button", { name: "予想して記帳する" }).click();
+  await next();
+  await post("現金", "借入金", "300000");
+  await post("現金", "売上", "80000");
+  await post("支払家賃", "現金", "50000");
+  // ステップ7の仕分けで備品を費用に入れる(ステップ3は資産だけを問うので費用の誤答はここで起こす。Issue #170)
+  const board = work.getByRole("group", { name: "仕分けボード" });
+  const boxes: [string, string][] = [["現金", "資産"], ["備品", "費用"], ["借入金", "負債"], ["資本金", "純資産"], ["売上", "収益"], ["支払家賃", "費用"]];
+  for (const [account, box] of boxes) {
+    await board.getByRole("button", { name: account, exact: true }).click();
+    await board.getByRole("button", { name: `${box} ← ここに入れる`, exact: true }).click();
+  }
+  await work.getByRole("button", { name: "確認する" }).click();
   const status = page.getByRole("status").filter({ hasText: "もう一歩" });
   await expect(status.getByText(/^見方:/).first()).toContainText("お金を払った時ではなく");
   await expect(status).not.toContainText("発生主義");

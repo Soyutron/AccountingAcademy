@@ -25,7 +25,7 @@ test("「次へ →」の進捗の保存に失敗したあと回答が保存さ�
   await expect(page.getByRole("alert").filter({ hasText: "保存エラー" })).toBeVisible();
   await page.unroute("**/rest/v1/unit_progress**");
 
-  for (const el of ["資産", "負債", "純資産", "収益", "費用"]) await work.getByLabel(`${el}の予想`, { exact: true }).selectOption("none");
+  for (const el of ["資産"]) await work.getByLabel(`${el}の予想`, { exact: true }).selectOption("none");
   await work.getByRole("button", { name: "予想して記帳する" }).click();
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   await expect(page.getByRole("alert").filter({ hasText: "保存エラー" })).toHaveCount(0);

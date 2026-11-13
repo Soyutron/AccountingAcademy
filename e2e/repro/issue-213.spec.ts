@@ -19,7 +19,7 @@ async function goToPostStep4(page: Page) {
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
 
   await next.click();
-  for (const el of ["資産", "負債", "純資産", "収益", "費用"]) {
+  for (const el of ["資産"]) {
     await work.getByLabel(`${el}の予想`, { exact: true }).selectOption({ label: "変わらない" });
   }
   await work.getByRole("button", { name: "予想して記帳する" }).click();

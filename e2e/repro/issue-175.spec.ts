@@ -64,7 +64,7 @@ test("続きから → 前へを重ねても、ステップごとの答えが戻
   await expect(done).toBeVisible();
   await next.click();
   await expect(page.getByText("ステップ3 / 10")).toBeVisible();
-  for (const [el, v] of [["資産", "decrease"], ["負債", "none"], ["純資産", "none"], ["収益", "none"], ["費用", "none"]])
+  for (const [el, v] of [["資産", "decrease"]])
     await work.getByLabel(`${el}の予想`, { exact: true }).selectOption(v);
   await work.getByRole("button", { name: /予想/ }).click();
   await expect(page.getByRole("status").filter({ hasText: "もう一歩" })).toBeVisible();
