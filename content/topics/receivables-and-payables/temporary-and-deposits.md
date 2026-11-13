@@ -61,6 +61,7 @@ wrong_patterns:
     misconception: net_pay_is_salary
     feedback: 給料は差し引く前の100,000円です。預かった3,000円は預り金として右に書きます。
   - match: { swapped: true }
+    misconception: debit_means_increase
     feedback: 給料は費用なので左、普通預金と預り金は右です。
   - match: { credit: [{ account: cash, amount: 97000 }] }
     feedback: 手取りは普通預金から振り込みました。
@@ -120,6 +121,7 @@ answer:
   credit: [{ account: cash, amount: 2000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 増えるのは立替金(権利)なので左、減るのは現金なので右です。
   - match: { debit: [{ account: shipping_expense }] }
     misconception: advance_for_others_is_expense
@@ -150,6 +152,7 @@ answer:
   credit: [{ account: cash, amount: 20000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 増えるのは仮払金なので左、減るのは現金なので右です。
   - match: { debit: [{ account: travel_expense }] }
     misconception: suspense_is_expense
@@ -233,6 +236,7 @@ answer:
   credit: [{ account: accounts_receivable_other, amount: 50000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: debit_means_increase
     feedback: 仮受金を消すので左、未収入金を減らすので右です。
   - match: { credit: [{ account: sales }] }
     misconception: receivable_collection_is_sale

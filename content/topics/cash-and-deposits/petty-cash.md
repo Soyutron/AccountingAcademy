@@ -47,6 +47,7 @@ answer:
   credit: [{ account: checking_account, amount: 30000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 増えるのは小口現金なので左、減るのは当座預金なので右です。
   - match: { debit: [{ account: supplies_expense }] }
     misconception: petty_cash_is_expense
@@ -82,6 +83,7 @@ answer:
   credit: [{ account: petty_cash, amount: 12500 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 費用は左で増え、小口現金は右で減ります。
   - match: { credit: [{ account: checking_account }] }
     feedback: 支払ったのは担当者の手元の小口現金です。まず小口現金を減らします。補給は次のステップです。

@@ -47,6 +47,7 @@ answer:
   credit: [{ account: bank_deposit, amount: 200000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 増えるのは当座預金なので左、減るのは普通預金なので右です。
   - match: { credit: [{ account: cash }] }
     feedback: 今回は普通預金から移しました。手元の現金は動いていません。
@@ -99,6 +100,7 @@ answer:
   credit: [{ account: checking_account, amount: 25000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 仕入は費用なので左、当座預金は減るので右です。
   - match: { credit: [{ account: cash }] }
     misconception: check_is_cash

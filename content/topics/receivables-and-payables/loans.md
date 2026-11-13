@@ -52,6 +52,7 @@ answer:
   credit: [{ account: bank_deposit, amount: 100000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 増えるのは貸付金(権利)なので左、減るのは普通預金なので右です。
   - match: { debit: [{ account: loans_payable }] }
     misconception: lender_borrower_confused
@@ -103,6 +104,7 @@ answer:
   credit: [{ account: bank_deposit, amount: 3000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 支払利息は費用なので左、普通預金は減るので右です。
   - match: { debit: [{ account: loans_payable }] }
     misconception: interest_reduces_principal
@@ -153,6 +155,7 @@ answer:
   credit: [{ account: loans_receivable, amount: 100000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 増えるのは普通預金なので左、消えるのは貸付金なので右です。
   - match: { credit: [{ account: loans_receivable, amount: 100000 }, { account: interest_income }] }
     misconception: repayment_includes_interest

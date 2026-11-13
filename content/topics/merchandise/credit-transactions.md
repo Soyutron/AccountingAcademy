@@ -144,6 +144,7 @@ answer:
   credit: [{ account: accounts_receivable, amount: 60000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 増えた預金は左、減った売掛金は右です。左右を入れ替えてみましょう。
   - match: { credit: [{ account: sales }] }
     misconception: receivable_collection_is_sale

@@ -47,6 +47,7 @@ answer:
   credit: [{ account: cash, amount: 3000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 現金は実際より多く書かれているので、右で減らします。差額の現金過不足は左です。
   - match: { debit: [{ account: miscellaneous_loss }] }
     misconception: shortage_is_loss
@@ -111,6 +112,7 @@ answer:
   credit: [{ account: cash_over_and_short, amount: 1000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 現金過不足を消すので右、雑損(費用)が増えるので左です。
   - match: { credit: [{ account: cash }] }
     feedback: 現金はもう実際の金額に直してあります。消すのは現金過不足のほうです。

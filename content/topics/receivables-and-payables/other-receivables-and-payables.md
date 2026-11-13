@@ -66,6 +66,7 @@ answer:
   credit: [{ account: equipment, amount: 50000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 増えるのは未収入金(権利)なので左、減るのは備品なので右です。
   - match: { debit: [{ account: accounts_receivable }] }
     misconception: nontrade_as_trade
@@ -116,6 +117,7 @@ answer:
   credit: [{ account: cash, amount: 10000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 増えるのは前払金(権利)なので左、減るのは現金なので右です。
   - match: { debit: [{ account: purchases }] }
     misconception: advance_is_expense

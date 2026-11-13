@@ -146,6 +146,7 @@ answer:
   credit: [{ account: cash, amount: 50000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 費用は左で増え、現金は右で減ります。左右を入れ替えてみましょう。
   - match: { debit: [{ account: accounts_payable }] }
     misconception: expense_as_liability
