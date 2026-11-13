@@ -11,7 +11,7 @@ type Task =
   | { type: "post"; answer: Entry }
   | { type: "predict"; answer: Record<string, string>; elements?: string[] }
   | { type: "tweak"; formula: string; params: { id: string; value: number; min: number; max: number; step: number }[]; goal: { output: string; equals: number } }
-  | { type: "classify"; accounts: string[] }
+  | { type: "classify"; accounts?: string[]; labels?: Record<string, string>; items?: { id: string; label: string; answer: string }[] }
   | { type: "calc"; answer: number };
 type Unit = { id: string; title: string; steps: { title: string; task: Task }[] };
 
@@ -104,9 +104,13 @@ for (const unit of units) {
         }
         case "classify": {
           const board = work.getByRole("group", { name: "仕分けボード" });
-          for (const id of task.accounts) {
-            await board.getByRole("button", { name: nameOf(id), exact: true }).click();
-            await board.getByRole("button", { name: `${ELEMENT_LABELS[accounts.find((a) => a.id === id)!.element]} ← ここに入れる`, exact: true }).click();
+          // labelsの形は項目の文と箱の表示名で、従来の形は科目名と5要素で押す(Issue #262)
+          const moves = task.labels
+            ? task.items!.map((it) => [it.label, task.labels![it.answer]])
+            : task.accounts!.map((id) => [nameOf(id), ELEMENT_LABELS[accounts.find((a) => a.id === id)!.element]]);
+          for (const [chip, box] of moves) {
+            await board.getByRole("button", { name: chip, exact: true }).click();
+            await board.getByRole("button", { name: `${box} ← ここに入れる`, exact: true }).click();
           }
           await work.getByRole("button", { name: "確認する" }).click();
           await expect(page.getByText("できました", { exact: true })).toBeVisible();

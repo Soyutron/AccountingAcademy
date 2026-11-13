@@ -18,7 +18,7 @@ type Task =
   | { type: "post"; answer: { debit: Line[]; credit: Line[] } }
   | { type: "predict"; answer: Record<string, string> }
   | { type: "tweak"; params: { id: string; label?: string; min: number; max: number; step: number }[] }
-  | { type: "classify"; accounts: string[] }
+  | { type: "classify"; accounts?: string[]; labels?: Record<string, string>; items?: { id: string; label: string; answer: string }[] }
   | { type: "calc"; answer: number };
 type Unit = { id: string; title: string; steps: { title: string; task: Task }[] };
 
@@ -92,11 +92,18 @@ export const ACTIONS: { name: string; weight: number; when: (s: State) => boolea
   { name: "仕分ける", weight: 4, when: (s) => s.task?.type === "classify", run: async (page, s, rnd) => {
       const t = s.task as Extract<Task, { type: "classify" }>;
       const board = work(page).getByRole("group", { name: "仕分けボード" });
-      for (const id of t.accounts) {
-        const a = accounts.find((x) => x.id === id)!;
-        const bucket = rnd() < 0.6 ? a.element : pick(Object.keys(ELEMENT_LABELS), rnd);
-        await board.getByRole("button", { name: a.name, exact: true }).click({ timeout: 3000 }).catch(() => {});
-        await board.getByRole("button", { name: `${ELEMENT_LABELS[bucket]} ← ここに入れる`, exact: true }).click({ timeout: 3000 }).catch(() => {});
+      // labelsの形は項目の文とその単元の箱で、従来の形は科目名と5要素で動かす(Issue #262)
+      const labels = t.labels ?? ELEMENT_LABELS;
+      const moves = t.labels
+        ? t.items!.map((it) => ({ chip: it.label, answer: it.answer }))
+        : t.accounts!.map((id) => {
+            const a = accounts.find((x) => x.id === id)!;
+            return { chip: a.name, answer: a.element };
+          });
+      for (const { chip, answer } of moves) {
+        const bucket = rnd() < 0.6 ? answer : pick(Object.keys(labels), rnd);
+        await board.getByRole("button", { name: chip, exact: true }).click({ timeout: 3000 }).catch(() => {});
+        await board.getByRole("button", { name: `${labels[bucket]} ← ここに入れる`, exact: true }).click({ timeout: 3000 }).catch(() => {});
       }
       await work(page).getByRole("button", { name: "確認する" }).click({ timeout: 3000 }).catch(() => {});
     } },
