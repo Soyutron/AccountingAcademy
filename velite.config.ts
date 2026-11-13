@@ -284,6 +284,8 @@ export default defineConfig({
             era: s.string().optional(),
             // 金額の単位。表示・入力の解釈・問題文の金額の検出・採点の文言が使う
             currency: s.string().min(1).default("円"),
+            // 結果ペインの段階。none: 帳簿なし、ledger: 元帳と試算まで、statements: 財務諸表まで(docs/ide-design.md 11章)
+            view: s.enum(["none", "ledger", "statements"]).default("statements"),
             // この単元だけで使う勘定科目(人名勘定、航海ごとの商品勘定)。全体マスタにも用語集にも載せない
             accounts: s.array(s.object({ id: s.string(), name: s.string(), element, why: s.string() })).default([]),
             opening: s.array(journalLine).default([]),

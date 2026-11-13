@@ -21,7 +21,7 @@ import { StatementsPane } from "./statements-pane";
 import { ImpactCompare } from "./impact-compare";
 import { ClassifyBoard } from "./classify-board";
 import { TweakPanel } from "./tweak-panel";
-import { LedgerTab } from "./ledger-tab";
+import { LedgerTab, TrialBalanceTable } from "./ledger-tab";
 import { type Flight, FlyingAmounts } from "./flying-amounts";
 import { type Burst, Celebration } from "./celebration";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -51,6 +51,8 @@ export interface IdeUnit {
   era?: string;
   // 金額の単位(scenario.currency)
   currency: string;
+  // 結果ペインの段階(scenario.view)
+  view: "none" | "ledger" | "statements";
   opening: OpeningLine[];
   steps: IdeStep[];
   next?: { id: string; title: string };
@@ -335,6 +337,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
     const prev = computeBalances(unit.opening, visiblePosted.slice(0, Math.max(0, viewUpto - 1)).map((p) => p.entry), accountMap);
     return { balances: upto, diff: viewUpto === 0 ? new Map<string, number>() : diffBalances(prev, upto) };
   }, [viewUpto, visiblePosted, balancesNow, diff, unit.opening, accountMap]);
+
+  // scenario.view: ledgerの結果ペイン(試算と元帳)も、さかのぼり中はその時点までの記帳で出す
+  const shownPosted = viewUpto === null ? visiblePosted : visiblePosted.slice(0, viewUpto);
 
   // 失敗の詳細(RLSの英文など)はconsoleに出し、学習者には取るべき行動だけ見せる
   const trySave = async (fn: () => Promise<void>, isAttempt: boolean) => {
@@ -1156,7 +1161,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
 
         <section id="pane-result" role="region" aria-label="結果" className={`${paneClass("result")} bg-surface-result`} data-tour="statements">
           {unit.era && <h2 className="mb-3 text-sm font-semibold">{unit.era}</h2>}
-          {visiblePosted.length > 1 && (
+          {unit.view === "none" && <p className="text-sm text-muted-foreground">この時代にはまだ帳簿がありません。</p>}
+          {unit.view !== "none" && visiblePosted.length > 1 && (
             <div className="mb-3 rounded-md border p-2 text-xs space-y-1" data-tour="rewind">
               <div className="flex items-center gap-1">
               <label className="flex flex-1 items-center justify-between gap-2">
@@ -1194,7 +1200,21 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
               )}
             </div>
           )}
-          <StatementsPane accounts={accountMap} balances={view.balances} diff={view.diff} company={unit.company} />
+          {unit.view === "statements" && <StatementsPane accounts={accountMap} balances={view.balances} diff={view.diff} company={unit.company} />}
+          {unit.view === "ledger" && (
+            <div className="space-y-5 text-sm">
+              <section aria-label="試算">
+                <h3 className="font-semibold mb-1">
+                  試算 <span className="text-xs font-normal text-muted-foreground">{unit.company}</span>
+                </h3>
+                <TrialBalanceTable opening={unit.opening} posted={shownPosted} accounts={accountMap} />
+              </section>
+              <section aria-label="元帳">
+                <h3 className="font-semibold mb-1">元帳(T勘定)</h3>
+                <LedgerTab opening={unit.opening} posted={shownPosted} accounts={accountMap} />
+              </section>
+            </div>
+          )}
         </section>
       </div>
 
