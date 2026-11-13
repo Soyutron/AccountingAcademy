@@ -27,7 +27,7 @@ async function openBoard(page: Page) {
   await page.getByRole("button", { name: "予想して記帳する" }).click();
   await ok();
   await next();
-  await page.getByPlaceholder("金額(円)").fill("78500");
+  await page.getByPlaceholder("金額(円)").fill("-71500");
   await page.getByRole("button", { name: "確認する" }).click();
   await ok();
   await next();

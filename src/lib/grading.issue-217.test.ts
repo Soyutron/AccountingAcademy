@@ -33,9 +33,9 @@ describe("5要素の動きが正解と同じ誤答", () => {
   // 誤答パターンに専用の説明があればそれが出る。どちらでも結果の表を見直させる文は出さない
   it.each([
     ["運賃を売掛金から引く", RETURNS, 3, entry([["accounts_receivable", 28500], ["shipping_expense", 1500]], [["sales", 30000]])],
-    ["普通預金 / 現金", CREDIT, 3, entry([["bank_deposit", 60000]], [["cash", 60000]])],
-    ["買掛金 / 普通預金", CREDIT, 4, entry([["accounts_payable", 40000]], [["bank_deposit", 40000]])],
-    ["買掛金 / 売掛金", CREDIT, 4, entry([["accounts_payable", 40000]], [["accounts_receivable", 40000]])],
+    ["普通預金 / 現金", CREDIT, 4, entry([["bank_deposit", 60000]], [["cash", 60000]])],
+    ["買掛金 / 普通預金", CREDIT, 5, entry([["accounts_payable", 40000]], [["bank_deposit", 40000]])],
+    ["買掛金 / 売掛金", CREDIT, 5, entry([["accounts_payable", 40000]], [["accounts_receivable", 40000]])],
   ])("%sには結果の表を見直させる文を出さない", (_name, unitId, index, wrong) => {
     const result = gradePost(postTask(unitId, index), wrong, accountMap);
     expect(result.correct).toBe(false);

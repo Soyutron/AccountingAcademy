@@ -10,7 +10,7 @@ requires: [merchandise/returns-and-costs]
 scenario:
   company: カフェ「マメノキ」
   opening:
-    - { account: cash, amount: 711500 }
+    - { account: cash, amount: 561500 }
     - { account: bank_deposit, amount: 60000 }
     - { account: accounts_receivable, amount: 25000 }
     - { account: merchandise_inventory, amount: 15000 }
@@ -21,7 +21,7 @@ scenario:
     - { account: sales, amount: 255000 }
     - { account: purchases, amount: 132000 }
     - { account: shipping_expense, amount: 1500 }
-    - { account: rent_expense, amount: 50000 }
+    - { account: rent_expense, amount: 200000 }
 ---
 
 ## 棚に残った豆
@@ -144,26 +144,30 @@ success: 仕入が125,000に減り、繰越商品が22,000になりました。�
 
 ## 決算後のもうけ
 2本の仕訳で、損益計算書の費用が変わりました。改めて[[net_income|当期純利益]]を読んでみましょう。
-売上255,000から、売上原価125,000、[[shipping_expense|発送費]] 1,500、[[rent_expense|支払家賃]] 50,000を引きます。
+売上255,000から、売上原価125,000、[[shipping_expense|発送費]] 1,500、[[rent_expense|支払家賃]] 200,000を引きます。家賃は毎月末に50,000円を払ってきたので、決算の日までの4か月分です。費用の合計が売上を上回ると、損益計算書には当期純利益ではなく当期純損失として載ります。そのときは先頭に「-」を付けて答えます。
 
 ```task
 type: calc
 question: 決算の2本の仕訳のあとの当期純利益はいくらですか(円)
-answer: 78500
+answer: -71500
 wrong_patterns:
-  - match: 71500
+  - match: -78500
     misconception: purchases_equal_cogs
     feedback: それはこの期の仕入132,000を、そのまま売上原価にした金額です。期首の商品15,000を足し、売れ残り22,000を引いた125,000が売上原価です。
-  - match: 93500
+  - match: -56500
     misconception: beginning_inventory_forgotten
     feedback: 売上原価を110,000で計算しています。期首の商品15,000もこの期に売った商品なので、売上原価は125,000です。
-  - match: 56500
+  - match: -93500
     misconception: purchases_equal_cogs
     feedback: 売れ残り22,000まで費用にしています。売れ残りは繰越商品(資産)に移したので、費用ではありません。
+  - match: 71500
+    feedback: 符号が逆です。費用の合計が売上より大きいので、当期純利益はマイナス(損失)になります。
   - match: 130000
-    feedback: 売上原価だけでなく、発送費1,500と支払家賃50,000も費用です。
-hint: 255,000 − 125,000 − 1,500 − 50,000。
-success: 当期純利益は78,500円。売れ残りの22,000円は費用ではなく、資産として次の期に持ち越されます。
+    feedback: 売上原価だけでなく、発送費1,500と支払家賃200,000も費用です。
+  - match: 78500
+    feedback: 支払家賃を1か月分しか引いていません。家賃は毎月末に払ってきたので、4か月分200,000が費用です。
+hint: 255,000 − 125,000 − 1,500 − 200,000 = −71,500。
+success: 当期純利益は−71,500円。売れた分の仕入値だけを費用にしても、4か月分の家賃には届きませんでした。売れ残りの22,000円は費用ではなく、資産として次の期に持ち越されます。
 ```
 
 ## 商品の3つの科目
