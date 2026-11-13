@@ -37,7 +37,7 @@ const hasLine = (lines: JournalLine[], account: string, amount: number) => lines
 
 const STEPS: TourStep[] = [
   { title: "会計IDEへようこそ", body: "2分で使い方を体験します。実際に1件記帳してみましょう。いつでもスキップできます。" },
-  { target: "guide", pane: "guide", title: "ここはガイド", body: "物語と「やること」を読む場所です。ステップごとに2〜4文だけなので、読んだらすぐ手を動かします。" },
+  { target: "guide", pane: "guide", title: "ここはガイド", body: "物語と「やること」を読む場所です。ステップごとに短い説明を読んだら、すぐ手を動かします。" },
   { target: "next-button", title: "次へ進む", body: "「次へ →」を押して、最初の課題に進みましょう。", done: (c) => c.stepIndex >= 1, waiting: "「次へ →」を押してください", autoAdvance: true },
   { target: "journal-debit", pane: "work", title: "借方(左)に書く", body: "科目に「現金」、金額に100000と入れます。科目は途中まで打つと候補が出ます。", done: (c) => hasLine(c.debit, "cash", 100000), waiting: "借方に 現金100,000を入れてください" },
   { target: "journal-credit", pane: "work", title: "貸方(右)に書く", body: "科目に「資本金」、金額に100000と入れます。", done: (c) => hasLine(c.credit, "capital_stock", 100000), waiting: "貸方に 資本金100,000を入れてください" },
