@@ -1,7 +1,7 @@
 # 品質改善ループ(Monkeyテスト → Issue → 修正 → 再検証)の設計案
 
 TaxForge(`~/Projects/taxforge`)で運用している「人格型Monkeyテスト」と「Issue駆動の無人修正ループ」を調査し、
-AccountingAcademyに移植した。§1〜§3は調査の記録、§4以降が設計、§8が実装したものと使い方。
+Open簿記に移植した。§1〜§3は調査の記録、§4以降が設計、§8が実装したものと使い方。
 
 ## 0. 結論
 
@@ -57,7 +57,7 @@ AccountingAcademyに移植した。§1〜§3は調査の記録、§4以降が設
 
 ## 3. 本プロジェクトとの前提の違い
 
-| 項目 | TaxForge | AccountingAcademy | 影響 |
+| 項目 | TaxForge | Open簿記 | 影響 |
 | --- | --- | --- | --- |
 | 外部LLM | 製品がOpenAIを呼ぶ(スタブ必須) | 無し | 環境はSupabaseローカル + `pnpm dev`だけ |
 | 認証 | メール + パスワード、組織、ロール | 匿名サインイン(最初の回答時) | 検証ユーザー不要。セッションごとに新しいブラウザコンテキストで「新規ゲスト」になる。レート制限の心配が無い |
@@ -132,7 +132,7 @@ Monkeyテスト(人格: …)で検出。操作履歴: logs/monkey/<session>/hist
 
 ラベル: `bug` + `needs-triage` + `p1`〜`p3` + 領域(`area:ide` / `area:content` / `area:progress` / `area:ui`)。
 スクリーンショットは`gh`ではIssueに添付できないので、初期はローカルパスの参照に留める。必要になったら
-orphanブランチ`evidence`にpushして`blob/evidence/...?raw=true`でリンクする(private repoなのでログイン中の本人だけ見える)。
+orphanブランチ`evidence`にpushして`blob/evidence/...?raw=true`でリンクする(publicリポジトリなので誰でも見える。学習者の情報や秘密が写っていないことを確かめてからpushする)。
 
 ### 4.3 ② 自動トリアージ(新設。TaxForgeでは人手)
 

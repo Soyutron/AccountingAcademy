@@ -1,6 +1,6 @@
 ---
 name: monkey-test
-description: Claude Codeが学習者の人格になり、AccountingAcademyのローカル環境(Supabase + pnpm dev)をPlaywrightで探索的に壊すMonkeyテスト。「モンキーテスト」「人格で壊して」「/monkey-test <人格> [step数]」で使う。
+description: Claude Codeが学習者の人格になり、Open簿記のローカル環境(Supabase + pnpm dev)をPlaywrightで探索的に壊すMonkeyテスト。「モンキーテスト」「人格で壊して」「/monkey-test <人格> [step数]」で使う。
 ---
 
 # Monkeyテスト(人格型)

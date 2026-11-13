@@ -36,7 +36,7 @@ pnpm dev        # http://localhost:3000
 回答ログは`public.attempts`、進捗は`public.unit_progress`。psqlはコンテナにある。
 
 ```bash
-docker exec -it supabase_db_AccountingAcademy psql -U postgres -d postgres
+docker exec -it supabase_db_openboki psql -U postgres -d postgres
 ```
 
 課題ごとの初回正答率(predictとpostを比べると、理解と操作の差が見える):
