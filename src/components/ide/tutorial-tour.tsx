@@ -148,7 +148,12 @@ export function TutorialTour({
         </div>
         <p id="tutorial-tour-title" className="font-semibold">{step.title}</p>
         <p id="tutorial-tour-body">{step.body}</p>
-        {!satisfied && step.waiting && <p className="text-xs text-primary">{step.waiting}</p>}
+        {/* 入力の段は自動で進まないので、済んだことと、画面下の「次へ →」ではなくカードの「次へ」を押すことを示す(Issue #166) */}
+        {step.waiting && (
+          <p className="text-xs text-primary" aria-live="polite">
+            {satisfied ? "できました。このカードの「次へ」で進みます" : step.waiting}
+          </p>
+        )}
         {awayPane && (
           <div className="flex items-center justify-between gap-2 rounded-md bg-muted/60 p-2 text-xs">
             <span>「{paneLabels[awayPane]}」のタブに戻ると続けられます</span>
