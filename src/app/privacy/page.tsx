@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = { title: "プライバシーポリシー" };
 
 // 運営者名と問い合わせ先は正式名称の決定(#76)で置き換える。法的な文言は運営者が最終確認する
-const ISSUES_URL = "https://github.com/Soyutron/AccountingAcademy/issues";
+const ISSUES_URL = "https://github.com/Soyutron/openboki/issues";
 
 export default function PrivacyPage() {
   return (
@@ -11,7 +11,7 @@ export default function PrivacyPage() {
       <div className="space-y-2">
         <h1 className="text-2xl font-bold">プライバシーポリシー</h1>
         <p className="text-muted-foreground">
-          AccountingAcademyの運営者(以下「運営者」)が、学習者の情報をどう取得し、何に使い、いつ消すかを定めます。
+          Open簿記の運営者(以下「運営者」)が、学習者の情報をどう取得し、何に使い、いつ消すかを定めます。
         </p>
       </div>
 

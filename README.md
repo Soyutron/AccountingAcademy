@@ -1,5 +1,6 @@
-# AccountingAcademy(仮名)
+# Open簿記
 
+読みは「オープン簿記」、英字表記はOpenBoki。公開先はopenboki.org(準備中)。
 会計を基礎から専門領域まで、原理・概念・構造の理解を軸に体系的に学べるWebサービス。
 目指すのは「日本の会計教育に、オープンソースの文化を」。誰もが無料で学べ、教材はコミュニティが育てる共有財産にする([docs/vision.md](docs/vision.md))。
 学習体験は **会計IDE**: Codecademy(https://www.codecademy.com/)のように、物語と課題・仕訳帳・財務諸表を1画面に置き、
@@ -59,6 +60,7 @@ Issueにしないもの: 設計の検討や試行錯誤(結論だけADRかdocs�
 
 貢献の仕方は[CONTRIBUTING.md](CONTRIBUTING.md)、行動規範は[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)。
 コードは[Apache License 2.0](LICENSE)、`content/`以下の教材は[CC BY-SA 4.0](content/LICENSE)で公開する(ADR 0007)。貢献はDCO(`git commit -s`)で受け付ける。
+名称「Open簿記」「オープン簿記」「OpenBoki」とロゴは商標として扱い、どちらのライセンスの対象にも含めない。フォークは自由だが、同じ名前でサービスを名乗ることはできない。
 
 ## 開発環境
 

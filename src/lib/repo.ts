@@ -1,1 +1,1 @@
-export const REPO_URL = "https://github.com/Soyutron/AccountingAcademy";
+export const REPO_URL = "https://github.com/Soyutron/openboki";

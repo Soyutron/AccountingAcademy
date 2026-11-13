@@ -6,7 +6,7 @@ import { expect, test } from "@playwright/test";
 
 const unit = "/units/bookkeeping-basics/five-elements";
 const sql = (q: string) =>
-  execFileSync("docker", ["exec", "-i", "supabase_db_AccountingAcademy", "psql", "-U", "postgres", "-d", "postgres", "-Atc", q], { encoding: "utf8" }).trim();
+  execFileSync("docker", ["exec", "-i", "supabase_db_openboki", "psql", "-U", "postgres", "-d", "postgres", "-Atc", q], { encoding: "utf8" }).trim();
 
 test("初回サインインから100日後でも、今日活動した匿名ユーザーは削除の対象にならない", async ({ page }) => {
   // 匿名サインインと進捗の保存は最初の回答のときに行われるので、ステップ2を記帳して user_id を拾う

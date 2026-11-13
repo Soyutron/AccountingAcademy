@@ -1,4 +1,4 @@
-# AccountingAcademy(仮名)
+# Open簿記
 
 会計を基礎から専門領域まで、原理・概念・構造の理解を軸に体系的に学べるWebサービス。学習体験はCodecademyのlearn-by-doingを踏襲する。
 ビジョンは`docs/vision.md`、ロードマップは`docs/roadmap.md`、要件は`docs/requirements.md`、学習体験(会計IDE)は`docs/ide-design.md`、デザインシステムとテーマは`docs/design-system.md`、コンテンツ構造は`docs/content-model.md`、構成は`docs/architecture.md`、設計判断の理由は`docs/decisions/`、開発プロセスと現在のフェーズは`README.md`を見る。

@@ -108,7 +108,7 @@ export function loadContent() {
 
 /** ローカルSupabaseにSQLを流し、行をタブ区切りの配列で返す。 */
 export function db(sql) {
-  const out = execFileSync("docker", ["exec", "-i", "supabase_db_AccountingAcademy", "psql", "-U", "postgres", "-d", "postgres", "-Atc", sql], { encoding: "utf8" });
+  const out = execFileSync("docker", ["exec", "-i", "supabase_db_openboki", "psql", "-U", "postgres", "-d", "postgres", "-Atc", sql], { encoding: "utf8" });
   return out.trim() === "" ? [] : out.trim().split("\n").map((l) => l.split("|"));
 }
 

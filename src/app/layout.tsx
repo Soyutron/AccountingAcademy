@@ -9,8 +9,8 @@ import { ThemeSwitcher } from "@/components/theme-switcher";
 import { SiteFooter } from "@/components/site-footer";
 
 export const metadata: Metadata = {
-  title: { template: "%s | AccountingAcademy", default: "AccountingAcademy" },
-  description: "会計を原理から、手を動かして学ぶ",
+  title: { template: "%s | Open簿記", default: "Open簿記" },
+  description: "Open簿記(オープン簿記)。会計を原理から、手を動かして学ぶ",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -30,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <nav className="mx-auto flex max-w-4xl items-center gap-3 px-4 py-2 text-sm sm:gap-5">
             {/* 狭い幅では語が割れるリンクの代わりにブランド名を省略して収める */}
             <Link href="/" className="truncate font-heading font-bold">
-              AccountingAcademy
+              Open簿記
             </Link>
             <Link href="/paths/boki-3" className="whitespace-nowrap text-muted-foreground hover:text-foreground">
               3級合格パス

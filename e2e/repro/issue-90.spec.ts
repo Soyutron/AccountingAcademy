@@ -22,7 +22,7 @@ test.describe("390px", () => {
     await page.goto(UNIT);
     await expectNavLinksOnOneLine(page);
 
-    const brand = page.getByRole("banner").getByRole("link", { name: "AccountingAcademy", exact: true });
+    const brand = page.getByRole("banner").getByRole("link", { name: "Open簿記", exact: true });
     expect(await brand.evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(true);
 
     const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
