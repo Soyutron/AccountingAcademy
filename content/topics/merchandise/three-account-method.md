@@ -43,6 +43,7 @@ answer:
   credit: [{ account: cash, amount: 30000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 仕入は費用なので左で増え、現金は右で減ります。左右を入れ替えてみましょう。
   - match: { debit: [{ account: merchandise_inventory }] }
     misconception: purchase_is_asset

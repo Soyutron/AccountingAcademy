@@ -66,9 +66,9 @@ describe("預かったお金、仮のお金 ステップ2(給料を払う)", () 
     expect(result.feedback).toContain("金額");
   });
 
-  it("貸借逆はswappedの説明のまま", () => {
+  it("貸借逆はswappedの説明のまま(預り金は負債なので、誤解は借方 = 増加。#257)", () => {
     const result = gradePost(task, { debit: task.answer.credit, credit: task.answer.debit });
-    expect(result.misconception).toBeUndefined();
+    expect(result.misconception).toBe("debit_means_increase");
     expect(result.feedback).toContain("給料は費用なので左");
   });
 

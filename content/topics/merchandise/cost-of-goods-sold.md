@@ -76,6 +76,7 @@ answer:
   credit: [{ account: merchandise_inventory, amount: 15000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: それは売れ残りを取り出すときの向きです。期首の商品は繰越商品から仕入へ移すので、左に仕入、右に繰越商品です。
   - match: { debit: [{ account: purchases, amount: 22000 }] }
     misconception: beginning_inventory_forgotten
