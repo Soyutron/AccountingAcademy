@@ -6,6 +6,7 @@ import { DEFAULT_THEME } from "@/themes";
 import { HashHistorySync } from "@/components/hash-history-sync";
 import { ThemeBoot } from "@/components/theme-boot";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { SiteFooter } from "@/components/site-footer";
 
 export const metadata: Metadata = {
   title: { template: "%s | AccountingAcademy", default: "AccountingAcademy" },
@@ -42,6 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </nav>
         </header>
         <main id="main">{children}</main>
+        <SiteFooter />
       </body>
     </html>
   );
