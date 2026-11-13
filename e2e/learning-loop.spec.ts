@@ -12,12 +12,15 @@ type Task =
   | { type: "predict"; answer: Record<string, string>; elements?: string[] }
   | { type: "tweak"; formula: string; params: { id: string; value: number; min: number; max: number; step: number }[]; goal: { output: string; equals: number } }
   | { type: "classify"; accounts?: string[]; labels?: Record<string, string>; items?: { id: string; label: string; answer: string }[] }
-  | { type: "calc"; answer: number };
-type Unit = { id: string; title: string; steps: { title: string; task: Task }[] };
+  | { type: "calc"; answer: number }
+  | { type: "debug"; answer: { index: number; entry: Entry } };
+type Unit = { id: string; title: string; scenario: { accounts: { id: string; name: string }[] }; steps: { title: string; task: Task }[] };
 
 const units: Unit[] = JSON.parse(readFileSync(".velite/units.json", "utf8"));
 const accounts: { id: string; name: string; element: string }[] = JSON.parse(readFileSync(".velite/accounts.json", "utf8")).accounts;
-const nameOf = (id: string) => accounts.find((a) => a.id === id)!.name;
+// 単元限定の科目(scenario.accounts)は全体マスタに無いので、単元の科目から先に引く
+let unitAccounts: { id: string; name: string }[] = [];
+const nameOf = (id: string) => (unitAccounts.find((a) => a.id === id) ?? accounts.find((a) => a.id === id))!.name;
 const ELEMENT_LABELS: Record<string, string> = { asset: "資産", liability: "負債", equity: "純資産", revenue: "収益", expense: "費用" };
 
 async function fillEntry(page: Page, entry: Entry) {
@@ -61,6 +64,7 @@ function solveTweak(task: Extract<Task, { type: "tweak" }>): Record<string, numb
 
 for (const unit of units) {
   test(`${unit.title}を最後まで進められる`, async ({ page }) => {
+    unitAccounts = unit.scenario.accounts;
     await page.goto(`/units/${unit.id}`);
     // チュートリアルの案内やツアーは、学習ループの検証では閉じる
     const tourSkip = page.getByRole("dialog", { name: "チュートリアル" }).getByRole("button", { name: "スキップ" });
@@ -117,9 +121,19 @@ for (const unit of units) {
           break;
         }
         case "calc": {
-          await work.getByPlaceholder("金額(円)").fill(String(task.answer));
+          // プレースホルダは単元の通貨で「金額(ドゥカート)」にもなる(Issue #260)
+          await work.getByPlaceholder(/^金額\(/).fill(String(task.answer));
           await work.getByRole("button", { name: "確認する" }).click();
           await expect(page.getByText("できました", { exact: true })).toBeVisible();
+          break;
+        }
+        case "debug": {
+          // 誤りの行を選ぶと、その行が仕訳エディタに読み込まれる。直した仕訳を入れて確認する(Issue #263)
+          await work.getByRole("radio").nth(task.answer.index).check();
+          await fillEntry(page, task.answer.entry);
+          await work.getByRole("button", { name: "確認する" }).click();
+          await expect(page.getByText("できました", { exact: true })).toBeVisible();
+          await expect(page.getByRole("region", { name: "結果" }).getByText("左右の合計は一致しています。")).toBeVisible();
           break;
         }
         case "observe":

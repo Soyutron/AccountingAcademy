@@ -31,10 +31,11 @@ Claude Codeがテスター人格として会計IDEを操作し、不具合・状
 
 IDEの要素(アクセシブルネーム): 「次へ →」「← 前へ」「記帳する」「予想して記帳する」「確認する」「答えを見る」(2回間違えた後)、
 「行を追加」「行を削除」、「借方の科目1」「借方の金額1」「貸方の科目1」…、select「資産の予想」など5つ、
-group「仕分けボード」、placeholder「金額(円)」、slider(「条件を変える」)、range「帳簿をさかのぼる」(2件以上記帳後)、
+group「仕分けボード」、placeholder「金額(円)」(単元の通貨で「金額(ドゥカート)」にもなる)、radio「n行目: 摘要」(debugの行選び)、slider(「条件を変える」)、range「帳簿をさかのぼる」(2件以上記帳後)、
 「使い方」(ヘッダー。中の「場所を示す」で対象が光る)、見出し横の「?」(button「〜の説明」)、note「初めての「〜」」の「わかった」「くわしく」(課題の種類の初出)、「今はしない」(初回バナー)、section「貸借対照表」「損益計算書」「このステップの影響」「会社のかたち」、
 用語のポップオーバー(本文のリンク → dialog、用語名がaria-label)。
-単元IDと各ステップの課題(`task.type`: observe / post / predict / tweak / classify / calc、`answer`)は`.velite/units.json`。
+単元IDと各ステップの課題(`task.type`: observe / post / predict / tweak / classify / calc / debug、`answer`)は`.velite/units.json`。
+debugは`solveDebug(page, task, nameOf)`(session.mjs)で正解の行を選んで直せる。
 
 ## セッションの進め方
 
