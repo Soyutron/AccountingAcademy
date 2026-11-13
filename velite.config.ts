@@ -1,5 +1,6 @@
 import { parse as parseYaml } from "yaml";
 import { defineConfig, s, z } from "velite";
+import { pathErrors, unitKindErrors } from "./src/lib/content-checks";
 
 // コンテンツのスキーマと横断検査。構造の定義はdocs/content-model.md、画面と学習フローはdocs/ide-design.mdが正本
 
@@ -271,6 +272,9 @@ export default defineConfig({
           summary: s.string(),
           level: s.number().int().min(1).max(4),
           order: s.number(),
+          // 試験範囲外の単元(歴史・不正会計)はkindで課題の条件を変える。ADR 0009
+          kind: s.enum(["lesson", "history", "forensics"]).default("lesson"),
+          sources: s.array(s.object({ title: s.string(), note: s.string().optional() })).default([]),
           introduces: idList,
           concepts: idList,
           requires: idList,
@@ -290,7 +294,9 @@ export default defineConfig({
         id: s.string(),
         title: s.string(),
         summary: s.string(),
-        exam: s.object({ name: s.string(), format: s.string(), source: s.string() }),
+        exam: s.object({ name: s.string(), format: s.string(), source: s.string() }).optional(),
+        // 試験に紐づかないパスの、時代順の説明。examとどちらかが必須(prepareで検査)
+        era: s.string().optional(),
         sections: s.array(s.object({ title: s.string(), units: s.array(s.string()).min(1) })),
       }),
     },
@@ -384,7 +390,7 @@ export default defineConfig({
       if (u.steps.length < 4) errors.push(`${where}: ステップが${u.steps.length}個しかない(4個以上)`);
       if (u.steps.length > 0 && u.steps[0].task.type !== "observe") errors.push(`${where}: 最初のステップはobserve(導入)にする`);
       if (u.steps.length > 0 && !u.steps[u.steps.length - 1].title.includes("ふりかえり")) errors.push(`${where}: 最後のステップの見出しに「ふりかえり」を含める`);
-      if (!u.steps.some((st) => st.task.type === "post" || st.task.type === "predict")) errors.push(`${where}: postかpredictのステップが1つもない`);
+      unitKindErrors(u).forEach((e) => errors.push(`${where}: ${e}`));
 
       const known = explained(u.id);
       const used = new Set<string>();
@@ -481,6 +487,7 @@ export default defineConfig({
     conceptIds.forEach((id) => visit(id, []));
 
     for (const p of paths) {
+      pathErrors(p).forEach((e) => errors.push(`パス${p.id}: ${e}`));
       const seen: string[] = [];
       for (const section of p.sections) {
         for (const unitId of section.units) {

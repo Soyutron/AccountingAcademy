@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { units } from "#content";
@@ -49,7 +50,23 @@ export default async function UnitPage({ params }: { params: Promise<{ topic: st
       misconceptions={misconceptions}
       returnTitles={returnTitles}
       narratives={unit.steps.map((s, i) => (
-        <Markdown key={i} body={s.narrative} />
+        <Fragment key={i}>
+          <Markdown body={s.narrative} />
+          {/* 出典はふりかえりの下に並べる(ADR 0009) */}
+          {i === unit.steps.length - 1 && unit.sources.length > 0 && (
+            <section className="not-prose mt-6 space-y-2 border-t pt-4 text-sm">
+              <h3 className="font-medium">出典</h3>
+              <ul className="space-y-1">
+                {unit.sources.map((src) => (
+                  <li key={src.title}>
+                    <p>{src.title}</p>
+                    {src.note && <p className="text-muted-foreground">{src.note}</p>}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </Fragment>
       ))}
     />
   );
