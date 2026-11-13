@@ -62,6 +62,7 @@ export interface GlossaryEntry {
   example?: string;
   element?: AccountInfo["element"];
   contra?: boolean;
+  temporary?: boolean;
   related: { id: string; name: string }[];
   unit?: { id: string; title: string };
 }
@@ -88,6 +89,7 @@ export const glossary: GlossaryEntry[] = [
       example: c.example,
       element: account?.element,
       contra: account?.contra,
+      temporary: account?.temporary,
       // relatedとcontrastsの両方に挙げる概念があるので、先に出た方だけ残す
       related: related.map((id) => ({ id, name: nameOf(id) })),
       unit: (() => {
@@ -109,6 +111,7 @@ export const glossary: GlossaryEntry[] = [
       example: a.example,
       element: a.element,
       contra: a.contra,
+      temporary: a.temporary,
       related: a.concepts.map((id) => ({ id, name: nameOf(id) })),
     })),
 ];

@@ -116,7 +116,7 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
                 {account ? (
                   <div className="flex items-start gap-1 min-w-0">
                     <span className="shrink-0">
-                      <ElementBadge element={account.element} contra={account.contra} size="xs" />
+                      <ElementBadge element={account.element} contra={account.contra} temporary={account.temporary} size="xs" />
                     </span>
                     <span className="mt-px leading-4 text-muted-foreground">{account.short}</span>
                   </div>

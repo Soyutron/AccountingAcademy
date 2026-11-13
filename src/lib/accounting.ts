@@ -12,6 +12,8 @@ export interface AccountInfo {
   reading?: string[];
   element: Element;
   contra: boolean;
+  // 仮勘定(現金過不足)。残高が逆側に出たら、その側の部に正の金額で並べる
+  temporary?: boolean;
   // 一文の説明と、なぜその要素に属するか。ホバー解説と要素分類のフィードバックに使う
   short: string;
   why: string;
@@ -38,7 +40,8 @@ export const ELEMENT_LABELS: Record<Element, string> = {
 };
 
 // whyは「なぜその要素か」の答えなので、問いが読めるように見出しを付けて用語の説明にする
-export function accountSummary(account: Pick<AccountInfo, "element" | "why">): string {
+export function accountSummary(account: Pick<AccountInfo, "element" | "why" | "temporary">): string {
+  if (account.temporary) return `仮勘定として扱う理由: ${account.why}`;
   return `${ELEMENT_LABELS[account.element]}に分類する理由: ${account.why}`;
 }
 

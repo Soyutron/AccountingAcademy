@@ -106,7 +106,7 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
       >
         <div className="font-semibold flex items-center gap-2">
           {entry.name}
-          {entry.element && <ElementBadge element={entry.element} contra={entry.contra} size="xs" />}
+          {entry.element && <ElementBadge element={entry.element} contra={entry.contra} temporary={entry.temporary} size="xs" />}
         </div>
         <p>{entry.short}</p>
         {expanded ? (

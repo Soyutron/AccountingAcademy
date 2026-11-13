@@ -18,7 +18,8 @@ test("現金過不足の単元で、雑益への取り違えと費用の向き�
   await fill(page, ["現金過不足", 3000], ["現金", 3000]);
   await expect(page.getByRole("status").getByText("できました")).toBeVisible();
   await next();
-  for (const k of ["資産", "負債", "純資産", "収益", "費用"]) await page.getByLabel(`${k}の予想`, { exact: true }).selectOption({ label: "減る" });
+  // 現金過不足は仮勘定なので、ステップ3は費用と純資産だけを問う(Issue #191)
+  for (const k of ["純資産", "費用"]) await page.getByLabel(`${k}の予想`, { exact: true }).selectOption({ label: "減る" });
   await page.getByRole("button", { name: "予想して記帳する" }).click();
   await expect(wrong).toBeVisible();
   await expect(wrong).not.toContainText("まだ合っていません");
