@@ -47,6 +47,7 @@ answer:
   credit: [{ account: bank_deposit, amount: 200000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 増えるのは当座預金なので左、減るのは普通預金なので右です。
   - match: { credit: [{ account: cash }] }
     feedback: 今回は普通預金から移しました。手元の現金は動いていません。
@@ -61,9 +62,8 @@ success: 貸借対照表に当座預金が現れ、普通預金が同じだけ�
 
 ## 買掛金を小切手で払う
 問屋への買掛金60,000円を、小切手を振り出して支払いました。「この紙を銀行に持っていけば、当座預金から払います」という紙が[[check|小切手]]です。
-小切手を渡した瞬間、手元の現金は減っていません。減るのは当座預金です。
 帳簿では、小切手を振り出した日に当座預金を減らします。銀行の残高が実際に減るのは相手が銀行に持ち込んだときですが、渡した時点で支払いは確定し、相手はいつでも換金できるので、帳簿はその日に記録します。
-記帳の前に、5つの箱がどう動くか予想してみましょう。
+では、手元の現金は動くでしょうか。問屋への「払う義務」はどうなるでしょうか。記帳の前に、5つの箱がどう動くか予想してみましょう。
 
 ```task
 type: predict
@@ -85,7 +85,7 @@ wrong_patterns:
     misconception: issued_check_leaves_payable
     feedback: 小切手を渡した時点で、支払いは済んでいます。買掛金は「払う義務」なので、払えば増えるのではなく減ります。
 hint: 買掛金(負債)と当座預金(資産)が同じだけ減ります。もうけは動きません。
-success: 買掛金が消え、当座預金が140,000になりました。手元の現金は297,000のままです。
+success: 買掛金という「払う義務」が消え、当座預金が140,000になりました。手元の現金は297,000のままです。
 ```
 
 ## 仕入も小切手で
@@ -100,6 +100,7 @@ answer:
   credit: [{ account: checking_account, amount: 25000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 仕入は費用なので左、当座預金は減るので右です。
   - match: { credit: [{ account: cash }] }
     misconception: check_is_cash

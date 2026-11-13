@@ -19,7 +19,7 @@ scenario:
 
 ## 2号店の決算
 カフェ「マメノキ」は10月1日に2号店を開きました。開店の日に中古のコーヒーマシン600,000円(備品)を買い、同じ日に配達用の軽バン1,200,000円も買っています。
-きょうは3月31日、2号店にとって初めての決算です。この単元では、[[depreciation|減価償却]]の「1年分はいくらか」を決める計算を、条件を動かしながら確かめます。
+きょうは3月31日、2号店にとって初めての[[closing|決算]]です。この単元では、[[depreciation|減価償却]]の「1年分はいくらか」を決める計算を、条件を動かしながら確かめます。
 
 ## 軽バンを記帳する
 軽バンの購入を、まだ帳簿に書いていませんでした。1,200,000円を現金で払っています。
@@ -42,6 +42,7 @@ answer:
   credit: [{ account: cash, amount: 1200000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 増えた軽バン(資産)は左、減った現金は右です。左右を入れ替えてみましょう。
   - match: { debit: [{ account: depreciation_expense }] }
     misconception: no_cost_allocation

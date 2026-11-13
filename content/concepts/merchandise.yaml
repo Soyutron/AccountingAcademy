@@ -63,10 +63,20 @@ concepts:
     summary: 品違いや傷みで商品を返す取引。新しい取引ではなく、元の仕入や売上の取り消しなので、元の仕訳を左右逆にした仕訳(逆仕訳)で記録する。掛けなら買掛金や売掛金が減る。
     example: 掛けで仕入れた豆のうち10,000円分を返したら、左に買掛金10,000、右に仕入10,000。
     requires: [purchase, journal_entry]
-    related: [incidental_costs]
+    related: [incidental_costs, reverse_entry]
+    contrasts: []
+  - id: reverse_entry
+    name: 逆仕訳
+    reading: [ぎゃくしわけ]
+    short: 元の仕訳と同じ科目・金額で、左右だけを入れ替えた仕訳。元の記録を取り消すときに使う
+    summary: 返品のように、記録済みの取引の全部または一部をなかったことにするときは、元の仕訳を消さずに左右を入れ替えた仕訳を足す。元の仕訳と打ち消し合い、科目の残高が取り消した分だけ戻る。帳簿に取り消しの経緯が残る。
+    example: 「左に仕入10,000、右に買掛金10,000」の分を返品したら、逆仕訳は「左に買掛金10,000、右に仕入10,000」。
+    requires: [journal_entry]
+    related: [returns]
     contrasts: []
   - id: incidental_costs
     name: 諸掛
+    aliases: [仕入諸掛, 諸掛り]
     reading: [しょがかり]
     short: 商品の売り買いにかかる運賃などの費用。仕入のときは仕入に含め、売るときは発送費にする
     summary: 商品を仕入れるときの運賃(仕入諸掛)は、商品を手に入れるためにかかった金額なので仕入に含める。売った商品を送る運賃は発送費という別の費用にする。向きで扱いが変わる。

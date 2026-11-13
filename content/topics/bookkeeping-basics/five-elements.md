@@ -4,7 +4,7 @@ title: 5つの要素と仕訳
 summary: カフェを開く1か月を帳簿に書きながら、お金の動きを5つの箱に分けて記録する方法を身につける
 level: 1
 order: 1
-introduces: [transaction, five_elements, asset, liability, equity, revenue, expense, account_title, debit_credit, journal_entry, balance_sheet, income_statement, net_income]
+introduces: [transaction, five_elements, asset, liability, equity, revenue, expense, account_title, debit_credit, journal_entry, balance_sheet, income_statement, net_income, t_account, closing]
 concepts: []
 requires: []
 scenario:
@@ -53,6 +53,7 @@ success: 記帳できました。結果の表に、現金と資本金が同時�
 
 ## コーヒーマシンを買う
 いま左に書いた側を[[debit_credit|借方]]、右側を貸方と呼びます。難しそうな名前ですが、「左」と「右」の呼び名にすぎません。現金のようなお店の財産は、増えたら左に書きます。この「財産」の箱を[[asset|資産]]と呼びます。
+記帳した仕訳は、ワークスペースの「総勘定元帳(T勘定)」タブで科目ごとにも見られます。現金の欄には、仕訳で左に書いた1,000,000がTの字の左側に載ります。科目ごとに左右の増減を並べたこの形を[[t_account|T勘定]]と呼び、全科目のT勘定を集めた帳簿が総勘定元帳です。
 さて、開店に欠かせないコーヒーマシンを600,000円で買い、現金で払いました。マシンは「備品」という勘定科目で、現金と同じ資産の仲間です。資産は、資産・負債・[[equity|純資産]]・収益・費用の[[five_elements|5つの箱]]のひとつです。残りの4つの箱はこの先の取引で順に出てきます。記帳の前に、資産がどう動くか予想してみましょう。現金が減ってマシンが増えると、資産の合計はどうなるでしょうか。
 
 ```figure
@@ -145,6 +146,7 @@ answer:
   credit: [{ account: cash, amount: 50000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 費用は左で増え、現金は右で減ります。左右を入れ替えてみましょう。
   - match: { debit: [{ account: accounts_payable }] }
     misconception: expense_as_liability
@@ -240,4 +242,4 @@ equity:
   - { account: capital_stock, amount: 1000000 }
   - { label: 当期純利益, amount: 30000 }
 ```
-次の単元「仕入と売上」では、棚に並べるコーヒー豆や焼き菓子を仕入れて売る、日々の取引を記帳します。このコーヒーマシンの600,000円を1年の終わりにどう扱うか(払った年に全部費用にしないのはなぜか)は、後の固定資産のテーマで考えます。仕訳帳は自由に使えるので、気になる取引を試してから進んでも構いません。
+次の単元「仕入と売上」では、棚に並べるコーヒー豆や焼き菓子を仕入れて売る、日々の取引を記帳します。1年の終わりには帳簿を締めて、貸借対照表と損益計算書を作ります。この手続きを[[closing|決算]]と呼びます。このコーヒーマシンの600,000円を決算でどう扱うか(払った年に全部費用にしないのはなぜか)は、後の固定資産のテーマで考えます。仕訳帳は自由に使えるので、気になる取引を試してから進んでも構いません。

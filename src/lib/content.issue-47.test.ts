@@ -24,7 +24,8 @@ describe("資産・費用だけの仕訳の貸借逆", () => {
     expect(bad).toEqual([]);
   });
 
-  it("利息の支払いを貸借逆にすると、誤解なしでfeedbackを返す", () => {
+  // #257で「お金が出ていく側を左に書く」を付けた。debit_means_increaseに戻さないことだけを固定する
+  it("利息の支払いを貸借逆にすると、debit_means_increase以外の誤解でfeedbackを返す", () => {
     const step = unitMap.get("receivables-and-payables/loans")!.steps[3];
     if (step.task?.type !== "post") throw new Error("postではない");
     const r = gradePost(step.task, {
@@ -32,7 +33,7 @@ describe("資産・費用だけの仕訳の貸借逆", () => {
       credit: [{ account: "interest_expense", amount: 3000 }],
     });
     expect(r.correct).toBe(false);
-    expect(r.misconception).toBeUndefined();
+    expect(r.misconception).toBe("outflow_on_debit");
     expect(r.feedback).toBeTruthy();
   });
 });

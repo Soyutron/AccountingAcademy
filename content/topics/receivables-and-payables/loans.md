@@ -52,6 +52,7 @@ answer:
   credit: [{ account: bank_deposit, amount: 100000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 増えるのは貸付金(権利)なので左、減るのは普通預金なので右です。
   - match: { debit: [{ account: loans_payable }] }
     misconception: lender_borrower_confused
@@ -103,6 +104,7 @@ answer:
   credit: [{ account: bank_deposit, amount: 3000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 支払利息は費用なので左、普通預金は減るので右です。
   - match: { debit: [{ account: loans_payable }] }
     misconception: interest_reduces_principal
@@ -153,6 +155,7 @@ answer:
   credit: [{ account: loans_receivable, amount: 100000 }]
 wrong_patterns:
   - match: { swapped: true }
+    misconception: outflow_on_debit
     feedback: 増えるのは普通預金なので左、消えるのは貸付金なので右です。
   - match: { credit: [{ account: loans_receivable, amount: 100000 }, { account: interest_income }] }
     misconception: repayment_includes_interest
@@ -176,7 +179,7 @@ success: 貸付金が消えて、普通預金に戻りました。利息の2,000
 
 ## 借入金を返す
 手元に余裕ができたので、銀行の借入金のうち100,000円を普通預金から返しました。
-返すのは「義務」の分です。預金が減り、借入金が同じだけ減ります。記帳の前に、5つの箱がどう動くか予想してみましょう。
+貸したお金が返ってきたときは、貸付金という「権利」が消えました。借りたお金を返したときは、何が消えるでしょうか。利息を払ったときとの違いはあるでしょうか。記帳の前に、5つの箱がどう動くか予想してみましょう。
 
 ```task
 type: predict
@@ -196,7 +199,7 @@ wrong_patterns:
   - match: { asset: none }
     feedback: 普通預金から100,000円を払ったので、資産は減ります。
 hint: 普通預金(資産)と借入金(負債)が同じだけ減ります。もうけは動きません。
-success: 借入金が200,000になりました。費用になったのは利息の3,000円だけです。
+success: 普通預金が減り、借入金という「義務」が同じだけ減って200,000になりました。返済は費用ではなく、費用になったのは利息の3,000円だけです。
 ```
 
 ## 箱に分ける
@@ -220,5 +223,5 @@ success: 元本は資産か負債、利息は収益か費用。お金の貸し�
 
 ## ふりかえり
 貸したお金は貸付金(資産)、借りたお金は借入金(負債)。返したり返してもらったりしても、もうけは動きません。利息だけが受取利息(収益)や支払利息(費用)になります。
-利息は「[[principal|元本]] × [[annual_interest_rate|年利率]] × 月数 ÷ 12」。この計算は、決算で「まだ払っていない利息」を扱うときにも使います。
+利息は「[[principal|元本]] × [[annual_interest_rate|年利率]] × 月数 ÷ 12」。この計算は、[[closing|決算]]で「まだ払っていない利息」を扱うときにも使います。
 次は、商品以外の売り買いの後払いと、手付金の記録です。
