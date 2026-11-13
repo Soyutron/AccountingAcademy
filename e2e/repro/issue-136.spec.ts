@@ -67,6 +67,7 @@ async function clickNextAndExpectSaved(page: Page) {
 test("access_tokenの署名が無効でも、refresh_tokenが有効なら同じユーザーで進捗を読み直して続けられる", async ({ page, context }) => {
   const userId = await startGuest(page, context);
   await replaceSession(context, breakSignature);
+  await page.evaluate(() => sessionStorage.clear());
   await page.reload();
   await page.waitForLoadState("networkidle");
   await expect(page.getByRole("button", { name: "続きから" })).toBeVisible();
@@ -84,6 +85,7 @@ test("refresh_tokenも無効なら、閲覧ではユーザーを作らず、次�
   page.on("response", (r) => {
     if (r.url().includes("/auth/v1/signup") && r.ok()) signups++;
   });
+  await page.evaluate(() => sessionStorage.clear());
   await page.reload();
   await page.waitForLoadState("networkidle");
   expect(signups).toBe(0);
@@ -133,6 +135,7 @@ for (const [label, session] of malformed) {
     page.on("pageerror", (e) => errors.push(e.stack ?? e.message));
     await startGuest(page, context);
     await replaceSession(context, () => session);
+    await page.evaluate(() => sessionStorage.clear());
     await page.reload();
     await page.waitForLoadState("networkidle");
 

@@ -43,6 +43,7 @@ test("前へ→次へで戻っても「答えを見る」が消えない", async
 });
 
 test("「続きから」で引き継いだ誤答回数も、前へ→次へで消えない", async ({ page }) => {
+  await page.evaluate(() => sessionStorage.clear());
   await page.reload();
   await page.getByRole("button", { name: "続きから" }).click();
   await expect(page.getByText("ステップ2 / 8")).toBeVisible();

@@ -27,6 +27,7 @@ test("predictが初めて出たとき案内が出て、「わかった」で閉�
   await expect(note).toBeHidden();
   expect(await seen(page)).toContain("predict");
   // 同じステップを開き直しても出ない
+  await page.evaluate(() => sessionStorage.clear());
   await page.reload();
   await page.getByRole("button", { name: "続きから" }).click();
   await expect(page.getByRole("combobox", { name: "資産の予想", exact: true })).toBeVisible();
@@ -57,6 +58,7 @@ test("チュートリアル単元では案内を出さない", async ({ page }) 
 test("「使い方」の「場所を示す」で対象が光り、Escで消える", async ({ page }) => {
   await page.goto("/units/tutorial/first-entry");
   await page.evaluate(() => localStorage.setItem("tutorial-state", JSON.stringify({ status: "done", enabled: true })));
+  await page.evaluate(() => sessionStorage.clear());
   await page.reload();
   await page.getByRole("button", { name: "次へ →" }).click();
   await page.getByRole("button", { name: "使い方" }).click();
@@ -77,6 +79,7 @@ test("スマホ幅の「場所を示す」は対象のペインへ切り替え�
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/units/tutorial/first-entry");
   await page.evaluate(() => localStorage.setItem("tutorial-state", JSON.stringify({ status: "done", enabled: true })));
+  await page.evaluate(() => sessionStorage.clear());
   await page.reload();
   await page.getByRole("button", { name: "次へ →" }).click();
   await page.getByRole("button", { name: "使い方" }).click();

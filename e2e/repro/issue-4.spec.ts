@@ -46,6 +46,8 @@ test("開き直して案内を押さずに次へを押しても、保存され�
   await reachStep3(page);
   await expect.poll(() => saved.at(-1)).toBe(2);
 
+  await page.evaluate(() => sessionStorage.clear());
+
   await page.reload();
   // 進捗の取得が終わるまで待ってから、案内ではなく「次へ →」を押す
   await expect(page.getByRole("button", { name: "続きから" })).toBeVisible();

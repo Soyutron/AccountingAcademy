@@ -17,6 +17,7 @@ test("続きからで再開した正解済みのpostステップは、前へ→�
   await expect(done).toBeVisible();
   await progress;
   await expect(async () => {
+    await page.evaluate(() => sessionStorage.clear());
     await page.reload();
     await page.getByRole("button", { name: "続きから" }).click({ timeout: 3000 });
   }).toPass();
@@ -48,6 +49,7 @@ test("続きからで再開した正解済みのcalcステップは、前へ→�
   await work.getByRole("button", { name: "確認する" }).click();
   await expect(done).toBeVisible();
   await expect(async () => {
+    await page.evaluate(() => sessionStorage.clear());
     await page.reload();
     await page.getByRole("button", { name: "続きから" }).click({ timeout: 3000 });
   }).toPass();

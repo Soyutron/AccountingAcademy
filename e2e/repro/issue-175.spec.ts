@@ -27,6 +27,7 @@ async function nextAndSave(page: Page) {
 }
 
 async function resumeAfterReload(page: Page, label: string) {
+  await page.evaluate(() => sessionStorage.clear());
   await page.reload();
   await page.getByRole("button", { name: "続きから" }).click();
   await expect(page.getByText(label)).toBeVisible();
@@ -102,6 +103,7 @@ test("正解したあとに誤答を重ねたステップは、最後の誤答�
   await expect(page.getByText("ステップ3 / 10")).toBeVisible();
 
   // 「続きから」を押さず手で進めると、正解済みのステップにも答えられる
+  await page.evaluate(() => sessionStorage.clear());
   await page.reload();
   await expect(page.getByRole("button", { name: "続きから" })).toBeVisible();
   await next.click();

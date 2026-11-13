@@ -88,6 +88,7 @@ test("「今はしない」「続きから」はステップの見出しへ、�
   await next.click();
   await expect(page.getByText("ステップ3 / 10")).toBeVisible();
   await page.waitForTimeout(1000);
+  await page.evaluate(() => sessionStorage.clear());
   await page.reload();
   const resume = page.getByRole("button", { name: "続きから" });
   await resume.focus();
