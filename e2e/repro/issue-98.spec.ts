@@ -5,7 +5,7 @@ test("calcの定義外の誤答に、結果の表の動きを問う文を出さ�
   const work = page.getByRole("region", { name: "ワークスペース" });
   await page.goto("/units/merchandise/cost-of-goods-sold");
   await page.getByRole("button", { name: "次へ →" }).click();
-  await expect(page.getByText("ステップ2 / 8")).toBeVisible();
+  await expect(page.getByText("ステップ2 / 7")).toBeVisible();
   await work.getByPlaceholder("金額(円)").fill("1100000");
   await work.getByRole("button", { name: "確認する" }).click();
   await expect(page.getByRole("status").filter({ hasText: "もう一歩" })).toBeVisible();
