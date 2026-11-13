@@ -45,7 +45,7 @@ misconceptions:
   - id: expense_at_payment
     name: 支払った時に費用
     description: 現金を支払った時点で費用になると思っている。支払いと費用の発生を区別していない
-    correct: 費用はお金を払った時ではなく、その効果が発生した期間に計上する(発生主義)。長く使う資産の購入は支払った時点では費用にならない
+    correct: 費用はお金を払った時ではなく、その効果が発生した期間に計上する。長く使う資産の購入は支払った時点では費用にならない
     concepts: [accrual_basis, cost_allocation]
     remediation: depreciation/what-is-depreciation
   - id: no_cost_allocation
