@@ -21,9 +21,10 @@ interface Props {
   values: Record<string, number>;
   onChange: (values: Record<string, number>) => void;
   goal: { output: string; equals: number; label: string };
+  currency: string;
 }
 
-export function TweakPanel({ formula, params, values, onChange, goal }: Props) {
+export function TweakPanel({ formula, params, values, onChange, goal, currency }: Props) {
   const result = evaluateFormula(formula, values);
   const reached = result.outputs[goal.output] === goal.equals;
   return (
@@ -54,12 +55,12 @@ export function TweakPanel({ formula, params, values, onChange, goal }: Props) {
         {Object.entries(result.outputs).map(([k, v]) => (
           <div key={k} className={`contents ${k === goal.output ? "font-semibold" : ""}`}>
             <dt>{result.labels[k]}</dt>
-            <dd className="text-right font-mono tabular-nums">{formatAmount(v)}円</dd>
+            <dd className="text-right font-mono tabular-nums">{formatAmount(v)}{currency}</dd>
           </div>
         ))}
       </dl>
       <p role="status" className={`text-sm ${reached ? "text-ok-fg" : "text-muted-foreground"}`}>
-        目標: {goal.label}を{formatAmount(goal.equals)}円にする{reached ? " — 達成" : ""}
+        目標: {goal.label}を{formatAmount(goal.equals)}{currency}にする{reached ? " — 達成" : ""}
       </p>
     </div>
   );

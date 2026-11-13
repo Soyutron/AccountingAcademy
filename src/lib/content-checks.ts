@@ -26,3 +26,20 @@ export function unitKindErrors(u: UnitForCheck): string[] {
 export function pathErrors(p: { exam?: unknown; era?: string }): string[] {
   return p.exam || p.era ? [] : ["examとeraのどちらも無い"];
 }
+
+/** 単元限定の科目(scenario.accounts)のIDは、全体マスタとも単元の中でも重ねない(docs/content-model.md 7.5) */
+export function scenarioAccountErrors(local: { id: string }[], masterIds: ReadonlySet<string>): string[] {
+  const errors: string[] = [];
+  const seen = new Set<string>();
+  for (const { id } of local) {
+    if (masterIds.has(id)) errors.push(`scenario.accountsの${id}が全体マスタの勘定科目と重なる`);
+    if (seen.has(id)) errors.push(`scenario.accountsの${id}が重複`);
+    seen.add(id);
+  }
+  return errors;
+}
+
+/** その単元のopeningとtaskから参照できる勘定科目ID。全体マスタとその単元のscenario.accountsだけで、他の単元の科目は含めない */
+export function unitAccountIds(masterIds: ReadonlySet<string>, local: { id: string }[]): Set<string> {
+  return new Set([...masterIds, ...local.map((a) => a.id)]);
+}

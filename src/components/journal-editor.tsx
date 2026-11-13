@@ -19,16 +19,18 @@ interface Props {
   readOnly?: boolean;
   // predictでは予想を送るまで5要素の増減を見せない(答えが見えてしまう。Issue #11)
   showImpact?: boolean;
+  // 金額の単位。末尾に付けて入れても読む(単元のscenario.currency)
+  currency?: string;
 }
 
-export function JournalEditor({ accounts, value, onChange, readOnly = false, showImpact = true }: Props) {
+export function JournalEditor({ accounts, value, onChange, readOnly = false, showImpact = true, currency }: Props) {
   const idPrefix = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const focusLine = useRef<string | null>(null);
   // IMEの変換中は読みの途中なので「科目がない」と言わない(Issue #79)
   const [composingLine, setComposingLine] = useState<string | null>(null);
   const accountMap = useMemo(() => new Map(accounts.map((a) => [a.id, a])), [accounts]);
-  const entry = useMemo(() => toJournalEntry(value, accounts), [value, accounts]);
+  const entry = useMemo(() => toJournalEntry(value, accounts, currency), [value, accounts, currency]);
   const impact = useMemo(() => computeImpact(entry, accountMap), [entry, accountMap]);
 
   const update = (side: Side, index: number, patch: Partial<EditableLine>) => {
@@ -64,7 +66,7 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
         {value[side].map((line, i) => {
           const account = findAccountByName(line.accountName, accounts);
           const style = account ? ELEMENT_STYLE[account.element] : null;
-          const parsed = parseAmount(line.amount);
+          const parsed = parseAmount(line.amount, false, currency);
           // 空欄はまだ入力していないだけなので理由を出さない
           const amountError = line.amount.trim() && "reason" in parsed ? parsed.reason : null;
           const errorId = `${idPrefix}-${side}-${i}-amount-error`;
@@ -99,7 +101,7 @@ export function JournalEditor({ accounts, value, onChange, readOnly = false, sho
                   aria-describedby={amountError || amountMissing ? errorId : undefined}
                   onChange={(e) => update(side, i, { amount: e.target.value })}
                   onBlur={(e) => {
-                    const p = parseAmount(e.target.value);
+                    const p = parseAmount(e.target.value, false, currency);
                     if ("value" in p) update(side, i, { amount: formatAmount(p.value) });
                   }}
                   // 借方・貸方が縦積みの幅では390pxでも1,000,000,000と7文字の科目名の両方が入る比にする。横並びは1行が狭く、科目名を優先する(Issue #116)

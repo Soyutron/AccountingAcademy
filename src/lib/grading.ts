@@ -99,8 +99,8 @@ export function gradeCalc(task: TaskOf<"calc">, value: number): GradeResult {
   return ng(pattern?.feedback ?? CALC_WRONG, pattern?.misconception);
 }
 
-export function gradeTweak(task: TaskOf<"tweak">, outputs: Record<string, number>): GradeResult {
-  return outputs[task.goal.output] === task.goal.equals ? ok(task) : ng(`いまの${task.goal.label}は${outputs[task.goal.output]?.toLocaleString("ja-JP")}円です。条件を動かして${task.goal.equals.toLocaleString("ja-JP")}円にしてみましょう。`);
+export function gradeTweak(task: TaskOf<"tweak">, outputs: Record<string, number>, currency = "円"): GradeResult {
+  return outputs[task.goal.output] === task.goal.equals ? ok(task) : ng(`いまの${task.goal.label}は${outputs[task.goal.output]?.toLocaleString("ja-JP")}${currency}です。条件を動かして${task.goal.equals.toLocaleString("ja-JP")}${currency}にしてみましょう。`);
 }
 
 export interface ClassifyResult extends GradeResult {

@@ -65,6 +65,8 @@ export interface GlossaryEntry {
   temporary?: boolean;
   related: { id: string; name: string }[];
   unit?: { id: string; title: string };
+  // 単元限定の科目(scenario.accounts)。用語集に項目が無いので「用語集で見る」を出さない
+  local?: boolean;
 }
 
 function nameOf(id: string): string {
@@ -121,3 +123,31 @@ export const glossaryMap = new Map(glossary.map((g) => [g.id, g]));
 // 結果ペインの科目名も本文と同じ説明を開く。このモジュールをクライアントで読むと全単元が同梱されるので、ページから項目ごと渡す(Issue #82)
 export type GlossaryAccount = AccountInfo & { glossary: GlossaryEntry };
 export const glossaryAccountList: GlossaryAccount[] = accountList.map((a) => ({ ...a, glossary: glossaryMap.get(a.id)! }));
+
+/**
+ * その単元のIDEに渡す科目。全体マスタの後ろに単元限定の科目(scenario.accounts)を足す。
+ * 単元限定の科目は用語集に載せず、ポップオーバーの項目もここで作る(ADR 0009)
+ */
+export function unitAccountList(local: Unit["scenario"]["accounts"]): GlossaryAccount[] {
+  return [
+    ...glossaryAccountList,
+    ...local.map((a) => ({
+      ...a,
+      aliases: [],
+      contra: false,
+      short: a.why,
+      glossary: {
+        id: a.id,
+        kind: "account" as const,
+        name: a.name,
+        aliases: [],
+        reading: [],
+        short: a.why,
+        summary: "この単元だけで使う勘定科目です。用語集には載っていません。",
+        element: a.element,
+        related: [],
+        local: true,
+      },
+    })),
+  ];
+}

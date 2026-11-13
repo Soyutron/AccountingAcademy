@@ -47,6 +47,10 @@ export interface IdeUnit {
   // リポジトリのルートからのMarkdownのパス
   sourcePath: string;
   company: string;
+  // 時代と舞台(scenario.era)。歴史の単元だけが持つ
+  era?: string;
+  // 金額の単位(scenario.currency)
+  currency: string;
   opening: OpeningLine[];
   steps: IdeStep[];
   next?: { id: string; title: string };
@@ -391,7 +395,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
   const onTweakChange = (values: Record<string, number>) => {
     setParams(values);
     if (task.type !== "tweak") return;
-    const r = gradeTweak(task, evaluateFormula(task.formula, values).outputs);
+    const r = gradeTweak(task, evaluateFormula(task.formula, values).outputs, unit.currency);
     // 達成後に値を外したら「できました」を隠す(記録と「次へ →」の有効は達成済みのまま保つ)
     if (tweakDone) {
       setResult(r.correct ? r : null);
@@ -445,7 +449,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
       if (values) {
         answered.current.set(index, values);
         setParams(values);
-        setResult(gradeTweak(t, evaluateFormula(t.formula, values).outputs));
+        setResult(gradeTweak(t, evaluateFormula(t.formula, values).outputs, unit.currency));
       }
     }
   };
@@ -584,7 +588,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
     // answered・gradedAnswerはrefなので、採点のたびに書き直すためgradedResultとtweakDoneを依存に入れる
   }, [sessionLoaded, isTutorialUnit, unit.id, stepIndex, reached, posted, draft, effect, placed, calcValue, params, attempts, gradedResult, tweakDone]);
 
-  const entryDraft = toJournalEntry(draft, accounts);
+  const entryDraft = toJournalEntry(draft, accounts, unit.currency);
 
   // 問題文の金額を仕訳帳の金額欄に入れる(Issue #7)。フォーカス中の金額欄のカーソル位置に挿入し、
   // どこにもフォーカスが無ければ最初の空の金額欄に入れる。空の欄が無ければ何もしない
@@ -631,7 +635,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
     for (const type of ["pointerdown", "keydown", "blur"]) input.addEventListener(type, release, { signal: controller.signal });
   }, [draft]);
   const draftHasBothSides = entryDraft.debit.length > 0 && entryDraft.credit.length > 0;
-  const draftIncomplete = [...draft.debit, ...draft.credit].some((l) => isIncompleteLine(l, accounts));
+  const draftIncomplete = [...draft.debit, ...draft.credit].some((l) => isIncompleteLine(l, accounts, unit.currency));
   const draftReady = draftHasBothSides && !draftIncomplete;
   // 何か入れたのに記帳できないとき、足りない側か途中の行を伝える(ボタンが無言で無効のままにならないように。Issue #43, #71)
   const missingSides = [entryDraft.debit.length === 0 && "借方", entryDraft.credit.length === 0 && "貸方"].filter(Boolean);
@@ -729,7 +733,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
         break;
       }
       case "calc": {
-        const parsed = parseAmount(calcValue, true);
+        const parsed = parseAmount(calcValue, true, unit.currency);
         if ("reason" in parsed) {
           setCalcError(parsed.reason);
           setResult(null);
@@ -894,6 +898,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
 
       <div className="grid flex-1 min-h-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)]">
         <section id="pane-guide" role="region" aria-label="ガイド" className={`${paneClass("guide")} bg-surface-guide lg:border-r`} data-tour="guide">
+          {unit.era && <p className="mb-2 text-xs text-muted-foreground">{unit.era}</p>}
           <h2 ref={stepHeading} tabIndex={-1} className={`text-lg font-semibold mb-2 ${FOCUS_TARGET_CLASS}`}>{step.title}</h2>
           {/* ツアーを抜けたあと、学ぶつもりだった単元へ戻れるようにする。チュートリアルを続ける道も残すので自動では戻さない(Issue #224) */}
           {isTutorialUnit && returnTitle && !tourActive && (
@@ -941,7 +946,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
             </div>
           )}
           <div className="prose prose-sm max-w-none">{narratives[stepIndex]}</div>
-          <TaskBox task={task} onAmount={onTaskAmount} />
+          <TaskBox task={task} onAmount={onTaskAmount} currency={unit.currency} />
           {hint && (
             <div className="mt-3 text-sm" data-tour="hint">
               {showHint ? (
@@ -969,7 +974,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
             workPane.current?.focus();
             markSeen(firstTime.id);
           }} />}
-          <TaskReminder task={task} onAmount={onTaskAmount} />
+          <TaskReminder task={task} onAmount={onTaskAmount} currency={unit.currency} />
           {task.type === "post" && (
             <form
               className="space-y-2"
@@ -983,7 +988,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
                 <h3 className="text-sm font-semibold">仕訳帳に書く</h3>
                 <HelpIcon topic="journal" />
               </div>
-              <JournalEditor accounts={accounts} value={draft} onChange={setDraft} readOnly={result?.correct === true} />
+              <JournalEditor accounts={accounts} value={draft} onChange={setDraft} readOnly={result?.correct === true} currency={unit.currency} />
               {!result?.correct && (
                 <Button type="submit" disabled={!draftReady} data-tour="post-button" aria-describedby={sideHint ? "post-side-hint" : undefined}>
                   記帳する
@@ -1030,7 +1035,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
           )}
           {task.type === "tweak" && (
             <div data-tour="task-tweak">
-            <TweakPanel formula={task.formula} params={task.params} values={Object.fromEntries(task.params.map((p) => [p.id, params[p.id] ?? p.value]))} onChange={onTweakChange} goal={task.goal} />
+            <TweakPanel formula={task.formula} params={task.params} values={Object.fromEntries(task.params.map((p) => [p.id, params[p.id] ?? p.value]))} onChange={onTweakChange} goal={task.goal} currency={unit.currency} />
             </div>
           )}
           {task.type === "classify" && (
@@ -1060,7 +1065,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
                   }}
                   aria-invalid={calcError ? true : undefined}
                   aria-describedby={calcError ? "calc-error" : undefined}
-                  placeholder="金額(円)"
+                  placeholder={`金額(${unit.currency})`}
                 />
               </label>
               {!result?.correct && (
@@ -1086,7 +1091,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
             >
               <h3 className="text-sm font-semibold">自由に試す</h3>
               <p className="text-xs text-muted-foreground">好きな取引を記帳して、結果の財務諸表がどう動くか確かめてみましょう。{SANDBOX_NOT_SAVED}</p>
-              <JournalEditor accounts={accounts} value={draft} onChange={setDraft} />
+              <JournalEditor accounts={accounts} value={draft} onChange={setDraft} currency={unit.currency} />
               <Button type="submit" variant="outline" disabled={!canPostFreely} aria-describedby={sideHint ? "free-side-hint" : draftReady && !freeBalanced ? "free-post-hint" : undefined}>
                 記帳する
               </Button>
@@ -1150,6 +1155,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
         </section>
 
         <section id="pane-result" role="region" aria-label="結果" className={`${paneClass("result")} bg-surface-result`} data-tour="statements">
+          {unit.era && <h2 className="mb-3 text-sm font-semibold">{unit.era}</h2>}
           {visiblePosted.length > 1 && (
             <div className="mb-3 rounded-md border p-2 text-xs space-y-1" data-tour="rewind">
               <div className="flex items-center gap-1">
@@ -1350,9 +1356,9 @@ function ContributeLinks({ unit, stepNumber }: { unit: IdeUnit; stepNumber: numb
   );
 }
 
-function TaskText({ text, onAmount }: { text: string; onAmount?: (digits: string) => void }) {
+function TaskText({ text, onAmount, currency }: { text: string; onAmount?: (digits: string) => void; currency: string }) {
   if (!onAmount) return text;
-  return splitAmounts(text).map((seg, i) =>
+  return splitAmounts(text, currency).map((seg, i) =>
     typeof seg === "string" ? (
       seg
     ) : (
@@ -1372,7 +1378,7 @@ function TaskText({ text, onAmount }: { text: string; onAmount?: (digits: string
   );
 }
 
-function TaskBox({ task, onAmount }: { task: Task; onAmount?: (digits: string) => void }) {
+function TaskBox({ task, onAmount, currency }: { task: Task; onAmount?: (digits: string) => void; currency: string }) {
   const content = (() => {
     switch (task.type) {
       case "post":
@@ -1380,7 +1386,7 @@ function TaskBox({ task, onAmount }: { task: Task; onAmount?: (digits: string) =
       case "predict":
         return { title: "記帳の前に、どう動くか予想しましょう", body: task.transaction };
       case "tweak":
-        return { title: "条件を動かして目標に合わせましょう", body: `${task.goal.label}を${task.goal.equals.toLocaleString("ja-JP")}円にする` };
+        return { title: "条件を動かして目標に合わせましょう", body: `${task.goal.label}を${task.goal.equals.toLocaleString("ja-JP")}${currency}にする` };
       case "classify":
         return { title: "科目を5つの箱に分けましょう", body: null };
       case "calc":
@@ -1395,7 +1401,7 @@ function TaskBox({ task, onAmount }: { task: Task; onAmount?: (digits: string) =
       <div className="font-semibold">やること: {content.title}</div>
       {content.body && (
         <p className="mt-1">
-          <TaskText text={content.body} onAmount={onAmount} />
+          <TaskText text={content.body} onAmount={onAmount} currency={currency} />
         </p>
       )}
     </div>
@@ -1404,11 +1410,11 @@ function TaskBox({ task, onAmount }: { task: Task; onAmount?: (digits: string) =
 
 // タブ表示の幅ではガイドが隠れるので、入力しながら取引文を読めるようにする(Issue #149)。
 // calcとtweakはワークスペースに同じ文が既にあるので対象にしない
-function TaskReminder({ task, onAmount }: { task: Task; onAmount?: (digits: string) => void }) {
+function TaskReminder({ task, onAmount, currency }: { task: Task; onAmount?: (digits: string) => void; currency: string }) {
   if (task.type !== "post" && task.type !== "predict") return null;
   return (
     <p className="rounded-md border-l-4 border-primary bg-muted/40 p-2 text-sm lg:hidden">
-      <TaskText text={task.transaction} onAmount={onAmount} />
+      <TaskText text={task.transaction} onAmount={onAmount} currency={currency} />
     </p>
   );
 }

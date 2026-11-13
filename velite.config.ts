@@ -1,6 +1,6 @@
 import { parse as parseYaml } from "yaml";
 import { defineConfig, s, z } from "velite";
-import { pathErrors, unitKindErrors } from "./src/lib/content-checks";
+import { pathErrors, scenarioAccountErrors, unitAccountIds, unitKindErrors } from "./src/lib/content-checks";
 
 // コンテンツのスキーマと横断検査。構造の定義はdocs/content-model.md、画面と学習フローはdocs/ide-design.mdが正本
 
@@ -280,6 +280,12 @@ export default defineConfig({
           requires: idList,
           scenario: s.object({
             company: s.string(),
+            // 時代と舞台の1文。ガイドの冒頭と結果ペインの見出しに出す(docs/ide-design.md 11章)
+            era: s.string().optional(),
+            // 金額の単位。表示・入力の解釈・問題文の金額の検出・採点の文言が使う
+            currency: s.string().min(1).default("円"),
+            // この単元だけで使う勘定科目(人名勘定、航海ごとの商品勘定)。全体マスタにも用語集にも載せない
+            accounts: s.array(s.object({ id: s.string(), name: s.string(), element, why: s.string() })).default([]),
             opening: s.array(journalLine).default([]),
           }),
           path: s.path(),
@@ -332,8 +338,10 @@ export default defineConfig({
     const requireConcept = (id: string, where: string) => {
       if (!conceptIds.has(id)) errors.push(`${where}: 概念${id}が存在しない`);
     };
+    // 単元の検査の間だけ、その単元のscenario.accountsを足す。他の単元の科目は参照できない
+    let knownAccounts: ReadonlySet<string> = accountIds;
     const requireAccount = (id: string, where: string) => {
-      if (!accountIds.has(id)) errors.push(`${where}: 勘定科目${id}が存在しない`);
+      if (!knownAccounts.has(id)) errors.push(`${where}: 勘定科目${id}が存在しない`);
     };
     const requireUnit = (id: string, where: string) => {
       if (!unitById.has(id)) errors.push(`${where}: 単元${id}が存在しない`);
@@ -385,6 +393,8 @@ export default defineConfig({
       u.introduces.forEach((c) => requireConcept(c, where));
       u.concepts.forEach((c) => requireConcept(c, where));
       u.requires.forEach((r) => requireUnit(r, `${where}のrequires`));
+      scenarioAccountErrors(u.scenario.accounts, accountIds).forEach((e) => errors.push(`${where}: ${e}`));
+      knownAccounts = unitAccountIds(accountIds, u.scenario.accounts);
       u.scenario.opening.forEach((l) => requireAccount(l.account, `${where}のopening`));
 
       if (u.steps.length < 4) errors.push(`${where}: ステップが${u.steps.length}個しかない(4個以上)`);
@@ -399,7 +409,10 @@ export default defineConfig({
         if (!st.narrative.trim()) errors.push(`${w}: 説明文がない`);
         if (st.figures.length > 1) errors.push(`${w}: 図解は1ステップに1つまで`);
         st.figures.forEach((f) => {
-          figureAccounts(f).forEach((a) => requireAccount(a, `${w}の図解`));
+          // 図解は全体マスタで描くので、単元限定の科目は使えない
+          figureAccounts(f).forEach((a) => {
+            if (!accountIds.has(a)) errors.push(`${w}の図解: 勘定科目${a}が存在しない`);
+          });
           if (f.type === "proportion") {
             const sum = (items: { amount: number }[]) => items.reduce((t, i) => t + i.amount, 0);
             if (sum(f.assets) !== sum(f.liabilities) + sum(f.equity)) errors.push(`${w}の図解: 資産の合計が負債 + 純資産と一致しない`);
@@ -469,6 +482,7 @@ export default defineConfig({
       u.introduces.forEach((c) => {
         if (!used.has(c)) errors.push(`${where}: introducesの${c}が本文で[[${c}]]として使われていない`);
       });
+      knownAccounts = accountIds;
     }
 
     const visiting = new Set<string>();
