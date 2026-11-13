@@ -24,6 +24,10 @@ test("残高0の負債のT勘定に側が付かず、0でない科目には側�
   await work.getByRole("button", { name: "予想して記帳する" }).click();
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   await next.click();
+  await work.getByPlaceholder("金額(円)").fill("40000");
+  await work.getByRole("button", { name: "確認する" }).click();
+  await expect(page.getByText("できました", { exact: true })).toBeVisible();
+  await next.click();
   await post("普通預金", "売掛金", 60000);
   await next.click();
   await post("買掛金", "現金", 40000);

@@ -51,8 +51,8 @@ describe("問屋から掛けで仕入れる(ステップ2)", () => {
   });
 });
 
-describe("月末、代金が振り込まれる(ステップ4)", () => {
-  const task = postTask(3);
+describe("月末、代金が振り込まれる(ステップ5)", () => {
+  const task = postTask(4);
 
   it("右に買掛金と書くとreceivable_payable_confusedで売掛金を示す", () => {
     const result = gradePost(task, {
@@ -70,8 +70,8 @@ describe("月末、代金が振り込まれる(ステップ4)", () => {
   });
 });
 
-describe("問屋に代金を払う(ステップ5)", () => {
-  const task = postTask(4);
+describe("問屋に代金を払う(ステップ6)", () => {
+  const task = postTask(5);
 
   it("左に売掛金と書くとreceivable_payable_confusedで買掛金を示す", () => {
     const result = gradePost(task, {
