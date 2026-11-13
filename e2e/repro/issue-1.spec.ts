@@ -23,7 +23,7 @@ test("「記帳する」「予想して記帳する」を連打しても仕訳�
 
   await page.getByRole("button", { name: "次へ →" }).click();
   await expect(page.getByText("ステップ3 / 10")).toBeVisible();
-  for (const el of ["資産", "負債", "純資産", "収益", "費用"]) await work.getByLabel(`${el}の予想`, { exact: true }).selectOption("none");
+  for (const el of ["資産"]) await work.getByLabel(`${el}の予想`, { exact: true }).selectOption("none");
   await work.getByRole("button", { name: "予想して記帳する" }).evaluate((b: HTMLButtonElement) => { b.click(); b.click(); b.click(); });
   await expect(page.getByRole("button", { name: "予想して記帳する" })).toHaveCount(0);
   await expect.poll(() => inserts.length).toBe(2);

@@ -42,7 +42,7 @@ test("案内を閉じずに課題を済ませても見た扱いになり、「�
   await page.keyboard.press("Escape");
   await expect(help).toBeHidden();
   await expect(note).toBeVisible();
-  for (const el of ["資産", "負債", "純資産", "収益", "費用"]) await page.getByRole("combobox", { name: `${el}の予想`, exact: true }).selectOption("increase");
+  for (const el of ["資産"]) await page.getByRole("combobox", { name: `${el}の予想`, exact: true }).selectOption("increase");
   await page.getByRole("button", { name: "予想して記帳する" }).click();
   await expect(note).toBeHidden();
   expect(await seen(page)).toContain("predict");

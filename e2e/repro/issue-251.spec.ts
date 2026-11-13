@@ -26,7 +26,7 @@ async function openBoard(page: Page, mobile = false) {
   await next();
   await post(page, "現金", "資本金", "1000000");
   await next();
-  for (const name of ["資産", "負債", "純資産", "収益", "費用"]) {
+  for (const name of ["資産"]) {
     await page.getByLabel(`${name}の予想`, { exact: true }).selectOption("none");
   }
   await page.getByRole("button", { name: "予想して記帳する" }).click();

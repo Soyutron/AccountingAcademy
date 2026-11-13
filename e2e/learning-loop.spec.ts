@@ -9,7 +9,7 @@ type Entry = { debit: Line[]; credit: Line[] };
 type Task =
   | { type: "observe" }
   | { type: "post"; answer: Entry }
-  | { type: "predict"; answer: Record<string, string> }
+  | { type: "predict"; answer: Record<string, string>; elements?: string[] }
   | { type: "tweak"; formula: string; params: { id: string; value: number; min: number; max: number; step: number }[]; goal: { output: string; equals: number } }
   | { type: "classify"; accounts: string[] }
   | { type: "calc"; answer: number };
@@ -88,7 +88,7 @@ for (const unit of units) {
           break;
         }
         case "predict": {
-          for (const [el, v] of Object.entries(task.answer)) await work.getByLabel(`${ELEMENT_LABELS[el]}の予想`, { exact: true }).selectOption(v);
+          for (const [el, v] of Object.entries(task.answer).filter(([el]) => !task.elements || task.elements.includes(el))) await work.getByLabel(`${ELEMENT_LABELS[el]}の予想`, { exact: true }).selectOption(v);
           await work.getByRole("button", { name: "予想して記帳する" }).click();
           await expect(page.getByText("できました", { exact: true })).toBeVisible();
           break;

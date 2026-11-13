@@ -8,7 +8,7 @@ import { AccountName } from "@/components/account-name";
 import { ElementBadge } from "@/components/element-badge";
 import { HelpIcon } from "./help-icon";
 
-// 結果ペイン: 会社のかたち(資産vs負債 + 純資産の帯)、貸借対照表、損益計算書。前のステップからの差分を ▲▼ で示す
+// 結果ペイン: 会社のかたち(資産vs負債 + 純資産の帯)、貸借対照表、損益計算書。前のステップからの差分を「+」「−」の符号で示す(▲△は日本の会計でマイナスの印なので使わない)
 
 interface Props {
   accounts: ReadonlyMap<string, GlossaryAccount>;
@@ -84,7 +84,7 @@ export function StatementsPane({ accounts, balances, diff, company }: Props) {
                 <li key={el} className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs motion-safe:animate-in motion-safe:fade-in ${s.bg} ${s.border} ${s.text}`}>
                   <span aria-hidden>{s.symbol}</span>
                   {s.label}
-                  <span aria-hidden>{d > 0 ? "▲" : "▼"}</span>
+                  <span aria-hidden>{d > 0 ? "+" : "−"}</span>
                   <span className="sr-only">{d > 0 ? "増加" : "減少"}</span>
                   <span className="font-mono tabular-nums">{formatAmount(Math.abs(d))}</span>
                 </li>
@@ -157,7 +157,7 @@ function Row({ id, name, amount, delta, magnitude = false }: { id?: string; name
         </span>
         {changed && (
           <span className="min-w-0 wrap-anywhere text-xs text-muted-foreground">
-            <span aria-hidden>{shown > 0 ? "▲" : "▼"}</span>
+            <span aria-hidden>{shown > 0 ? "+" : "−"}</span>
             <span className="sr-only">{shown > 0 ? "増加" : "減少"}</span>
             {formatAmount(Math.abs(delta))}
           </span>

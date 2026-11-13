@@ -16,7 +16,7 @@ test("classifyで別々の誤解に当たる2科目を間違えると、両方�
     await next.click();
   };
   await post("現金", "資本金", "1000000");
-  for (const n of ["資産", "負債", "純資産", "収益", "費用"]) await page.getByLabel(`${n}の予想`, { exact: true }).selectOption({ label: "変わらない" });
+  for (const n of ["資産"]) await page.getByLabel(`${n}の予想`, { exact: true }).selectOption({ label: "変わらない" });
   await work.getByRole("button", { name: "予想して記帳する" }).click();
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   await next.click();
