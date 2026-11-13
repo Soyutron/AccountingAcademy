@@ -1,6 +1,6 @@
 import { parse as parseYaml } from "yaml";
 import { defineConfig, s, z } from "velite";
-import { pathErrors, scenarioAccountErrors, unitAccountIds, unitKindErrors } from "./src/lib/content-checks";
+import { classifyErrors, pathErrors, scenarioAccountErrors, unitAccountIds, unitKindErrors } from "./src/lib/content-checks";
 
 // コンテンツのスキーマと横断検査。構造の定義はdocs/content-model.md、画面と学習フローはdocs/ide-design.mdが正本
 
@@ -118,8 +118,12 @@ export const taskSchema = s.discriminatedUnion("type", [
   s.object({
     ...taskBase,
     type: s.literal("classify"),
-    accounts: s.array(s.string()).min(2),
-    // 科目 → 間違えた要素 → 誤解ID
+    // 従来の形: 科目を5要素の箱に分ける
+    accounts: s.array(s.string()).min(2).optional(),
+    // 任意の箱の形: 箱のID → 表示名と、並べる項目。accountsとどちらか一方を書く(Issue #262)
+    labels: s.record(s.string(), s.string()).optional(),
+    items: s.array(s.object({ id: s.string(), label: s.string(), answer: s.string() })).min(1).optional(),
+    // 項目(科目IDまたは項目ID) → 間違えた箱 → 誤解ID
     misconceptions: s.record(s.string(), s.record(s.string(), s.string())).default({}),
   }),
   s.object({
@@ -467,7 +471,9 @@ export default defineConfig({
             break;
           }
           case "classify":
-            t.accounts.forEach((a) => requireAccount(a, w));
+            classifyErrors(t, misconceptionIds).forEach((e) => errors.push(`${w}: ${e}`));
+            if (t.labels) break;
+            t.accounts?.forEach((a) => requireAccount(a, w));
             Object.entries(t.misconceptions).forEach(([acc, byElement]) => {
               requireAccount(acc, w);
               Object.values(byElement).forEach((m) => requireMisconception(m, w));

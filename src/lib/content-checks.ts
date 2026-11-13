@@ -43,3 +43,38 @@ export function scenarioAccountErrors(local: { id: string }[], masterIds: Readon
 export function unitAccountIds(masterIds: ReadonlySet<string>, local: { id: string }[]): Set<string> {
   return new Set([...masterIds, ...local.map((a) => a.id)]);
 }
+
+interface ClassifyForCheck {
+  accounts?: string[];
+  labels?: Record<string, string>;
+  items?: { id: string; answer: string }[];
+  misconceptions: Record<string, Record<string, string>>;
+}
+
+/** classifyの形と、labels + itemsの形の参照を検査する。accountsの形の科目と誤解はprepareが単元の科目で検査する(Issue #262) */
+export function classifyErrors(t: ClassifyForCheck, misconceptionIds: ReadonlySet<string>): string[] {
+  const errors: string[] = [];
+  if (!t.labels) {
+    if (!t.accounts) errors.push("classifyにaccountsもlabelsも無い");
+    if (t.items) errors.push("itemsはlabelsと一緒に書く");
+    return errors;
+  }
+  const labels = t.labels;
+  if (t.accounts) errors.push("accountsとlabelsは一緒に書けない");
+  if (Object.keys(labels).length < 2) errors.push("labelsの箱が2つ未満");
+  if (!t.items) errors.push("labelsがあるのにitemsが無い");
+  const itemIds = new Set<string>();
+  for (const item of t.items ?? []) {
+    if (itemIds.has(item.id)) errors.push(`itemsの${item.id}が重複`);
+    itemIds.add(item.id);
+    if (!Object.hasOwn(labels, item.answer)) errors.push(`items ${item.id}のanswer ${item.answer}がlabelsに無い`);
+  }
+  for (const [id, byBox] of Object.entries(t.misconceptions)) {
+    if (!itemIds.has(id)) errors.push(`misconceptionsの${id}がitemsに無い`);
+    for (const [box, mis] of Object.entries(byBox)) {
+      if (!Object.hasOwn(labels, box)) errors.push(`misconceptions ${id}の箱${box}がlabelsに無い`);
+      if (!misconceptionIds.has(mis)) errors.push(`誤解${mis}が存在しない`);
+    }
+  }
+  return errors;
+}

@@ -10,7 +10,7 @@ import { ElementBadge } from "@/components/element-badge";
 import { AccountName } from "@/components/account-name";
 import { CheckCircle2, CircleAlert } from "lucide-react";
 import { type EditableEntry, emptyEntry, fromJournalEntry, isIncompleteLine, parseAmount, toJournalEntry } from "@/lib/journal-editable";
-import { type ClassifyResult, type EffectAnswer, type GradeResult, type PredictResult, type Task, canRevealAnswer, gradeCalc, gradeClassify, gradePost, gradePredict, gradeTweak, predictElements } from "@/lib/grading";
+import { type ClassifyResult, type EffectAnswer, type GradeResult, type PredictResult, type Task, canRevealAnswer, classifyBoard, gradeCalc, gradeClassify, gradePost, gradePredict, gradeTweak, predictElements } from "@/lib/grading";
 import { evaluateFormula } from "@/lib/formulas";
 import { type OpeningLine, computeBalances, diffBalances } from "@/lib/ledger";
 import { CookieBlockedError, fetchProgress, recordAttempt, resetOutOfRangeStep, setUnitProgress } from "@/lib/progress";
@@ -121,7 +121,7 @@ interface SessionSnapshot {
   posted: Posted[];
   draft: EditableEntry;
   effect: Partial<EffectAnswer>;
-  placed: Partial<Record<string, Element>>;
+  placed: Partial<Record<string, string>>;
   calcValue: string;
   params: Record<string, number>;
   attempts: number;
@@ -158,9 +158,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
   const autoFocusedAmount = useRef<HTMLInputElement | null>(null);
   const [effect, setEffect] = useState<Partial<EffectAnswer>>({});
   const [params, setParams] = useState<Record<string, number>>({});
-  const [placed, setPlaced] = useState<Partial<Record<string, Element>>>({});
+  const [placed, setPlaced] = useState<Partial<Record<string, string>>>({});
   // classifyを最後に採点したときの配置。採点後に移した科目を見分ける(Issue #66)
-  const [gradedPlaced, setGradedPlaced] = useState<Partial<Record<string, Element>>>({});
+  const [gradedPlaced, setGradedPlaced] = useState<Partial<Record<string, string>>>({});
   const [calcValue, setCalcValue] = useState("");
   // calcの入力が金額として読めないときの理由。採点も記録もしない(Issue #43)
   const [calcError, setCalcError] = useState<string | null>(null);
@@ -442,8 +442,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
       setResult(gradeCalc(t, n));
     }
     if (t.type === "classify") {
-      const saved = answer as Record<string, Element> | undefined;
-      const placement = saved && gradeClassify(t, saved, accountMap).correct ? saved : Object.fromEntries(t.accounts.map((id) => [id, accountMap.get(id)!.element]));
+      const saved = answer as Record<string, string> | undefined;
+      const placement = saved && gradeClassify(t, saved, accountMap).correct ? saved : classifyAnswer(t, accountMap);
       answered.current.set(index, placement);
       setPlaced(placement);
       setResult(gradeClassify(t, placement, accountMap));
@@ -760,7 +760,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
         break;
       }
       case "classify": {
-        if (task.accounts.some((id) => !placed[id]) || alreadyGraded(placed)) return;
+        if (classifyBoard(task, accountMap).items.some((i) => !placed[i.id]) || alreadyGraded(placed)) return;
         const r = gradeClassify(task, placed, accountMap);
         if (r.correct) {
           focusStatus.current = true;
@@ -784,7 +784,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
       setCalcValue(String(task.answer));
       setCalcError(null);
     }
-    if (task.type === "classify") setPlaced(Object.fromEntries(task.accounts.map((id) => [id, accountMap.get(id)!.element])));
+    if (task.type === "classify") setPlaced(classifyAnswer(task, accountMap));
     setResult(null);
     setRevealed(true);
     // 結果の表示を消すので、同じ誤答を入れ直して押したら採点し直して説明を出す(Issue #128)
@@ -808,7 +808,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
   // 採点後に箱を移した科目は採点結果の表示から外し、全部移したら結果も消す(Issue #66)。件数と誤解も残りの科目で出し直す
   const result = ((): typeof gradedResult => {
     if (task.type !== "classify" || !gradedResult || gradedResult.correct) return gradedResult;
-    const r = gradeClassify({ ...task, accounts: task.accounts.filter((id) => placed[id] === gradedPlaced[id]) }, placed, accountMap);
+    const kept = (id: string) => placed[id] === gradedPlaced[id];
+    const r = gradeClassify(task.labels ? { ...task, items: task.items?.filter((i) => kept(i.id)) } : { ...task, accounts: task.accounts?.filter(kept) }, placed, accountMap);
     return r.correct ? null : r;
   })();
 
@@ -823,6 +824,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
   const revealNote = revealed && !result ? `正解を入れました。「${task.type === "post" ? "記帳する" : "確認する"}」を押すと次へ進めます。` : null;
   const misIds = result && "misconceptions" in result ? result.misconceptions : result?.misconception ? [result.misconception] : [];
   const misList = misIds.flatMap((id) => misconceptions[id] ?? []);
+  const classify = task.type === "classify" ? classifyBoard(task, accountMap) : null;
   const helpCtx: HelpContext = { taskType: task.type, postedCount: visiblePosted.length, isLast, hasHint: Boolean(hint) };
   const openHelpTopic = (id: string, returnTo: HTMLElement | null) => {
     helpReturnTo.current = returnTo;
@@ -1043,11 +1045,11 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
             <TweakPanel formula={task.formula} params={task.params} values={Object.fromEntries(task.params.map((p) => [p.id, params[p.id] ?? p.value]))} onChange={onTweakChange} goal={task.goal} currency={unit.currency} />
             </div>
           )}
-          {task.type === "classify" && (
+          {classify && (
             <div className="space-y-2" data-tour="task-classify">
-              <ClassifyBoard accounts={task.accounts.map((id) => accountMap.get(id)!)} placed={placed} onChange={setPlaced} wrong={new Set(result && "wrong" in result ? result.wrong.map((w) => w.account) : [])} disabled={result?.correct === true} />
+              <ClassifyBoard boxes={classify.boxes} items={classify.items} placed={placed} onChange={setPlaced} wrong={new Set(result && "wrong" in result ? result.wrong.map((w) => w.account) : [])} disabled={result?.correct === true} />
               {!result?.correct && (
-                <Button onClick={check} disabled={task.accounts.some((id) => !placed[id])}>
+                <Button onClick={check} disabled={classify.items.some((i) => !placed[i.id])}>
                   確認する
                 </Button>
               )}
@@ -1398,6 +1400,11 @@ function TaskText({ text, onAmount, currency }: { text: string; onAmount?: (digi
   );
 }
 
+/** classifyの模範解答の配置 */
+function classifyAnswer(task: Extract<Task, { type: "classify" }>, accounts: ReadonlyMap<string, AccountInfo>): Record<string, string> {
+  return Object.fromEntries(classifyBoard(task, accounts).items.map((i) => [i.id, i.answer]));
+}
+
 function TaskBox({ task, onAmount, currency }: { task: Task; onAmount?: (digits: string) => void; currency: string }) {
   const content = (() => {
     switch (task.type) {
@@ -1408,7 +1415,7 @@ function TaskBox({ task, onAmount, currency }: { task: Task; onAmount?: (digits:
       case "tweak":
         return { title: "条件を動かして目標に合わせましょう", body: `${task.goal.label}を${task.goal.equals.toLocaleString("ja-JP")}${currency}にする` };
       case "classify":
-        return { title: "科目を5つの箱に分けましょう", body: null };
+        return { title: task.labels ? "項目を箱に分けましょう" : "科目を5つの箱に分けましょう", body: null };
       case "calc":
         return { title: "金額を答えましょう", body: task.question };
       case "observe":

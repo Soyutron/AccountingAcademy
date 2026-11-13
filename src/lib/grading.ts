@@ -104,25 +104,47 @@ export function gradeTweak(task: TaskOf<"tweak">, outputs: Record<string, number
 }
 
 export interface ClassifyResult extends GradeResult {
-  // 間違えた科目ごとの説明
+  // 間違えた項目ごとの説明。accountは科目IDまたは項目ID
   wrong: { account: string; feedback: string; misconception?: string }[];
-  // 間違えた科目それぞれの誤解(重複なし)。misconceptionはこの先頭で、attemptsには1件だけ保存する
+  // 間違えた項目それぞれの誤解(重複なし)。misconceptionはこの先頭で、attemptsには1件だけ保存する
   misconceptions: string[];
 }
 
-export function gradeClassify(task: TaskOf<"classify">, placed: Partial<Record<string, Element>>, accounts: ReadonlyMap<string, AccountInfo>): ClassifyResult {
+export interface ClassifyBox {
+  id: string;
+  label: string;
+}
+export interface ClassifyItem extends ClassifyBox {
+  answer: string;
+}
+
+/** 仕分けボードの箱と項目。labelsの無い従来の形は、箱を5要素、項目を科目とみなす(Issue #262) */
+export function classifyBoard(task: TaskOf<"classify">, accounts: ReadonlyMap<string, AccountInfo>): { boxes: ClassifyBox[]; items: ClassifyItem[] } {
+  if (task.labels) return { boxes: Object.entries(task.labels).map(([id, label]) => ({ id, label })), items: task.items ?? [] };
+  return {
+    boxes: ELEMENTS.map((el) => ({ id: el, label: ELEMENT_LABELS[el] })),
+    items: (task.accounts ?? []).flatMap((id) => {
+      const a = accounts.get(id);
+      return a ? [{ id, label: a.name, answer: a.element }] : [];
+    }),
+  };
+}
+
+export function gradeClassify(task: TaskOf<"classify">, placed: Partial<Record<string, string>>, accounts: ReadonlyMap<string, AccountInfo>): ClassifyResult {
+  const { boxes, items } = classifyBoard(task, accounts);
+  const boxLabel = new Map(boxes.map((b) => [b.id, b.label]));
   const wrong: ClassifyResult["wrong"] = [];
-  for (const id of task.accounts) {
-    const account = accounts.get(id);
-    const chosen = placed[id];
-    if (!account || chosen === account.element) continue;
+  for (const item of items) {
+    const chosen = placed[item.id];
+    if (chosen === item.answer) continue;
     wrong.push({
-      account: id,
-      misconception: chosen ? task.misconceptions[id]?.[chosen] : undefined,
-      feedback: `${account.name}は${ELEMENT_LABELS[account.element]}です。${account.why}`,
+      account: item.id,
+      misconception: chosen ? task.misconceptions[item.id]?.[chosen] : undefined,
+      // 任意の箱には科目のwhyに当たる理由が無いので、正解の箱だけを示し、理由は誤解の説明に任せる
+      feedback: task.labels ? `「${item.label}」は${boxLabel.get(item.answer)}です。` : `${item.label}は${boxLabel.get(item.answer)}です。${accounts.get(item.id)!.why}`,
     });
   }
   if (wrong.length === 0) return { ...ok(task), wrong, misconceptions: [] };
   const misconceptions = [...new Set(wrong.flatMap((w) => w.misconception ?? []))];
-  return { ...ng(`${wrong.length}個の科目が別の箱に入っています。`, misconceptions[0]), wrong, misconceptions };
+  return { ...ng(`${wrong.length}個の${task.labels ? "項目" : "科目"}が別の箱に入っています。`, misconceptions[0]), wrong, misconceptions };
 }
