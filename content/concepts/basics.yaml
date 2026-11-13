@@ -119,6 +119,25 @@ concepts:
     requires: [revenue, expense, equity]
     related: [income_statement, balance_sheet]
     contrasts: []
+  - id: t_account
+    name: T勘定
+    aliases: [総勘定元帳, 元帳]
+    reading: [てぃーかんじょう]
+    short: 科目ごとに左右の増減を並べた帳簿の形
+    summary: 仕訳帳は取引を起きた順に書くが、T勘定は同じ仕訳を勘定科目ごとに集め直す。仕訳で左に書いた金額は科目の左側に、右に書いた金額は右側に載り、左右の差がその科目の残高になる。全科目のT勘定を集めた帳簿を総勘定元帳と呼ぶ。
+    example: 現金1,000,000の出資と家賃50,000の支払いを記帳すると、現金のT勘定は左に1,000,000、右に50,000が載り、残高は950,000。
+    requires: [journal_entry, account_title]
+    related: [debit_credit]
+    contrasts: []
+  - id: closing
+    name: 決算
+    reading: [けっさん]
+    short: 期末に帳簿を締めて財務諸表を作る手続き
+    summary: 会社は通常1年を区切り(期)にして、その最後の日に帳簿を締める。期中の記録を確かめて直し、その期のもうけを損益計算書に、期末の財産と義務を貸借対照表にまとめる。
+    example: 4月から3月を1期とするカフェなら、3月31日が決算の日。その日までの記録から、1年分の当期純利益と期末の資産・負債・純資産を求める。
+    requires: [balance_sheet, income_statement]
+    related: [net_income]
+    contrasts: []
   - id: accrual_basis
     name: 発生主義
     reading: [はっせいしゅぎ]
