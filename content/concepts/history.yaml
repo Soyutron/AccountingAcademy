@@ -1,0 +1,73 @@
+id: history
+title: 会計の歴史
+order: 90
+concepts:
+  - id: memorandum_book
+    name: 覚え書き
+    aliases: [メモリアーレ]
+    reading: [おぼえがき]
+    short: 起きた出来事を、起きた順に文章で書いていく帳簿
+    summary: 中世イタリアの商人が最初に付けた帳簿。売った、買った、受け取った、払ったを、起きた順に文章で書く。パチョーリの『スンマ』(1494年)ではmemoriale(メモリアーレ)と呼ばれ、仕訳帳・元帳と並ぶ3帳簿の最初に置かれている。
+    example: 「3月2日、ジョヴァンニに胡椒20袋を売った。代金60ドゥカートは後で受け取る」と1行書く。
+    requires: [transaction]
+    related: [single_entry, journal_entry]
+    contrasts: []
+  - id: single_entry
+    name: 単式の記録
+    aliases: [単式簿記]
+    reading: [たんしきのきろく, たんしきぼき]
+    short: 1つの出来事を1か所に1回だけ書く記録の仕方。合計や残高はそのつど拾って数える
+    summary: 出来事を1か所に1回だけ書き、残高を知りたいときは関係する行を拾い集めて足し引きする記録の仕方。書くのは簡単だが、相手や品物ごとの残高がすぐには分からず、写し間違いや書き漏れを記録そのものから見つけられない。
+    example: 覚え書きだけで「ジョヴァンニにいくら貸しているか」を知るには、彼の行を全部拾って売った額を足し、受け取った額を引く。
+    requires: [memorandum_book]
+    related: []
+    contrasts: [journal_entry]
+  - id: personal_account
+    name: 人名勘定
+    reading: [じんめいかんじょう]
+    short: 取引相手1人ごとに設けたページ。相手がこちらに負う分を左、こちらが相手に負う分を右に書く
+    summary: 取引相手ごとにページを設け、相手がこちらに負う分(売った、払った)を左に、こちらが相手に負う分(受け取った、買った)を右に書く記録。左右の合計の差が、その相手との貸し借りの残高になる。左右の見出し「彼は与えるべし」「彼は受け取るべし」が、借方・貸方という言葉の由来。
+    example: ジョヴァンニに胡椒を60で売ったら左に60、彼から30を受け取ったら右に30。残高は左に30残り、彼がこちらに30負っている。
+    requires: [memorandum_book, debit_credit]
+    related: [account_title]
+    contrasts: []
+  - id: venture_accounting
+    name: 口別計算
+    aliases: [口別損益計算]
+    reading: [くちべつけいさん]
+    short: 航海や商品の1口ごとにページを設け、かかった額と売った額の差でその口のもうけを数える方法
+    summary: 商いの1口(航海1回分の胡椒など)ごとにページを設け、左にかかった額、右に売った額を書き、口が終わったときの左右の差をその口のもうけとする数え方。中世の海上貿易では商いが1口ずつ完結したので、期間ではなく口で区切るのが自然だった。
+    example: 胡椒50袋に代金120、運賃20、関税10がかかり、180で売れたら、この口のもうけは30。
+    requires: [memorandum_book]
+    related: [personal_account]
+    contrasts: [cost_of_goods_sold]
+  - id: double_entry
+    name: 複式簿記
+    aliases: [複式]
+    reading: [ふくしきぼき]
+    short: 1つの出来事を2つのページに同じ額で、片方は左、片方は右に書く記録の仕方。全ページの左右の合計が一致する
+    summary: 1つの出来事を必ず2つのページに同じ額で書き、一方を左(借方)、他方を右(貸方)にする記録の仕方。帳簿中のすべてのページの左の合計と右の合計が常に一致するので、写し忘れや写し間違いを記録そのものから見つけられる。いまの仕訳はこの形をそのまま受け継いでいる。
+    example: マッテオに胡椒を90で売ったら、マッテオのページの左に90、胡椒のページの右に90を書く。
+    requires: [single_entry, debit_credit]
+    related: [journal_entry]
+    contrasts: [single_entry]
+  - id: three_books
+    name: 3帳簿
+    aliases: [覚え書き・仕訳帳・元帳]
+    reading: [さんちょうぼ]
+    short: 『スンマ』が書いたヴェネツィア式の帳簿の構成。覚え書きに文章で書き、仕訳帳で借方と貸方の組に直し、元帳のページへ写す
+    summary: パチョーリ『スンマ』(1494年)が記述したヴェネツィア式の帳簿の構成。1冊目の覚え書き(memoriale)に出来事を文章で書き、2冊目の仕訳帳(giornale)で「Per(借方)// A(貸方)」の組と額に直し、3冊目の元帳(quaderno)の各ページへ写す。いまの仕訳帳と元帳はこの2冊目と3冊目にあたる。
+    example: 「ニッコロから布を100で買った」を覚え書きに書き、仕訳帳で「Per 布 // A ニッコロ、100」にし、元帳の布のページの左とニッコロのページの右へ写す。
+    requires: [memorandum_book, double_entry]
+    related: [journal_entry]
+    contrasts: []
+  - id: profit_and_loss_account
+    name: 利益と損失の勘定
+    aliases: [利益と損失, 損益の勘定]
+    reading: [りえきとそんしつのかんじょう]
+    short: 口ごとのもうけと損を1つのページに集め、帳簿を閉じるときに元手へ移す勘定。損益計算書の祖先
+    summary: 商いの口が閉じるたびに、そのもうけを右に、損を左に集める1枚のページ。『スンマ』ではpro e dannoと呼ばれる。帳簿を閉じるときに残りを元手へ移すので、1年にどの口でいくらもうけ、いくら損したかがこのページで読める。いまの損益計算書はこのページの子孫にあたる。
+    example: 布の口のもうけ30を右に、胡椒の口の損10を左に集め、残りの20を元手へ移す。
+    requires: [venture_accounting, double_entry]
+    related: [income_statement, net_income]
+    contrasts: []
