@@ -322,6 +322,7 @@ export default defineConfig({
         id: s.string(),
         title: s.string(),
         summary: s.string(),
+        order: s.number(),
         exam: s.object({ name: s.string(), format: s.string(), source: s.string() }).optional(),
         // 試験に紐づかないパスの、時代順の説明。examとどちらかが必須(prepareで検査)
         era: s.string().optional(),

@@ -11,6 +11,7 @@ export const misconceptionMap = new Map(misconceptions.misconceptions.map((m) =>
 export const unitMap = new Map(units.map((u) => [u.id, u]));
 
 export const sortedDomains = [...domains].sort((a, b) => a.order - b.order);
+export const sortedPaths = [...paths].sort((a, b) => a.order - b.order);
 export const sortedTopics = topics.filter((t) => !t.hidden).sort((a, b) => a.order - b.order);
 
 export function unitsOfTopic(topicId: string): Unit[] {
