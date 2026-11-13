@@ -78,8 +78,13 @@ export interface PredictResult extends GradeResult {
   misconceptions: string[];
 }
 
-export function gradePredict(task: TaskOf<"predict">, effect: EffectAnswer): PredictResult {
-  const keys = Object.keys(task.answer) as Element[];
+/** predictで問う要素。elementsが無ければ5要素すべて(Issue #170) */
+export function predictElements(task: TaskOf<"predict">): readonly Element[] {
+  return task.elements ? ELEMENTS.filter((el) => task.elements!.includes(el)) : ELEMENTS;
+}
+
+export function gradePredict(task: TaskOf<"predict">, effect: Partial<EffectAnswer>): PredictResult {
+  const keys = predictElements(task);
   if (keys.every((k) => effect[k] === task.answer[k])) return { ...ok(task), misconceptions: [] };
   const patterns = task.wrong_patterns.filter((p) =>
     (Object.entries(p.match) as [Element, Change | undefined][]).every(([k, v]) => v === undefined || effect[k] === v),

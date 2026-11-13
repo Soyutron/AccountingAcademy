@@ -28,7 +28,7 @@ test("もっと見る・記帳する・予想して記帳するをEnterで押し
 
   await page.getByRole("button", { name: "次へ →" }).click();
   await expect(page.getByText("ステップ3 / 10")).toBeVisible();
-  for (const el of ["資産", "負債", "純資産", "収益", "費用"]) await work.getByLabel(`${el}の予想`, { exact: true }).selectOption("none");
+  for (const el of ["資産"]) await work.getByLabel(`${el}の予想`, { exact: true }).selectOption("none");
   await work.getByRole("button", { name: "予想して記帳する" }).focus();
   await page.keyboard.press("Enter");
   await expect(work.getByRole("button", { name: "予想して記帳する" })).toHaveCount(0);
