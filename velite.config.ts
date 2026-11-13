@@ -1,5 +1,6 @@
 import { parse as parseYaml } from "yaml";
 import { defineConfig, s, z } from "velite";
+import { classifyErrors, debugErrors, pathErrors, scenarioAccountErrors, unitAccountIds, unitKindErrors } from "./src/lib/content-checks";
 
 // コンテンツのスキーマと横断検査。構造の定義はdocs/content-model.md、画面と学習フローはdocs/ide-design.mdが正本
 
@@ -54,6 +55,13 @@ const journalEntry = s.object({
   memo: s.string().optional(),
   debit: s.array(journalLine).min(1),
   credit: s.array(journalLine).min(1),
+});
+// debugのentriesだけは写し忘れ(片側が空)を書けるようにする。貸借の不一致はprepareのdebugErrorsが1行だけに絞る
+const looseJournalEntry = s.object({
+  date: s.string().optional(),
+  memo: s.string().optional(),
+  debit: s.array(journalLine),
+  credit: s.array(journalLine),
 });
 const journalLinePattern = s.object({ account: s.string().optional(), amount: s.number().int().optional() });
 const effect = s.object({ asset: change, liability: change, equity: change, revenue: change, expense: change });
@@ -117,8 +125,12 @@ export const taskSchema = s.discriminatedUnion("type", [
   s.object({
     ...taskBase,
     type: s.literal("classify"),
-    accounts: s.array(s.string()).min(2),
-    // 科目 → 間違えた要素 → 誤解ID
+    // 従来の形: 科目を5要素の箱に分ける
+    accounts: s.array(s.string()).min(2).optional(),
+    // 任意の箱の形: 箱のID → 表示名と、並べる項目。accountsとどちらか一方を書く(Issue #262)
+    labels: s.record(s.string(), s.string()).optional(),
+    items: s.array(s.object({ id: s.string(), label: s.string(), answer: s.string() })).min(1).optional(),
+    // 項目(科目IDまたは項目ID) → 間違えた箱 → 誤解ID
     misconceptions: s.record(s.string(), s.record(s.string(), s.string())).default({}),
   }),
   s.object({
@@ -127,6 +139,15 @@ export const taskSchema = s.discriminatedUnion("type", [
     question: s.string(),
     answer: s.number().int(),
     wrong_patterns: s.array(wrongPattern(s.number().int())).default([]),
+  }),
+  s.object({
+    ...taskBase,
+    type: s.literal("debug"),
+    // 記帳済みの仕訳。1行だけ誤りがある(Issue #263)
+    entries: s.array(looseJournalEntry).min(2),
+    // indexは0始まりの誤りの行、entryは直した仕訳
+    answer: s.object({ index: s.number().int().min(0), entry: journalEntry }),
+    wrong_patterns: s.array(wrongPattern(s.object({ index: s.number().int().min(0) }))).default([]),
   }),
 ]);
 export type Task = z.infer<typeof taskSchema>;
@@ -271,11 +292,22 @@ export default defineConfig({
           summary: s.string(),
           level: s.number().int().min(1).max(4),
           order: s.number(),
+          // 試験範囲外の単元(歴史・不正会計)はkindで課題の条件を変える。ADR 0009
+          kind: s.enum(["lesson", "history", "forensics"]).default("lesson"),
+          sources: s.array(s.object({ title: s.string(), note: s.string().optional() })).default([]),
           introduces: idList,
           concepts: idList,
           requires: idList,
           scenario: s.object({
             company: s.string(),
+            // 時代と舞台の1文。ガイドの冒頭と結果ペインの見出しに出す(docs/ide-design.md 11章)
+            era: s.string().optional(),
+            // 金額の単位。表示・入力の解釈・問題文の金額の検出・採点の文言が使う
+            currency: s.string().min(1).default("円"),
+            // 結果ペインの段階。none: 帳簿なし、ledger: 元帳と試算まで、statements: 財務諸表まで(docs/ide-design.md 11章)
+            view: s.enum(["none", "ledger", "statements"]).default("statements"),
+            // この単元だけで使う勘定科目(人名勘定、航海ごとの商品勘定)。全体マスタにも用語集にも載せない
+            accounts: s.array(s.object({ id: s.string(), name: s.string(), element, why: s.string() })).default([]),
             opening: s.array(journalLine).default([]),
           }),
           path: s.path(),
@@ -290,7 +322,10 @@ export default defineConfig({
         id: s.string(),
         title: s.string(),
         summary: s.string(),
-        exam: s.object({ name: s.string(), format: s.string(), source: s.string() }),
+        order: s.number(),
+        exam: s.object({ name: s.string(), format: s.string(), source: s.string() }).optional(),
+        // 試験に紐づかないパスの、時代順の説明。examとどちらかが必須(prepareで検査)
+        era: s.string().optional(),
         sections: s.array(s.object({ title: s.string(), units: s.array(s.string()).min(1) })),
       }),
     },
@@ -326,8 +361,10 @@ export default defineConfig({
     const requireConcept = (id: string, where: string) => {
       if (!conceptIds.has(id)) errors.push(`${where}: 概念${id}が存在しない`);
     };
+    // 単元の検査の間だけ、その単元のscenario.accountsを足す。他の単元の科目は参照できない
+    let knownAccounts: ReadonlySet<string> = accountIds;
     const requireAccount = (id: string, where: string) => {
-      if (!accountIds.has(id)) errors.push(`${where}: 勘定科目${id}が存在しない`);
+      if (!knownAccounts.has(id)) errors.push(`${where}: 勘定科目${id}が存在しない`);
     };
     const requireUnit = (id: string, where: string) => {
       if (!unitById.has(id)) errors.push(`${where}: 単元${id}が存在しない`);
@@ -379,12 +416,14 @@ export default defineConfig({
       u.introduces.forEach((c) => requireConcept(c, where));
       u.concepts.forEach((c) => requireConcept(c, where));
       u.requires.forEach((r) => requireUnit(r, `${where}のrequires`));
+      scenarioAccountErrors(u.scenario.accounts, accountIds).forEach((e) => errors.push(`${where}: ${e}`));
+      knownAccounts = unitAccountIds(accountIds, u.scenario.accounts);
       u.scenario.opening.forEach((l) => requireAccount(l.account, `${where}のopening`));
 
       if (u.steps.length < 4) errors.push(`${where}: ステップが${u.steps.length}個しかない(4個以上)`);
       if (u.steps.length > 0 && u.steps[0].task.type !== "observe") errors.push(`${where}: 最初のステップはobserve(導入)にする`);
       if (u.steps.length > 0 && !u.steps[u.steps.length - 1].title.includes("ふりかえり")) errors.push(`${where}: 最後のステップの見出しに「ふりかえり」を含める`);
-      if (!u.steps.some((st) => st.task.type === "post" || st.task.type === "predict")) errors.push(`${where}: postかpredictのステップが1つもない`);
+      unitKindErrors(u).forEach((e) => errors.push(`${where}: ${e}`));
 
       const known = explained(u.id);
       const used = new Set<string>();
@@ -393,7 +432,10 @@ export default defineConfig({
         if (!st.narrative.trim()) errors.push(`${w}: 説明文がない`);
         if (st.figures.length > 1) errors.push(`${w}: 図解は1ステップに1つまで`);
         st.figures.forEach((f) => {
-          figureAccounts(f).forEach((a) => requireAccount(a, `${w}の図解`));
+          // 図解は全体マスタで描くので、単元限定の科目は使えない
+          figureAccounts(f).forEach((a) => {
+            if (!accountIds.has(a)) errors.push(`${w}の図解: 勘定科目${a}が存在しない`);
+          });
           if (f.type === "proportion") {
             const sum = (items: { amount: number }[]) => items.reduce((t, i) => t + i.amount, 0);
             if (sum(f.assets) !== sum(f.liabilities) + sum(f.equity)) errors.push(`${w}の図解: 資産の合計が負債 + 純資産と一致しない`);
@@ -446,7 +488,9 @@ export default defineConfig({
             break;
           }
           case "classify":
-            t.accounts.forEach((a) => requireAccount(a, w));
+            classifyErrors(t, misconceptionIds).forEach((e) => errors.push(`${w}: ${e}`));
+            if (t.labels) break;
+            t.accounts?.forEach((a) => requireAccount(a, w));
             Object.entries(t.misconceptions).forEach(([acc, byElement]) => {
               requireAccount(acc, w);
               Object.values(byElement).forEach((m) => requireMisconception(m, w));
@@ -458,11 +502,17 @@ export default defineConfig({
               if (p.match === t.answer) errors.push(`${w}: 正解と同じ値が誤答パターンにある`);
             });
             break;
+          case "debug":
+            debugErrors(t).forEach((e) => errors.push(`${w}: ${e}`));
+            [...t.entries, t.answer.entry].forEach((e) => [...e.debit, ...e.credit].forEach((l) => requireAccount(l.account, w)));
+            t.wrong_patterns.forEach((p) => requireMisconception(p.misconception, w));
+            break;
         }
       });
       u.introduces.forEach((c) => {
         if (!used.has(c)) errors.push(`${where}: introducesの${c}が本文で[[${c}]]として使われていない`);
       });
+      knownAccounts = accountIds;
     }
 
     const visiting = new Set<string>();
@@ -481,6 +531,7 @@ export default defineConfig({
     conceptIds.forEach((id) => visit(id, []));
 
     for (const p of paths) {
+      pathErrors(p).forEach((e) => errors.push(`パス${p.id}: ${e}`));
       const seen: string[] = [];
       for (const section of p.sections) {
         for (const unitId of section.units) {

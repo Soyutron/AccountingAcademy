@@ -462,3 +462,45 @@ misconceptions:
     correct: 預り金は他人のお金で、後で納める義務。会社のもうけではないので負債
     concepts: [advances_and_deposits, liability]
     remediation: receivables-and-payables/temporary-and-deposits
+  - id: claim_ignores_receipts
+    name: 受け取った分を引かない
+    description: 相手への貸しを、売った額の合計のままにしている。受け取った分を引いていない
+    correct: 貸しは、売った額から受け取った額を引いた残り。受け取った時点で、その分はもう貸しではない
+    concepts: [personal_account]
+    remediation: birth-of-double-entry/memorandum-and-personal-accounts
+  - id: credit_purchase_as_claim
+    name: 後払いで買っても貸し
+    description: 相手から後払いで買った分を、相手への貸しに足している
+    correct: 後払いで買ったのは、こちらが相手に負う側。人名勘定では右に書き、貸しからは引く
+    concepts: [personal_account, debit_credit]
+    remediation: birth-of-double-entry/memorandum-and-personal-accounts
+  - id: personal_account_by_cash_direction
+    name: 人名勘定の左右をお金や物の向きで決める
+    description: 「お金や物を受け取ったら左、渡したら右」と考えて人名勘定に写している
+    correct: 人名勘定の左右は、相手がこちらに負うか(左)、こちらが相手に負うか(右)で決まる。相手から受け取ると相手の負いが減るので右、相手に払うとこちらの負いが減るので左。物を売って渡しても、相手が負うので左
+    concepts: [personal_account, debit_credit]
+    remediation: birth-of-double-entry/memorandum-and-personal-accounts
+  - id: balance_reads_one_side
+    name: 残高を片側の合計と思う
+    description: 人名勘定の残高を、左か右の片側の合計で答えている
+    correct: 残高は左の合計と右の合計の差。差が左に残れば相手がこちらに負い、右に残ればこちらが相手に負う
+    concepts: [personal_account]
+    remediation: birth-of-double-entry/memorandum-and-personal-accounts
+  - id: venture_sales_as_profit
+    name: 売った額がもうけ
+    description: 商いの1口のもうけを、売った額の合計で答えている。買った代金や運賃・関税を引いていない
+    correct: もうけは、売った額からその口にかかった額(代金、運賃、関税)を引いた残り
+    concepts: [venture_accounting]
+    remediation: birth-of-double-entry/venture-profit-and-double-entry
+  - id: profit_is_cash
+    name: もうけは現金に書く
+    description: 口のもうけを元手や利益と損失のページへ移すときに、相手を現金にしている
+    correct: 現金は代金を受け取ったときにすでに動いている。もうけを移しても現金は動かず、積み上がるのは元手(または利益と損失)
+    concepts: [venture_accounting, double_entry]
+    remediation: birth-of-double-entry/venture-profit-and-double-entry
+  - id: closing_side_confused
+    name: 残高を移す側を取り違える
+    description: 口や利益と損失のページの残りを元手などへ移すとき、残っている側と同じ側に書いて、残高を消すどころか倍にしてしまう
+    correct: 残高を消すには、残っている側の反対側に同じ額を書く。右に残っていれば左に書いて消し、移す先のページの右に同じ額を書く
+    concepts: [double_entry, venture_accounting]
+    remediation: birth-of-double-entry/venture-profit-and-double-entry

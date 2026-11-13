@@ -10,7 +10,7 @@ import { ElementBadge } from "@/components/element-badge";
 import { AccountName } from "@/components/account-name";
 import { CheckCircle2, CircleAlert } from "lucide-react";
 import { type EditableEntry, emptyEntry, fromJournalEntry, isIncompleteLine, parseAmount, toJournalEntry } from "@/lib/journal-editable";
-import { type ClassifyResult, type EffectAnswer, type GradeResult, type PredictResult, type Task, canRevealAnswer, gradeCalc, gradeClassify, gradePost, gradePredict, gradeTweak, predictElements } from "@/lib/grading";
+import { type ClassifyResult, type DebugAnswer, type EffectAnswer, type GradeResult, type PredictResult, type Task, canRevealAnswer, classifyBoard, gradeCalc, gradeClassify, gradeDebug, gradePost, gradePredict, gradeTweak, predictElements } from "@/lib/grading";
 import { evaluateFormula } from "@/lib/formulas";
 import { type OpeningLine, computeBalances, diffBalances } from "@/lib/ledger";
 import { CookieBlockedError, fetchProgress, recordAttempt, resetOutOfRangeStep, setUnitProgress } from "@/lib/progress";
@@ -21,7 +21,7 @@ import { StatementsPane } from "./statements-pane";
 import { ImpactCompare } from "./impact-compare";
 import { ClassifyBoard } from "./classify-board";
 import { TweakPanel } from "./tweak-panel";
-import { LedgerTab } from "./ledger-tab";
+import { LedgerTab, TrialBalanceTable } from "./ledger-tab";
 import { type Flight, FlyingAmounts } from "./flying-amounts";
 import { type Burst, Celebration } from "./celebration";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -47,6 +47,12 @@ export interface IdeUnit {
   // リポジトリのルートからのMarkdownのパス
   sourcePath: string;
   company: string;
+  // 時代と舞台(scenario.era)。歴史の単元だけが持つ
+  era?: string;
+  // 金額の単位(scenario.currency)
+  currency: string;
+  // 結果ペインの段階(scenario.view)
+  view: "none" | "ledger" | "statements";
   opening: OpeningLine[];
   steps: IdeStep[];
   next?: { id: string; title: string };
@@ -103,8 +109,21 @@ function replayEntries(steps: IdeStep[], upto: number): Posted[] {
     if (t.type === "observe") t.entries.forEach((e) => posted.push({ step: i, memo: e.memo ?? s.title, entry: e }));
     if (t.type === "post") posted.push({ step: i, memo: t.transaction, entry: t.answer });
     if (t.type === "predict") posted.push({ step: i, memo: t.transaction, entry: t.entry });
+    if (t.type === "debug") t.entries.forEach((e, j) => posted.push({ step: i, memo: e.memo ?? s.title, entry: j === t.answer.index ? t.answer.entry : e }));
   });
   return posted;
+}
+
+/** debugのステップの記帳のうち、index行目を直した仕訳に置き換える。行の見出し(memo)は元の行のまま */
+function fixDebugRow(posted: Posted[], step: number, index: number, entry: JournalEntry): Posted[] {
+  let row = 0;
+  return posted.map((p) => (p.step === step && row++ === index ? { ...p, entry } : p));
+}
+
+/** debugの行を仕訳エディタに読み込む。空の側には空行を1つ置き、そのまま書き足せるようにする */
+function editableRow(entry: JournalEntry, accounts: ReadonlyMap<string, AccountInfo>): EditableEntry {
+  const e = fromJournalEntry(entry, accounts);
+  return { debit: e.debit.length ? e.debit : [{ accountName: "", amount: "" }], credit: e.credit.length ? e.credit : [{ accountName: "", amount: "" }] };
 }
 
 // 同じタブで単元を離れて戻ったとき(戻る・reload・他ページから)に、離れる前のステップと入力途中の答えを戻す(Issue #83)。
@@ -115,7 +134,7 @@ interface SessionSnapshot {
   posted: Posted[];
   draft: EditableEntry;
   effect: Partial<EffectAnswer>;
-  placed: Partial<Record<string, Element>>;
+  placed: Partial<Record<string, string>>;
   calcValue: string;
   params: Record<string, number>;
   attempts: number;
@@ -123,6 +142,8 @@ interface SessionSnapshot {
   stepAttempts: [number, number][];
   // 未正解のステップで最後に採点した答え(JSON)。戻したあとも誤答の説明を出し、同じ答えを二重に記録しない
   gradedAnswer: string | null;
+  // debugで選んでいる行
+  debugRow?: number | null;
 }
 const sessionKey = (unitId: string) => `ide-session:${unitId}`;
 function readSession(unitId: string): SessionSnapshot | null {
@@ -152,10 +173,12 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
   const autoFocusedAmount = useRef<HTMLInputElement | null>(null);
   const [effect, setEffect] = useState<Partial<EffectAnswer>>({});
   const [params, setParams] = useState<Record<string, number>>({});
-  const [placed, setPlaced] = useState<Partial<Record<string, Element>>>({});
+  const [placed, setPlaced] = useState<Partial<Record<string, string>>>({});
   // classifyを最後に採点したときの配置。採点後に移した科目を見分ける(Issue #66)
-  const [gradedPlaced, setGradedPlaced] = useState<Partial<Record<string, Element>>>({});
+  const [gradedPlaced, setGradedPlaced] = useState<Partial<Record<string, string>>>({});
   const [calcValue, setCalcValue] = useState("");
+  // debugで選んだ行(0始まり)。選ぶとその行が仕訳エディタに読み込まれる
+  const [debugRow, setDebugRow] = useState<number | null>(null);
   // calcの入力が金額として読めないときの理由。採点も記録もしない(Issue #43)
   const [calcError, setCalcError] = useState<string | null>(null);
   // 直近の採点結果そのもの。画面に出すのは、これから導出するresult
@@ -332,6 +355,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
     return { balances: upto, diff: viewUpto === 0 ? new Map<string, number>() : diffBalances(prev, upto) };
   }, [viewUpto, visiblePosted, balancesNow, diff, unit.opening, accountMap]);
 
+  // scenario.view: ledgerの結果ペイン(試算と元帳)も、さかのぼり中はその時点までの記帳で出す
+  const shownPosted = viewUpto === null ? visiblePosted : visiblePosted.slice(0, viewUpto);
+
   // 失敗の詳細(RLSの英文など)はconsoleに出し、学習者には取るべき行動だけ見せる
   const trySave = async (fn: () => Promise<void>, isAttempt: boolean) => {
     try {
@@ -391,7 +417,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
   const onTweakChange = (values: Record<string, number>) => {
     setParams(values);
     if (task.type !== "tweak") return;
-    const r = gradeTweak(task, evaluateFormula(task.formula, values).outputs);
+    const r = gradeTweak(task, evaluateFormula(task.formula, values).outputs, unit.currency);
     // 達成後に値を外したら「できました」を隠す(記録と「次へ →」の有効は達成済みのまま保つ)
     if (tweakDone) {
       setResult(r.correct ? r : null);
@@ -433,11 +459,20 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
       setResult(gradeCalc(t, n));
     }
     if (t.type === "classify") {
-      const saved = answer as Record<string, Element> | undefined;
-      const placement = saved && gradeClassify(t, saved, accountMap).correct ? saved : Object.fromEntries(t.accounts.map((id) => [id, accountMap.get(id)!.element]));
+      const saved = answer as Record<string, string> | undefined;
+      const placement = saved && gradeClassify(t, saved, accountMap).correct ? saved : classifyAnswer(t, accountMap);
       answered.current.set(index, placement);
       setPlaced(placement);
       setResult(gradeClassify(t, placement, accountMap));
+    }
+    if (t.type === "debug") {
+      const saved = answer as DebugAnswer | undefined;
+      const fixed = saved && gradeDebug(t, saved).correct ? saved : t.answer;
+      answered.current.set(index, fixed);
+      setDebugRow(fixed.index);
+      setDraft(fromJournalEntry(fixed.entry, accountMap));
+      setPosted((prev) => fixDebugRow(prev, index, fixed.index, fixed.entry));
+      setResult(gradeDebug(t, fixed));
     }
     if (t.type === "tweak") {
       setTweakDone(true);
@@ -445,7 +480,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
       if (values) {
         answered.current.set(index, values);
         setParams(values);
-        setResult(gradeTweak(t, evaluateFormula(t.formula, values).outputs));
+        setResult(gradeTweak(t, evaluateFormula(t.formula, values).outputs, unit.currency));
       }
     }
   };
@@ -459,6 +494,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
     setPlaced({});
     setCalcValue("");
     setCalcError(null);
+    setDebugRow(null);
     setParams({});
     setResult(null);
     setRevealed(false);
@@ -474,8 +510,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
     setRepeated(0);
     setViewUpto(null);
     setPane("guide");
-    // observeの仕訳はステップに入った時点で自動的に記帳する
-    if (target.task.type === "observe" && target.task.entries.length > 0) {
+    // observeの仕訳はステップに入った時点で自動的に記帳する。debugの仕訳も、誤りを含んだまま記帳済みとして積む
+    if ((target.task.type === "observe" || target.task.type === "debug") && target.task.entries.length > 0) {
       const entries = target.task.entries;
       setPosted((prev) => (prev.some((p) => p.step === index) ? prev : [...prev, ...entries.map((e) => ({ step: index, memo: e.memo ?? target.title, entry: e }))]));
     }
@@ -538,8 +574,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
         setPlaced(s.placed);
         setCalcValue(s.calcValue);
         setParams(s.params);
+        setDebugRow(s.debugRow ?? null);
         const t = unit.steps[s.stepIndex].task;
-        if (s.gradedAnswer && (t.type === "post" || t.type === "calc" || t.type === "classify")) {
+        if (s.gradedAnswer && (t.type === "post" || t.type === "calc" || t.type === "classify" || t.type === "debug")) {
           gradedAnswer.current = s.gradedAnswer;
           const graded = JSON.parse(s.gradedAnswer);
           if (t.type === "post") {
@@ -550,6 +587,10 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
           if (t.type === "classify") {
             setGradedPlaced(graded);
             setResult(gradeClassify(t, graded, accountMap));
+          }
+          if (t.type === "debug") {
+            setGradedEntry(graded.index === t.answer.index ? graded.entry : null);
+            setResult(gradeDebug(t, graded, accountMap));
           }
         }
       }
@@ -575,6 +616,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
       answered: [...answered.current],
       stepAttempts: [...stepAttempts.current],
       gradedAnswer: answered.current.has(stepIndex) ? null : gradedAnswer.current,
+      debugRow,
     };
     try {
       window.sessionStorage.setItem(sessionKey(unit.id), JSON.stringify(snapshot));
@@ -582,9 +624,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
       // 保存できないブラウザでは従来どおりDBの「続きから」だけで再開する
     }
     // answered・gradedAnswerはrefなので、採点のたびに書き直すためgradedResultとtweakDoneを依存に入れる
-  }, [sessionLoaded, isTutorialUnit, unit.id, stepIndex, reached, posted, draft, effect, placed, calcValue, params, attempts, gradedResult, tweakDone]);
+  }, [sessionLoaded, isTutorialUnit, unit.id, stepIndex, reached, posted, draft, effect, placed, calcValue, params, debugRow, attempts, gradedResult, tweakDone]);
 
-  const entryDraft = toJournalEntry(draft, accounts);
+  const entryDraft = toJournalEntry(draft, accounts, unit.currency);
 
   // 問題文の金額を仕訳帳の金額欄に入れる(Issue #7)。フォーカス中の金額欄のカーソル位置に挿入し、
   // どこにもフォーカスが無ければ最初の空の金額欄に入れる。空の欄が無ければ何もしない
@@ -631,13 +673,14 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
     for (const type of ["pointerdown", "keydown", "blur"]) input.addEventListener(type, release, { signal: controller.signal });
   }, [draft]);
   const draftHasBothSides = entryDraft.debit.length > 0 && entryDraft.credit.length > 0;
-  const draftIncomplete = [...draft.debit, ...draft.credit].some((l) => isIncompleteLine(l, accounts));
+  const draftIncomplete = [...draft.debit, ...draft.credit].some((l) => isIncompleteLine(l, accounts, unit.currency));
   const draftReady = draftHasBothSides && !draftIncomplete;
   // 何か入れたのに記帳できないとき、足りない側か途中の行を伝える(ボタンが無言で無効のままにならないように。Issue #43, #71)
   const missingSides = [entryDraft.debit.length === 0 && "借方", entryDraft.credit.length === 0 && "貸方"].filter(Boolean);
   const touched = [...draft.debit, ...draft.credit].some((l) => l.accountName.trim() || l.amount.trim());
   // 未確定の行はentryDraftから落ちるので、先に見ないと入力済みの側を「足りない側」と案内してしまう(Issue #97)
-  const sideHint = draftReady || !touched ? null : draftIncomplete ? "入力が途中の行があります。科目と金額をそろえるか、その行を削除すると記帳できます。" : `${missingSides.join("と")}にも科目と金額を入れると記帳できます。`;
+  const submitVerb = task.type === "debug" ? "確認" : "記帳";
+  const sideHint = draftReady || !touched ? null : draftIncomplete ? `入力が途中の行があります。科目と金額をそろえるか、その行を削除すると${submitVerb}できます。` : `${missingSides.join("と")}にも科目と金額を入れると${submitVerb}できます。`;
   const askedElements = task.type === "predict" ? predictElements(task) : ELEMENTS;
   const predictReady = askedElements.every((el) => effect[el]);
 
@@ -652,7 +695,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
   useEffect(() => {
     if (!gradedResult || !revealWrong.current) return;
     revealWrong.current = false;
-    const target = workPane.current?.querySelector(task.type === "classify" ? "[data-wrong]" : '[data-tour="post-button"]');
+    const target = workPane.current?.querySelector(task.type === "classify" ? "[data-wrong]" : task.type === "debug" ? '[data-tour="task-debug"] button[type="submit"]' : '[data-tour="post-button"]');
     const bar = bottomBar.current;
     if (!target || !bar || !paneTabs.current?.offsetParent) return;
     const overlap = target.getBoundingClientRect().bottom - bar.getBoundingClientRect().top;
@@ -713,6 +756,33 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
         }
         break;
       }
+      case "debug": {
+        if (debugRow === null || !draftReady) return;
+        const answer: DebugAnswer = { index: debugRow, entry: entryDraft };
+        if (alreadyGraded(answer)) return;
+        const r = gradeDebug(task, answer, accountMap);
+        if (r.correct) {
+          focusStatus.current = true;
+          answeredStep.current = stepIndex;
+          answered.current.set(stepIndex, answer);
+        }
+        // 行の選び間違いには仕訳の比較を出さない。比べる相手の仕訳が無い
+        setGradedEntry(debugRow === task.answer.index ? entryDraft : null);
+        setResult(r);
+        setAttempts((n) => n + 1);
+        record(r, answer);
+        if (r.correct) {
+          setPosted((prev) => fixDebugRow(prev, stepIndex, debugRow, entryDraft));
+          setViewUpto(null);
+          setPendingFlight(entryDraft);
+          celebrate();
+          showResultPane();
+        } else {
+          revealWrong.current = true;
+          setPane("work");
+        }
+        break;
+      }
       case "predict": {
         if (!predictReady) return;
         const r = gradePredict(task, effect);
@@ -729,7 +799,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
         break;
       }
       case "calc": {
-        const parsed = parseAmount(calcValue, true);
+        const parsed = parseAmount(calcValue, true, unit.currency);
         if ("reason" in parsed) {
           setCalcError(parsed.reason);
           setResult(null);
@@ -751,7 +821,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
         break;
       }
       case "classify": {
-        if (task.accounts.some((id) => !placed[id]) || alreadyGraded(placed)) return;
+        if (classifyBoard(task, accountMap).items.some((i) => !placed[i.id]) || alreadyGraded(placed)) return;
         const r = gradeClassify(task, placed, accountMap);
         if (r.correct) {
           focusStatus.current = true;
@@ -775,7 +845,11 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
       setCalcValue(String(task.answer));
       setCalcError(null);
     }
-    if (task.type === "classify") setPlaced(Object.fromEntries(task.accounts.map((id) => [id, accountMap.get(id)!.element])));
+    if (task.type === "classify") setPlaced(classifyAnswer(task, accountMap));
+    if (task.type === "debug") {
+      setDebugRow(task.answer.index);
+      setDraft(fromJournalEntry(task.answer.entry, accountMap));
+    }
     setResult(null);
     setRevealed(true);
     // 結果の表示を消すので、同じ誤答を入れ直して押したら採点し直して説明を出す(Issue #128)
@@ -799,7 +873,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
   // 採点後に箱を移した科目は採点結果の表示から外し、全部移したら結果も消す(Issue #66)。件数と誤解も残りの科目で出し直す
   const result = ((): typeof gradedResult => {
     if (task.type !== "classify" || !gradedResult || gradedResult.correct) return gradedResult;
-    const r = gradeClassify({ ...task, accounts: task.accounts.filter((id) => placed[id] === gradedPlaced[id]) }, placed, accountMap);
+    const kept = (id: string) => placed[id] === gradedPlaced[id];
+    const r = gradeClassify(task.labels ? { ...task, items: task.items?.filter((i) => kept(i.id)) } : { ...task, accounts: task.accounts?.filter(kept) }, placed, accountMap);
     return r.correct ? null : r;
   })();
 
@@ -814,7 +889,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
   const revealNote = revealed && !result ? `正解を入れました。「${task.type === "post" ? "記帳する" : "確認する"}」を押すと次へ進めます。` : null;
   const misIds = result && "misconceptions" in result ? result.misconceptions : result?.misconception ? [result.misconception] : [];
   const misList = misIds.flatMap((id) => misconceptions[id] ?? []);
-  const helpCtx: HelpContext = { taskType: task.type, postedCount: visiblePosted.length, isLast, hasHint: Boolean(hint) };
+  const classify = task.type === "classify" ? classifyBoard(task, accountMap) : null;
+  const helpCtx: HelpContext = { taskType: task.type, postedCount: visiblePosted.length, isLast, hasHint: Boolean(hint), view: unit.view };
   const openHelpTopic = (id: string, returnTo: HTMLElement | null) => {
     helpReturnTo.current = returnTo;
     setHelpFocus(id);
@@ -839,7 +915,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
   const paneClass = (p: Pane) => `${pane === p ? "block" : "hidden"} lg:block min-h-0 min-w-0 lg:overflow-y-auto p-4`;
 
   return (
-    <HelpControlsContext value={{ openTopic: openHelpTopic, hidden: tourActive }}>
+    <HelpControlsContext value={{ openTopic: openHelpTopic, hidden: tourActive, ctx: helpCtx }}>
     <div className="flex flex-col lg:h-[calc(100dvh-49px)]">
       <div className="flex items-center gap-3 border-b px-4 py-2 text-sm">
         <span className="font-semibold truncate">{unit.title}</span>
@@ -894,6 +970,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
 
       <div className="grid flex-1 min-h-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)]">
         <section id="pane-guide" role="region" aria-label="ガイド" className={`${paneClass("guide")} bg-surface-guide lg:border-r`} data-tour="guide">
+          {unit.era && <p className="mb-2 text-xs text-muted-foreground">{unit.era}</p>}
           <h2 ref={stepHeading} tabIndex={-1} className={`text-lg font-semibold mb-2 ${FOCUS_TARGET_CLASS}`}>{step.title}</h2>
           {/* ツアーを抜けたあと、学ぶつもりだった単元へ戻れるようにする。チュートリアルを続ける道も残すので自動では戻さない(Issue #224) */}
           {isTutorialUnit && returnTitle && !tourActive && (
@@ -941,7 +1018,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
             </div>
           )}
           <div className="prose prose-sm max-w-none">{narratives[stepIndex]}</div>
-          <TaskBox task={task} onAmount={onTaskAmount} />
+          <TaskBox task={task} onAmount={onTaskAmount} currency={unit.currency} />
           {hint && (
             <div className="mt-3 text-sm" data-tour="hint">
               {showHint ? (
@@ -964,12 +1041,12 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
         </section>
 
         <section ref={workPane} id="pane-work" role="region" aria-label="ワークスペース" tabIndex={-1} className={`${paneClass("work")} bg-surface-work lg:border-r space-y-4 ${FOCUS_TARGET_CLASS}`}>
-          {showFirstTime && <FirstTimeNote topic={firstTime} onMore={(button) => openHelpTopic(firstTime.id, button)} onDismiss={() => {
+          {showFirstTime && <FirstTimeNote topic={firstTime} ctx={helpCtx} onMore={(button) => openHelpTopic(firstTime.id, button)} onDismiss={() => {
             // 入力欄へ移すとスマートフォンでキーボードが開くので、ペイン自体へ移す
             workPane.current?.focus();
             markSeen(firstTime.id);
           }} />}
-          <TaskReminder task={task} onAmount={onTaskAmount} />
+          <TaskReminder task={task} onAmount={onTaskAmount} currency={unit.currency} />
           {task.type === "post" && (
             <form
               className="space-y-2"
@@ -983,7 +1060,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
                 <h3 className="text-sm font-semibold">仕訳帳に書く</h3>
                 <HelpIcon topic="journal" />
               </div>
-              <JournalEditor accounts={accounts} value={draft} onChange={setDraft} readOnly={result?.correct === true} />
+              <JournalEditor accounts={accounts} value={draft} onChange={setDraft} readOnly={result?.correct === true} currency={unit.currency} />
               {!result?.correct && (
                 <Button type="submit" disabled={!draftReady} data-tour="post-button" aria-describedby={sideHint ? "post-side-hint" : undefined}>
                   記帳する
@@ -1030,18 +1107,78 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
           )}
           {task.type === "tweak" && (
             <div data-tour="task-tweak">
-            <TweakPanel formula={task.formula} params={task.params} values={Object.fromEntries(task.params.map((p) => [p.id, params[p.id] ?? p.value]))} onChange={onTweakChange} goal={task.goal} />
+            <TweakPanel formula={task.formula} params={task.params} values={Object.fromEntries(task.params.map((p) => [p.id, params[p.id] ?? p.value]))} onChange={onTweakChange} goal={task.goal} currency={unit.currency} />
             </div>
           )}
-          {task.type === "classify" && (
+          {classify && (
             <div className="space-y-2" data-tour="task-classify">
-              <ClassifyBoard accounts={task.accounts.map((id) => accountMap.get(id)!)} placed={placed} onChange={setPlaced} wrong={new Set(result && "wrong" in result ? result.wrong.map((w) => w.account) : [])} disabled={result?.correct === true} />
+              <ClassifyBoard boxes={classify.boxes} items={classify.items} placed={placed} onChange={setPlaced} wrong={new Set(result && "wrong" in result ? result.wrong.map((w) => w.account) : [])} disabled={result?.correct === true} />
               {!result?.correct && (
-                <Button onClick={check} disabled={task.accounts.some((id) => !placed[id])}>
+                <Button onClick={check} disabled={classify.items.some((i) => !placed[i.id])}>
                   確認する
                 </Button>
               )}
             </div>
+          )}
+          {task.type === "debug" && (
+            <form
+              className="space-y-3"
+              data-tour="task-debug"
+              onSubmit={(e) => {
+                e.preventDefault();
+                check();
+              }}
+            >
+              <fieldset disabled={result?.correct === true} className="space-y-1">
+                <legend className="mb-1 flex items-center gap-1 text-sm font-semibold">
+                  誤りのある行を選ぶ
+                  <HelpIcon topic="debug" />
+                </legend>
+                <ol className="space-y-1 text-xs">
+                  {visiblePosted
+                    .filter((p) => p.step === stepIndex)
+                    .map((p, i) => (
+                      <li key={i}>
+                        <label className="flex cursor-pointer items-start gap-2 rounded border px-2 py-1 has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                          <input
+                            type="radio"
+                            name="debug-row"
+                            className="mt-0.5"
+                            aria-label={`${i + 1}行目: ${p.memo}`}
+                            checked={debugRow === i}
+                            onChange={() => {
+                              setDebugRow(i);
+                              setDraft(editableRow(task.entries[i], accountMap));
+                              setRevealed(false);
+                            }}
+                          />
+                          <span className="min-w-0 flex-1">
+                            <PostedEntry posted={p} accounts={accountMap} />
+                          </span>
+                        </label>
+                      </li>
+                    ))}
+                </ol>
+              </fieldset>
+              {debugRow === null ? (
+                <p className="text-xs text-muted-foreground">行を選ぶと、その仕訳をここで直せます。</p>
+              ) : (
+                <div className="space-y-2">
+                  <h3 className="text-sm font-semibold">{debugRow + 1}行目を直す</h3>
+                  <JournalEditor accounts={accounts} value={draft} onChange={setDraft} readOnly={result?.correct === true} currency={unit.currency} />
+                  {!result?.correct && (
+                    <Button type="submit" disabled={!draftReady} aria-describedby={sideHint ? "debug-side-hint" : undefined}>
+                      確認する
+                    </Button>
+                  )}
+                  {!result?.correct && sideHint && (
+                    <p id="debug-side-hint" className="text-xs text-muted-foreground">
+                      {sideHint}
+                    </p>
+                  )}
+                </div>
+              )}
+            </form>
           )}
           {task.type === "calc" && (
             <form
@@ -1060,7 +1197,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
                   }}
                   aria-invalid={calcError ? true : undefined}
                   aria-describedby={calcError ? "calc-error" : undefined}
-                  placeholder="金額(円)"
+                  placeholder={`金額(${unit.currency})`}
                 />
               </label>
               {!result?.correct && (
@@ -1075,7 +1212,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
               )}
             </form>
           )}
-          {task.type === "observe" && isLast && (
+          {task.type === "observe" && isLast && unit.view !== "none" && (
             <form
               className="space-y-2"
               data-tour="task-sandbox"
@@ -1085,8 +1222,8 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
               }}
             >
               <h3 className="text-sm font-semibold">自由に試す</h3>
-              <p className="text-xs text-muted-foreground">好きな取引を記帳して、結果の財務諸表がどう動くか確かめてみましょう。{SANDBOX_NOT_SAVED}</p>
-              <JournalEditor accounts={accounts} value={draft} onChange={setDraft} />
+              <p className="text-xs text-muted-foreground">好きな取引を記帳して、{unit.view === "ledger" ? "結果の試算と元帳" : "結果の財務諸表"}がどう動くか確かめてみましょう。{SANDBOX_NOT_SAVED}</p>
+              <JournalEditor accounts={accounts} value={draft} onChange={setDraft} currency={unit.currency} />
               <Button type="submit" variant="outline" disabled={!canPostFreely} aria-describedby={sideHint ? "free-side-hint" : draftReady && !freeBalanced ? "free-post-hint" : undefined}>
                 記帳する
               </Button>
@@ -1103,6 +1240,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
             </form>
           )}
 
+          {unit.view !== "none" && (
           <Tabs defaultValue="journal">
             <TabsList data-tour="ledger">
               <TabsTrigger value="journal">仕訳帳(記帳済み)</TabsTrigger>
@@ -1118,39 +1256,20 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
               <ol className="space-y-1 text-xs">
                 {visiblePosted.map((p, i) => (
                   <li key={i} className={`rounded border px-2 py-1 ${p.step === stepIndex ? "border-primary/50 bg-primary/5 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1" : ""}`}>
-                    <div className="text-muted-foreground">{p.memo}</div>
-                    <div className="grid grid-cols-2 gap-2 font-mono tabular-nums">
-                      <div className="space-x-1">
-                        {p.entry.debit.map((l, j) => {
-                          const a = accountMap.get(l.account);
-                          return (
-                            <span key={j}>
-                              {a ? <AccountName account={a} /> : l.account} {l.amount.toLocaleString("ja-JP")}
-                            </span>
-                          );
-                        })}
-                      </div>
-                      <div className="text-right space-x-1">
-                        {p.entry.credit.map((l, j) => {
-                          const a = accountMap.get(l.account);
-                          return (
-                            <span key={j}>
-                              {a ? <AccountName account={a} /> : l.account} {l.amount.toLocaleString("ja-JP")}
-                            </span>
-                          );
-                        })}
-                      </div>
-                    </div>
+                    <PostedEntry posted={p} accounts={accountMap} />
                   </li>
                 ))}
               </ol>
             )}
             </TabsContent>
           </Tabs>
+          )}
         </section>
 
         <section id="pane-result" role="region" aria-label="結果" className={`${paneClass("result")} bg-surface-result`} data-tour="statements">
-          {visiblePosted.length > 1 && (
+          {unit.era && <h2 className="mb-3 text-sm font-semibold">{unit.era}</h2>}
+          {unit.view === "none" && <p className="text-sm text-muted-foreground">この時代にはまだ帳簿がありません。</p>}
+          {unit.view !== "none" && visiblePosted.length > 1 && (
             <div className="mb-3 rounded-md border p-2 text-xs space-y-1" data-tour="rewind">
               <div className="flex items-center gap-1">
               <label className="flex flex-1 items-center justify-between gap-2">
@@ -1188,7 +1307,21 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
               )}
             </div>
           )}
-          <StatementsPane accounts={accountMap} balances={view.balances} diff={view.diff} company={unit.company} />
+          {unit.view === "statements" && <StatementsPane accounts={accountMap} balances={view.balances} diff={view.diff} company={unit.company} />}
+          {unit.view === "ledger" && (
+            <div className="space-y-5 text-sm">
+              <section aria-label="試算">
+                <h3 className="font-semibold mb-1">
+                  試算 <span className="text-xs font-normal text-muted-foreground">{unit.company}</span>
+                </h3>
+                <TrialBalanceTable opening={unit.opening} posted={shownPosted} accounts={accountMap} />
+              </section>
+              <section aria-label="元帳">
+                <h3 className="font-semibold mb-1">元帳(T勘定)</h3>
+                <LedgerTab opening={unit.opening} posted={shownPosted} accounts={accountMap} />
+              </section>
+            </div>
+          )}
         </section>
       </div>
 
@@ -1227,9 +1360,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
                 </p>
               )}
               <p className="whitespace-pre-wrap">{result.feedback}</p>
-              {task.type === "post" && !result.correct && gradedEntry && (
+              {(task.type === "post" || task.type === "debug") && !result.correct && gradedEntry && (
                 <div className="rounded bg-background/70 p-2">
-                  <ImpactCompare yours={gradedEntry} expected={task.answer} accounts={accountMap} />
+                  <ImpactCompare yours={gradedEntry} expected={task.type === "post" ? task.answer : task.answer.entry} accounts={accountMap} />
                 </div>
               )}
               {task.type === "predict" && <PredictCompare predicted={effect} elements={askedElements} entry={task.entry} accounts={accountMap} />}
@@ -1350,9 +1483,9 @@ function ContributeLinks({ unit, stepNumber }: { unit: IdeUnit; stepNumber: numb
   );
 }
 
-function TaskText({ text, onAmount }: { text: string; onAmount?: (digits: string) => void }) {
+function TaskText({ text, onAmount, currency }: { text: string; onAmount?: (digits: string) => void; currency: string }) {
   if (!onAmount) return text;
-  return splitAmounts(text).map((seg, i) =>
+  return splitAmounts(text, currency).map((seg, i) =>
     typeof seg === "string" ? (
       seg
     ) : (
@@ -1372,7 +1505,38 @@ function TaskText({ text, onAmount }: { text: string; onAmount?: (digits: string
   );
 }
 
-function TaskBox({ task, onAmount }: { task: Task; onAmount?: (digits: string) => void }) {
+/** 記帳済みの仕訳1件。debugの写し忘れの行は片側が空になる */
+function PostedEntry({ posted, accounts }: { posted: Posted; accounts: ReadonlyMap<string, GlossaryAccount> }) {
+  const side = (lines: JournalEntry["debit"]) =>
+    lines.length === 0 ? (
+      <span className="text-muted-foreground">—</span>
+    ) : (
+      lines.map((l, j) => {
+        const a = accounts.get(l.account);
+        return (
+          <span key={j}>
+            {a ? <AccountName account={a} /> : l.account} {l.amount.toLocaleString("ja-JP")}
+          </span>
+        );
+      })
+    );
+  return (
+    <>
+      <div className="text-muted-foreground">{posted.memo}</div>
+      <div className="grid grid-cols-2 gap-2 font-mono tabular-nums">
+        <div className="space-x-1">{side(posted.entry.debit)}</div>
+        <div className="text-right space-x-1">{side(posted.entry.credit)}</div>
+      </div>
+    </>
+  );
+}
+
+/** classifyの模範解答の配置 */
+function classifyAnswer(task: Extract<Task, { type: "classify" }>, accounts: ReadonlyMap<string, AccountInfo>): Record<string, string> {
+  return Object.fromEntries(classifyBoard(task, accounts).items.map((i) => [i.id, i.answer]));
+}
+
+function TaskBox({ task, onAmount, currency }: { task: Task; onAmount?: (digits: string) => void; currency: string }) {
   const content = (() => {
     switch (task.type) {
       case "post":
@@ -1380,11 +1544,13 @@ function TaskBox({ task, onAmount }: { task: Task; onAmount?: (digits: string) =
       case "predict":
         return { title: "記帳の前に、どう動くか予想しましょう", body: task.transaction };
       case "tweak":
-        return { title: "条件を動かして目標に合わせましょう", body: `${task.goal.label}を${task.goal.equals.toLocaleString("ja-JP")}円にする` };
+        return { title: "条件を動かして目標に合わせましょう", body: `${task.goal.label}を${task.goal.equals.toLocaleString("ja-JP")}${currency}にする` };
       case "classify":
-        return { title: "科目を5つの箱に分けましょう", body: null };
+        return { title: task.labels ? "項目を箱に分けましょう" : "科目を5つの箱に分けましょう", body: null };
       case "calc":
         return { title: "金額を答えましょう", body: task.question };
+      case "debug":
+        return { title: "誤りのある行を見つけて直しましょう", body: null };
       case "observe":
         return null;
     }
@@ -1395,7 +1561,7 @@ function TaskBox({ task, onAmount }: { task: Task; onAmount?: (digits: string) =
       <div className="font-semibold">やること: {content.title}</div>
       {content.body && (
         <p className="mt-1">
-          <TaskText text={content.body} onAmount={onAmount} />
+          <TaskText text={content.body} onAmount={onAmount} currency={currency} />
         </p>
       )}
     </div>
@@ -1404,11 +1570,11 @@ function TaskBox({ task, onAmount }: { task: Task; onAmount?: (digits: string) =
 
 // タブ表示の幅ではガイドが隠れるので、入力しながら取引文を読めるようにする(Issue #149)。
 // calcとtweakはワークスペースに同じ文が既にあるので対象にしない
-function TaskReminder({ task, onAmount }: { task: Task; onAmount?: (digits: string) => void }) {
+function TaskReminder({ task, onAmount, currency }: { task: Task; onAmount?: (digits: string) => void; currency: string }) {
   if (task.type !== "post" && task.type !== "predict") return null;
   return (
     <p className="rounded-md border-l-4 border-primary bg-muted/40 p-2 text-sm lg:hidden">
-      <TaskText text={task.transaction} onAmount={onAmount} />
+      <TaskText text={task.transaction} onAmount={onAmount} currency={currency} />
     </p>
   );
 }

@@ -1,0 +1,10 @@
+id: accounting-history
+title: 会計の歴史パス
+order: 2
+summary: 中世イタリアの商人から現代まで、会計のしくみが「なぜ生まれたか」を時代順に追体験する。いまは複式簿記の誕生と発展(3単元)まで。
+era: 複式簿記以前の中世イタリアから始め、株式会社と鉄道、工場、企業集団、グローバル化へ進む。試験の範囲とは独立した、時代順の学び方
+sections:
+  - title: 現代の複式簿記を知る
+    units: [bookkeeping-basics/five-elements]
+  - title: 複式簿記の誕生と発展
+    units: [birth-of-double-entry/memorandum-and-personal-accounts, birth-of-double-entry/venture-profit-and-double-entry, birth-of-double-entry/venetian-method-and-pacioli]

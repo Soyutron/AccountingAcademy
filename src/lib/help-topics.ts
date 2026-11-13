@@ -9,6 +9,8 @@ export interface HelpContext {
   postedCount: number;
   isLast: boolean;
   hasHint: boolean;
+  // 結果ペインの段階(scenario.view)。noneの単元には記帳の場が無い
+  view: "none" | "ledger" | "statements";
 }
 
 export interface HelpTopic {
@@ -16,7 +18,7 @@ export interface HelpTopic {
   category: HelpCategory;
   title: string;
   // 「?」用。1〜2文
-  short: string;
+  short: string | ((ctx: HelpContext) => string);
   // 「使い方」用。手順とキーボードの別手段。4文まで。課題の種類で言えることが変わる話題は関数にする
   body: string | ((ctx: HelpContext) => string);
   // 「いまの画面でできること」に入れる条件。無ければ常に
@@ -34,10 +36,14 @@ export const HELP_CATEGORIES: { id: HelpCategory; label: string }[] = [
   { id: "progress", label: "進め方" },
 ];
 
-const canWrite = (c: HelpContext) => c.taskType === "post" || (c.taskType === "observe" && c.isLast);
+const isSandbox = (c: HelpContext) => c.taskType === "observe" && c.isLast && c.view !== "none";
+const canWrite = (c: HelpContext) => c.taskType === "post" || isSandbox(c);
 
 /** 「自由に試す」の記帳は保存しない(永続化はroadmapのサンドボックス機能で決める。Issue #160)。見出しの下にも出す */
 export const SANDBOX_NOT_SAVED = "ここで記帳した仕訳はこのページを開いている間だけ残り、再読み込みすると消えます。";
+
+// 「自由に試す」で記帳の結果が出る場所。view: ledgerの単元には財務諸表が無い
+const sandboxResult = (c: HelpContext) => (c.view === "ledger" ? "結果の試算と元帳" : "財務諸表");
 
 export const HELP_TOPICS: HelpTopic[] = [
   {
@@ -72,7 +78,7 @@ export const HELP_TOPICS: HelpTopic[] = [
     // postは不一致も採点するので押せる。止めるのは採点の無い自由に試すだけ(Issue #199)
     body: (c) =>
       `科目と金額を入れて「記帳する」を押します。科目は途中まで打つと候補が出ます。金額欄でEnterを押しても記帳できます。${
-        c.taskType === "observe" && c.isLast ? "借方と貸方の合計がそろうまで「記帳する」は押せません。" : "借方と貸方の合計がそろっていないまま押すと、そろえるよう案内が出ます。"
+        isSandbox(c) ? "借方と貸方の合計がそろうまで「記帳する」は押せません。" : "借方と貸方の合計がそろっていないまま押すと、そろえるよう案内が出ます。"
       }`,
     when: canWrite,
   },
@@ -151,11 +157,11 @@ export const HELP_TOPICS: HelpTopic[] = [
   {
     id: "classify",
     category: "task",
-    title: "5つの箱に分ける",
+    title: "箱に分ける",
     target: "task-classify",
     pane: "work",
-    short: "科目を箱へドラッグするか、科目を押してから箱を押します。全部入れたら「確認する」。",
-    body: "科目を箱(資産・負債・純資産・収益・費用)へドラッグするか、科目を押してから入れる箱を押します。タッチ操作では科目を少し長押ししてから動かします。全部入れたら「確認する」。間違えた科目は赤く示され、なぜその要素かの説明が出ます。",
+    short: "科目や項目を箱へドラッグするか、押してから箱を押します。全部入れたら「確認する」。",
+    body: "科目は5要素の箱(資産・負債・純資産・収益・費用)へ、単元によっては項目をその単元が決めた箱(ページの左右など)へ入れます。ドラッグするか、科目や項目を押してから入れる箱を押します。タッチ操作では少し長押ししてから動かします。全部入れたら「確認する」。間違えたものは赤く示され、正しい箱が出ます。科目なら、なぜその要素かの説明も出ます。",
     when: (c) => c.taskType === "classify",
   },
   {
@@ -167,6 +173,16 @@ export const HELP_TOPICS: HelpTopic[] = [
     short: "問題文を読んで金額を入力し、「確認する」を押します。",
     body: "問題文を読んで金額を入力し、「確認する」を押します(Enterでも可)。桁区切りのカンマや「円」は付けても付けなくても構いません。",
     when: (c) => c.taskType === "calc",
+  },
+  {
+    id: "debug",
+    category: "task",
+    title: "誤りの行を直す",
+    target: "task-debug",
+    pane: "work",
+    short: "記帳済みの一覧から誤りのある行を選び、仕訳を直して「確認する」を押します。",
+    body: "記帳済みの一覧から誤りのある行を選ぶと、その仕訳が下の仕訳帳に読み込まれます。足りない科目と金額を書き足すか直して、「確認する」を押します。結果の試算で左右の合計が合っていないことが手がかりです。直せた行は帳簿の中で置き換わり、左右がそろいます。",
+    when: (c) => c.taskType === "debug",
   },
   {
     id: "tweak",
@@ -184,9 +200,9 @@ export const HELP_TOPICS: HelpTopic[] = [
     title: "自由に試す",
     target: "task-sandbox",
     pane: "work",
-    short: `最後のステップでは、好きな取引を記帳して財務諸表がどう動くか確かめられます。${SANDBOX_NOT_SAVED}`,
-    body: `最後のステップでは、好きな取引を記帳して財務諸表がどう動くか確かめられます。採点はありません。${SANDBOX_NOT_SAVED}借方と貸方の合計がそろえば記帳できます。`,
-    when: (c) => c.taskType === "observe" && c.isLast,
+    short: (c) => `最後のステップでは、好きな取引を記帳して${sandboxResult(c)}がどう動くか確かめられます。${SANDBOX_NOT_SAVED}`,
+    body: (c) => `最後のステップでは、好きな取引を記帳して${sandboxResult(c)}がどう動くか確かめられます。採点はありません。${SANDBOX_NOT_SAVED}借方と貸方の合計がそろえば記帳できます。`,
+    when: isSandbox,
   },
   {
     id: "steps",
@@ -214,12 +230,16 @@ export function helpTopic(id: string): HelpTopic {
 }
 
 // 初めて画面に出たときに案内を出す課題の種類(docs/help-design.md 5.2)
-export const FIRST_TIME_IDS = ["predict", "classify", "calc", "tweak", "sandbox"] as const;
+export const FIRST_TIME_IDS = ["predict", "classify", "calc", "debug", "tweak", "sandbox"] as const;
 
 /** 現在のステップで初出の案内を出す話題。該当しなければnull */
 export function firstTimeTopic(ctx: HelpContext): HelpTopic | null {
-  const id = ctx.taskType === "observe" ? (ctx.isLast ? "sandbox" : null) : ctx.taskType === "post" ? null : ctx.taskType;
+  const id = ctx.taskType === "observe" ? (isSandbox(ctx) ? "sandbox" : null) : ctx.taskType === "post" ? null : ctx.taskType;
   return id ? helpTopic(id) : null;
+}
+
+export function topicShort(t: HelpTopic, ctx: HelpContext): string {
+  return typeof t.short === "string" ? t.short : t.short(ctx);
 }
 
 export function topicBody(t: HelpTopic, ctx: HelpContext): string {

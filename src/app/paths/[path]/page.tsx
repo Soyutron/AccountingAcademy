@@ -24,11 +24,17 @@ export default async function PathPage({ params }: { params: Promise<{ path: str
         <h1 className="text-2xl font-bold">{path.title}</h1>
         <p className="text-muted-foreground">{path.summary}</p>
         <div className="rounded-md bg-muted/50 p-3 text-sm">
-          <p className="font-medium">{path.exam.name}</p>
-          <p className="text-muted-foreground">{path.exam.format}</p>
-          <a href={path.exam.source} className="text-xs underline" target="_blank" rel="noreferrer">
-            試験の公式情報
-          </a>
+          {path.exam ? (
+            <>
+              <p className="font-medium">{path.exam.name}</p>
+              <p className="text-muted-foreground">{path.exam.format}</p>
+              <a href={path.exam.source} className="text-xs underline" target="_blank" rel="noreferrer">
+                試験の公式情報
+              </a>
+            </>
+          ) : (
+            <p className="text-muted-foreground">{path.era}</p>
+          )}
         </div>
       </div>
       {path.sections.map((section) => (

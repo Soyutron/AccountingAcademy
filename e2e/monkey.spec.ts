@@ -18,13 +18,15 @@ type Task =
   | { type: "post"; answer: { debit: Line[]; credit: Line[] } }
   | { type: "predict"; answer: Record<string, string> }
   | { type: "tweak"; params: { id: string; label?: string; min: number; max: number; step: number }[] }
-  | { type: "classify"; accounts: string[] }
-  | { type: "calc"; answer: number };
-type Unit = { id: string; title: string; steps: { title: string; task: Task }[] };
+  | { type: "classify"; accounts?: string[]; labels?: Record<string, string>; items?: { id: string; label: string; answer: string }[] }
+  | { type: "calc"; answer: number }
+  | { type: "debug"; entries: unknown[]; answer: { index: number; entry: { debit: Line[]; credit: Line[] } } };
+type Unit = { id: string; title: string; scenario: { accounts: { id: string; name: string }[] }; steps: { title: string; task: Task }[] };
 
 const units: Unit[] = JSON.parse(readFileSync(".velite/units.json", "utf8"));
 const accounts: { id: string; name: string; element: string }[] = JSON.parse(readFileSync(".velite/accounts.json", "utf8")).accounts;
-const nameOf = (id: string) => accounts.find((a) => a.id === id)!.name;
+// 単元限定の科目(scenario.accounts)は全体マスタに無いので、全単元の科目もまとめて引く。同じIDは同じ名前で書いている
+const nameOf = (id: string) => (accounts.find((a) => a.id === id) ?? units.flatMap((u) => u.scenario.accounts).find((a) => a.id === id))!.name;
 const ELEMENT_LABELS: Record<string, string> = { asset: "資産", liability: "負債", equity: "純資産", revenue: "収益", expense: "費用" };
 const CHANGES = ["increase", "decrease", "none"];
 // 境界値を混ぜた金額の候補
@@ -92,17 +94,35 @@ export const ACTIONS: { name: string; weight: number; when: (s: State) => boolea
   { name: "仕分ける", weight: 4, when: (s) => s.task?.type === "classify", run: async (page, s, rnd) => {
       const t = s.task as Extract<Task, { type: "classify" }>;
       const board = work(page).getByRole("group", { name: "仕分けボード" });
-      for (const id of t.accounts) {
-        const a = accounts.find((x) => x.id === id)!;
-        const bucket = rnd() < 0.6 ? a.element : pick(Object.keys(ELEMENT_LABELS), rnd);
-        await board.getByRole("button", { name: a.name, exact: true }).click({ timeout: 3000 }).catch(() => {});
-        await board.getByRole("button", { name: `${ELEMENT_LABELS[bucket]} ← ここに入れる`, exact: true }).click({ timeout: 3000 }).catch(() => {});
+      // labelsの形は項目の文とその単元の箱で、従来の形は科目名と5要素で動かす(Issue #262)
+      const labels = t.labels ?? ELEMENT_LABELS;
+      const moves = t.labels
+        ? t.items!.map((it) => ({ chip: it.label, answer: it.answer }))
+        : t.accounts!.map((id) => {
+            const a = accounts.find((x) => x.id === id)!;
+            return { chip: a.name, answer: a.element };
+          });
+      for (const { chip, answer } of moves) {
+        const bucket = rnd() < 0.6 ? answer : pick(Object.keys(labels), rnd);
+        await board.getByRole("button", { name: chip, exact: true }).click({ timeout: 3000 }).catch(() => {});
+        await board.getByRole("button", { name: `${labels[bucket]} ← ここに入れる`, exact: true }).click({ timeout: 3000 }).catch(() => {});
       }
       await work(page).getByRole("button", { name: "確認する" }).click({ timeout: 3000 }).catch(() => {});
     } },
   { name: "金額を答える", weight: 4, when: (s) => s.task?.type === "calc", run: async (page, s, rnd) => {
       const t = s.task as Extract<Task, { type: "calc" }>;
-      await work(page).getByPlaceholder("金額(円)").fill(String(rnd() < 0.5 ? t.answer : pick(AMOUNTS, rnd)));
+      await work(page).getByPlaceholder(/^金額\(/).fill(String(rnd() < 0.5 ? t.answer : pick(AMOUNTS, rnd)));
+      await work(page).getByRole("button", { name: "確認する" }).click({ timeout: 3000 }).catch(() => {});
+    } },
+  { name: "誤りの行を直す", weight: 4, when: (s) => s.task?.type === "debug", run: async (page, s, rnd) => {
+      const t = s.task as Extract<Task, { type: "debug" }>;
+      // 半分は正解の行と仕訳で、残りは別の行を選んでそのまま確認する
+      const index = rnd() < 0.5 ? t.answer.index : Math.floor(rnd() * t.entries.length);
+      await work(page).getByRole("radio").nth(index).check({ timeout: 3000 }).catch(() => {});
+      if (index === t.answer.index) {
+        const e = t.answer.entry;
+        await fill(page, e.debit.map((l) => ({ account: nameOf(l.account), amount: l.amount })), e.credit.map((l) => ({ account: nameOf(l.account), amount: l.amount })));
+      }
       await work(page).getByRole("button", { name: "確認する" }).click({ timeout: 3000 }).catch(() => {});
     } },
   { name: "条件を変える", weight: 4, when: (s) => s.task?.type === "tweak", run: async (page, s, rnd) => {
@@ -214,7 +234,7 @@ for (const seed of seeds) {
       const action = candidates.find((a) => (r -= a.weight) < 0) ?? candidates[0];
       prevName = action.name;
       const expectError = /でたらめ|自由に|連打/.test(action.name);
-      const isPost = /記帳|予想|仕分ける|金額を答える/.test(action.name);
+      const isPost = /記帳|予想|仕分ける|金額を答える|誤りの行/.test(action.name);
       const before = isPost ? await attemptsCount(page) : null;
       let actionError = "";
       try {

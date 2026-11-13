@@ -127,9 +127,11 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
               </p>
             )}
             <div className="flex gap-3 text-xs">
-              <Link href={`/glossary#${entry.id}`} className="underline">
-                用語集で見る
-              </Link>
+              {!entry.local && (
+                <Link href={`/glossary#${entry.id}`} className="underline">
+                  用語集で見る
+                </Link>
+              )}
               {/* その単元自身を開いているときに自分へのリンクを出すと、押しても何も起きず壊れて見える */}
               {entry.unit &&
                 (pathname === `/units/${entry.unit.id}` ? (

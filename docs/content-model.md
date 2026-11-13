@@ -119,7 +119,7 @@ success: 結果の貸借対照表に、現金と資本金が同時に現れま�
 | post | `transaction`、`answer`(仕訳)、`alternatives`、`wrong_patterns`(swapped / unbalanced / debit / credit)、`hint`、`success` | 仕訳の一致(行順不同)。不一致なら誤答パターンで誤解を判定(swappedは金額を問わず科目の左右が逆なら当たる。行パターンは、正解にもパターンにも無い行がその側にあると当たらない) |
 | predict | `transaction`、`entry`(確認後に記帳される仕訳)、`answer`(5要素のincrease / decrease / none)、`elements`(問う要素。省略すれば5要素すべて。まだ定義していない要素を問わないために絞る)、`wrong_patterns`(部分一致。`elements`で問う要素だけ) | 予想と答えの一致。外れても実際の動きを見せて進める。一致した誤答パターンはすべて説明する |
 | tweak | `formula`(straight_line)、`params`(id / label / value / min / max / step / unit)、`goal`(output / equals / label)。straight_lineの当期分と期末の帳簿価額は`months`をparamsに含めたときだけ出る | 式の出力が目標値と一致 |
-| classify | `accounts`(科目IDの配列)、`misconceptions`(科目 → 間違えた要素 → 誤解ID) | 全科目が正しい箱 |
+| classify | `accounts`(科目IDの配列)か、`labels`(箱のID → 表示名)と`items`(項目のID・表示・正解の箱。7.2)。`misconceptions`(項目 → 間違えた箱 → 誤解ID) | 全項目が正しい箱 |
 | calc | `question`、`answer`、`wrong_patterns`(値) | 値の一致 |
 
 採点は`{correct, misconception?, feedback}`を返す。postの不正解では、学習者の仕訳の影響と期待される影響を5要素で並べて見せる。

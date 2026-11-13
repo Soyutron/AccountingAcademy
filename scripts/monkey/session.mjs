@@ -99,11 +99,13 @@ export function domFindings(dom, { expectError = false } = {}) {
   return found;
 }
 
-/** コンテンツ(.velite)を読む。units / accounts / misconceptionsを返す。 */
+/** コンテンツ(.velite)を読む。units / accounts / nameOfを返す。nameOfは単元限定の科目(scenario.accounts)も引く。 */
 export function loadContent() {
   const read = (f) => JSON.parse(fs.readFileSync(path.join(ROOT, ".velite", f), "utf8"));
   const accounts = read("accounts.json").accounts;
-  return { units: read("units.json"), accounts, nameOf: (id) => accounts.find((a) => a.id === id)?.name ?? id };
+  const units = read("units.json");
+  const local = units.flatMap((u) => u.scenario.accounts);
+  return { units, accounts, nameOf: (id) => (accounts.find((a) => a.id === id) ?? local.find((a) => a.id === id))?.name ?? id };
 }
 
 /** ローカルSupabaseにSQLを流し、行をタブ区切りの配列で返す。 */
@@ -132,6 +134,18 @@ export async function fillEntry(page, entry) {
       await work.getByLabel(`${side}の金額${i + 1}`).fill(String(lines[i].amount));
     }
   }
+}
+
+/**
+ * debugの課題を解く。誤りの行(answer.index)を選び、answer.entryを入れて「確認する」を押す(Issue #263)。
+ * taskは.velite/units.jsonのステップのtask、nameOfはloadContent()のもの。
+ */
+export async function solveDebug(page, task, nameOf) {
+  const work = page.getByRole("region", { name: "ワークスペース" });
+  await work.getByRole("radio").nth(task.answer.index).check();
+  const named = (lines) => lines.map((l) => ({ account: nameOf(l.account), amount: l.amount }));
+  await fillEntry(page, { debit: named(task.answer.entry.debit), credit: named(task.answer.entry.credit) });
+  await work.getByRole("button", { name: "確認する" }).click();
 }
 
 /**

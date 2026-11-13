@@ -11,22 +11,25 @@ export const misconceptionMap = new Map(misconceptions.misconceptions.map((m) =>
 export const unitMap = new Map(units.map((u) => [u.id, u]));
 
 export const sortedDomains = [...domains].sort((a, b) => a.order - b.order);
+export const sortedPaths = [...paths].sort((a, b) => a.order - b.order);
 export const sortedTopics = topics.filter((t) => !t.hidden).sort((a, b) => a.order - b.order);
 
 export function unitsOfTopic(topicId: string): Unit[] {
   return units.filter((u) => u.topic === topicId).sort((a, b) => a.level - b.level || a.order - b.order);
 }
 
-/** ふりかえりから進む次の単元。テーマ末尾では次のテーマ(知識の正本の順。ADR 0002)の最初の単元 */
+/** ふりかえりから進む次の単元。テーマ末尾では次のテーマ(知識の正本の順。ADR 0002)の最初の単元。
+ * 3級の単元から歴史の単元へ誘導しないよう、同じkindの単元の中だけで探す */
 export function nextUnit(unit: Unit): Unit | undefined {
-  const siblings = unitsOfTopic(unit.topic);
+  const sameKind = (topicId: string) => unitsOfTopic(topicId).filter((u) => u.kind === unit.kind);
+  const siblings = sameKind(unit.topic);
   const inTopic = siblings[siblings.findIndex((u) => u.id === unit.id) + 1];
   if (inTopic) return inTopic;
   // 非表示テーマ(チュートリアル)は順序の外なので、通常のテーマへはつながない
   const topicIdx = sortedTopics.findIndex((t) => t.id === unit.topic);
   if (topicIdx < 0) return undefined;
   for (const t of sortedTopics.slice(topicIdx + 1)) {
-    const first = unitsOfTopic(t.id)[0];
+    const first = sameKind(t.id)[0];
     if (first) return first;
   }
   return undefined;
@@ -65,6 +68,8 @@ export interface GlossaryEntry {
   temporary?: boolean;
   related: { id: string; name: string }[];
   unit?: { id: string; title: string };
+  // 単元限定の科目(scenario.accounts)。用語集に項目が無いので「用語集で見る」を出さない
+  local?: boolean;
 }
 
 function nameOf(id: string): string {
@@ -121,3 +126,31 @@ export const glossaryMap = new Map(glossary.map((g) => [g.id, g]));
 // 結果ペインの科目名も本文と同じ説明を開く。このモジュールをクライアントで読むと全単元が同梱されるので、ページから項目ごと渡す(Issue #82)
 export type GlossaryAccount = AccountInfo & { glossary: GlossaryEntry };
 export const glossaryAccountList: GlossaryAccount[] = accountList.map((a) => ({ ...a, glossary: glossaryMap.get(a.id)! }));
+
+/**
+ * その単元のIDEに渡す科目。全体マスタの後ろに単元限定の科目(scenario.accounts)を足す。
+ * 単元限定の科目は用語集に載せず、ポップオーバーの項目もここで作る(ADR 0009)
+ */
+export function unitAccountList(local: Unit["scenario"]["accounts"]): GlossaryAccount[] {
+  return [
+    ...glossaryAccountList,
+    ...local.map((a) => ({
+      ...a,
+      aliases: [],
+      contra: false,
+      short: a.why,
+      glossary: {
+        id: a.id,
+        kind: "account" as const,
+        name: a.name,
+        aliases: [],
+        reading: [],
+        short: a.why,
+        summary: "この単元だけで使う勘定科目です。用語集には載っていません。",
+        element: a.element,
+        related: [],
+        local: true,
+      },
+    })),
+  ];
+}

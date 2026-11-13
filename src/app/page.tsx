@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { paths } from "#content";
-import { LEVEL_LABELS, sortedDomains, sortedTopics, unitsOfTopic } from "@/lib/content";
+import { LEVEL_LABELS, sortedDomains, sortedPaths, sortedTopics, unitsOfTopic } from "@/lib/content";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Home() {
@@ -16,7 +15,7 @@ export default function Home() {
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">学習パス</h2>
         <div className="grid gap-3 sm:grid-cols-2">
-          {paths.map((p) => (
+          {sortedPaths.map((p) => (
             <Card key={p.id}>
               <CardHeader>
                 <CardTitle>
