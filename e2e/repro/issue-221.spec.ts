@@ -30,6 +30,8 @@ test("「次へ →」の進捗の保存に失敗したあと回答が保存さ�
   await expect(page.getByText("できました", { exact: true })).toBeVisible();
   await expect(page.getByRole("alert").filter({ hasText: "保存エラー" })).toHaveCount(0);
 
+  await page.evaluate(() => sessionStorage.clear());
+
   await page.reload();
   await expect(page.getByText("前回はステップ3まで進みました")).toBeVisible();
 });

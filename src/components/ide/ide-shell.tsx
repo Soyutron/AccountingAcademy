@@ -107,6 +107,31 @@ function replayEntries(steps: IdeStep[], upto: number): Posted[] {
   return posted;
 }
 
+// 同じタブで単元を離れて戻ったとき(戻る・reload・他ページから)に、離れる前のステップと入力途中の答えを戻す(Issue #83)。
+// タブを閉じれば消え、次に開いたときはDBの進捗から「続きから」を出す
+interface SessionSnapshot {
+  stepIndex: number;
+  reached: number;
+  posted: Posted[];
+  draft: EditableEntry;
+  effect: Partial<EffectAnswer>;
+  placed: Partial<Record<string, Element>>;
+  calcValue: string;
+  params: Record<string, number>;
+  attempts: number;
+  answered: [number, unknown][];
+  stepAttempts: [number, number][];
+}
+const sessionKey = (unitId: string) => `ide-session:${unitId}`;
+function readSession(unitId: string): SessionSnapshot | null {
+  try {
+    const raw = window.sessionStorage.getItem(sessionKey(unitId));
+    return raw ? (JSON.parse(raw) as SessionSnapshot) : null;
+  } catch {
+    return null;
+  }
+}
+
 // ダブルクリックの2回目は、1回目で描画された次のステップや同じ位置の最終ステップのリンクに当たる(Issue #198)。
 // ブラウザの数えるクリック回数で見分けるので、キーボード(detail 0)と普通の1回押しは妨げない
 function isRepeatedClick(e: MouseEvent<HTMLElement>) {
@@ -139,6 +164,9 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
   // 初回バナーの判定。進捗を読み終えるまではfalseにして、記録のある学習者にバナーが一瞬出ないようにする
   const [noRecord, setNoRecord] = useState(false);
   const [resumeStep, setResumeStep] = useState<number | null>(null);
+  // sessionStorageから戻したときは、DBの進捗で「続きから」を出さない(Issue #83)
+  const restoredSession = useRef(false);
+  const [sessionLoaded, setSessionLoaded] = useState(false);
   const [resumeSolved, setResumeSolved] = useState(false);
   // 再開するステップの最後の回答。predictは誤答でも進めるので、その予想を復元する(Issue #10)
   const [resumeAnswer, setResumeAnswer] = useState<unknown>(undefined);
@@ -267,7 +295,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
         // ステップを減らした単元では保存値が範囲外になる。そのまま持つと最後に着いても完了にならないので無視し、DBの値も戻す(再開できるように)
         if (saved && saved.step < unit.steps.length) savedStep.current = saved.step;
         else if (saved) resetOutOfRangeStep(unit.id, unit.steps.length).catch((e: Error) => console.error(e));
-        if (saved && saved.step > 0 && saved.step < unit.steps.length) {
+        if (saved && saved.step > 0 && saved.step < unit.steps.length && !restoredSession.current) {
           const answer = p.answers[unit.id]?.[saved.step];
           resumeAnswered.current = new Map(
             Object.entries(p.answers[unit.id] ?? {})
@@ -486,6 +514,56 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
     const type = unit.steps[resumeStep].task.type;
     restoreStep(resumeStep, type === "predict" || type === "tweak" ? resumeAnswer : undefined);
   };
+
+  // サーバー描画はステップ1なので、復元はマウント後に行う。チュートリアルはツアーがステップ1からの台本なので戻さない
+  /* eslint-disable react-hooks/set-state-in-effect -- sessionStorageはマウント後にしか読めない */
+  useEffect(() => {
+    const s = isTutorialUnit ? null : readSession(unit.id);
+    if (s && s.stepIndex < unit.steps.length) {
+      restoredSession.current = true;
+      answered.current = new Map(s.answered);
+      stepAttempts.current = new Map(s.stepAttempts);
+      setStepIndex(s.stepIndex);
+      setReached(s.reached);
+      setPosted(s.posted);
+      setAttempts(s.attempts);
+      const answer = answered.current.get(s.stepIndex);
+      if (answer !== undefined) restoreStep(s.stepIndex, answer);
+      else {
+        setDraft(s.draft);
+        setEffect(s.effect);
+        setPlaced(s.placed);
+        setCalcValue(s.calcValue);
+        setParams(s.params);
+      }
+    }
+    setSessionLoaded(true);
+    // マウント時に1回だけ読む
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
+  // 読む前に書くと、StrictModeの2回目のマウントや復元前の描画が空の状態で上書きしてしまう
+  useEffect(() => {
+    if (!sessionLoaded || isTutorialUnit) return;
+    const snapshot: SessionSnapshot = {
+      stepIndex,
+      reached,
+      posted,
+      draft,
+      effect,
+      placed,
+      calcValue,
+      params,
+      attempts,
+      answered: [...answered.current],
+      stepAttempts: [...stepAttempts.current],
+    };
+    try {
+      window.sessionStorage.setItem(sessionKey(unit.id), JSON.stringify(snapshot));
+    } catch {
+      // 保存できないブラウザでは従来どおりDBの「続きから」だけで再開する
+    }
+  }, [sessionLoaded, isTutorialUnit, unit.id, stepIndex, reached, posted, draft, effect, placed, calcValue, params, attempts, gradedResult, tweakDone]);
 
   const entryDraft = toJournalEntry(draft, accounts);
 

@@ -21,6 +21,7 @@ test("390pxで記帳したあとワークスペースのタブを開いても横
 
   // Issueと同じ「続きから」の経路でも収まる
   await page.getByRole("button", { name: "次へ →" }).click();
+  await page.evaluate(() => sessionStorage.clear());
   await page.reload();
   await page.getByRole("button", { name: "続きから" }).click();
   await page.getByRole("tab", { name: "ワークスペース" }).click();

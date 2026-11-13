@@ -5,6 +5,7 @@ test("正解直後にreloadしても「続きから」で達成状態と仕訳�
   const work = page.getByRole("region", { name: "ワークスペース" });
   const next = page.getByRole("button", { name: "次へ →" });
   const resume = async () => {
+    await page.evaluate(() => sessionStorage.clear());
     await page.reload();
     // 進捗の取得は非同期なので、案内が出るまで待つ
     await page.getByRole("button", { name: "続きから" }).click();

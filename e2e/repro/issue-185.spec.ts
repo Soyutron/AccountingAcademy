@@ -25,6 +25,8 @@ async function solveStep2WithoutResume(page: Page) {
     post(page, ["現金", "1000000"], ["借入金", "1000000"]),
   ]);
 
+  await page.evaluate(() => sessionStorage.clear());
+
   await page.reload();
   await expect(page.getByRole("button", { name: "続きから" })).toBeVisible();
   await next.click();
