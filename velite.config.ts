@@ -16,6 +16,8 @@ const account = s.object({
   short: s.string(),
   element,
   contra: s.boolean().default(false),
+  // 仮勘定。決算の財務諸表に載せられず、必ず本来の科目へ振り替える科目(現金過不足)。elementは残高をふだん置く側(Issue #258)
+  temporary: s.boolean().default(false),
   why: s.string(),
   // 用語集とポップオーバーの「例:」。概念と同じ役割(docs/content-model.md 4節)
   example: s.string().optional(),
@@ -25,6 +27,8 @@ const account = s.object({
 const concept = s.object({
   id: s.string(),
   name: s.string(),
+  // 別名(表記の揺れ、同じものを指す別の語)。用語集の検索で引く。読み(reading)とは混ぜない
+  aliases: s.array(s.string()).default([]),
   // 読み(ひらがな)。用語集の検索で引く(勘定科目のreadingと同じ)
   reading: s.array(s.string()).default([]),
   short: s.string(),
@@ -87,6 +91,8 @@ export const taskSchema = s.discriminatedUnion("type", [
     transaction: s.string(),
     entry: journalEntry,
     answer: effect,
+    // 予想で問う要素。省略すれば5要素すべて。まだ定義していない要素を問わないために絞る(Issue #170)
+    elements: s.array(element).min(1).optional(),
     wrong_patterns: s.array(wrongPattern(effectPattern)).default([]),
   }),
   s.object({
@@ -421,6 +427,14 @@ export default defineConfig({
           case "predict":
             checkEntry(t.entry, w);
             t.wrong_patterns.forEach((p) => requireMisconception(p.misconception, w));
+            if (t.elements) {
+              if (new Set(t.elements).size !== t.elements.length) errors.push(`${w}: elementsに同じ要素が重複している`);
+              t.wrong_patterns.forEach((p) => {
+                Object.keys(p.match).forEach((k) => {
+                  if (!t.elements!.includes(k as (typeof t.elements)[number])) errors.push(`${w}: 誤答パターンの${k}はelementsで問わない要素`);
+                });
+              });
+            }
             break;
           case "tweak": {
             const outputs = FORMULA_OUTPUTS[t.formula];

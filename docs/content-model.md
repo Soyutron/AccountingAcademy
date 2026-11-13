@@ -114,7 +114,7 @@ success: 結果の貸借対照表に、現金と資本金が同時に現れま�
 |---|---|---|
 | observe | `entries`(自動で記帳する仕訳。省略可) | なし |
 | post | `transaction`、`answer`(仕訳)、`alternatives`、`wrong_patterns`(swapped / unbalanced / debit / credit)、`hint`、`success` | 仕訳の一致(行順不同)。不一致なら誤答パターンで誤解を判定(swappedは金額を問わず科目の左右が逆なら当たる。行パターンは、正解にもパターンにも無い行がその側にあると当たらない) |
-| predict | `transaction`、`entry`(確認後に記帳される仕訳)、`answer`(5要素のincrease / decrease / none)、`wrong_patterns`(部分一致) | 予想と答えの一致。外れても実際の動きを見せて進める。一致した誤答パターンはすべて説明する |
+| predict | `transaction`、`entry`(確認後に記帳される仕訳)、`answer`(5要素のincrease / decrease / none)、`elements`(問う要素。省略すれば5要素すべて。まだ定義していない要素を問わないために絞る)、`wrong_patterns`(部分一致。`elements`で問う要素だけ) | 予想と答えの一致。外れても実際の動きを見せて進める。一致した誤答パターンはすべて説明する |
 | tweak | `formula`(straight_line)、`params`(id / label / value / min / max / step / unit)、`goal`(output / equals / label)。straight_lineの当期分と期末の帳簿価額は`months`をparamsに含めたときだけ出る | 式の出力が目標値と一致 |
 | classify | `accounts`(科目IDの配列)、`misconceptions`(科目 → 間違えた要素 → 誤解ID) | 全科目が正しい箱 |
 | calc | `question`、`answer`、`wrong_patterns`(値) | 値の一致 |
@@ -153,12 +153,18 @@ content/
   contra: true                # 評価勘定。資産の控除項目で、増加は貸方
   why: 固定資産の帳簿価額を直接減らさず、取得原価と減価の累計を別々に見せるためです。
   concepts: [cost_allocation, contra_account]
+- id: cash_over_and_short
+  name: 現金過不足
+  element: asset              # 仮勘定でも、残高をふだん置く側を書く
+  temporary: true             # 仮勘定。決算の財務諸表に載せられず、必ず本来の科目へ振り替える科目だけに付ける(仮払金・仮受金は資産・負債のまま)
+  why: 現金の差額を一時的に置いておく「仮の置き場」で、原因が分かるまで現金の仲間として扱うからです。
 ```
 
 ### 3.2 概念(concepts/assets.yaml)
 ```yaml
 - id: cost_allocation
   name: 費用配分の原則
+  aliases: [費用配分]                  # 別名(表記の揺れ)。用語集の検索で引く(読みとは分ける)
   reading: [ひようはいぶんのげんそく]   # ひらがなの読み。用語集の検索で引く
   short: 長く使うものの購入代金を、使う期間に分けて費用にする考え方
   summary: 資産の取得原価を、その資産が使われる期間にわたって費用として配分する考え方。収益と費用を同じ期間に対応させるためにある。

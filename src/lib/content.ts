@@ -53,7 +53,7 @@ export interface GlossaryEntry {
   id: string;
   kind: "concept" | "account";
   name: string;
-  // 勘定科目の別名。概念は空
+  // 別名。概念と勘定科目の両方から集める
   aliases: string[];
   // ひらがなの読み。用語集の検索で引く
   reading: string[];
@@ -81,7 +81,7 @@ export const glossary: GlossaryEntry[] = [
       id: c.id,
       kind: "concept" as const,
       name: c.name,
-      aliases: account?.aliases ?? [],
+      aliases: [...c.aliases, ...(account?.aliases ?? [])],
       reading: [...c.reading, ...(account?.reading ?? [])],
       short: c.short,
       summary: c.summary,
