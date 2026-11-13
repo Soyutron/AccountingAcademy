@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 // Issue #72: 学習中に気づいた誤りを、単元とステップの文脈つきでGitHubに伝えられるようにする
-const REPO = "https://github.com/Soyutron/openboki";
+const REPO = "https://github.com/openboki/openboki";
 
 test("「誤りを報告」は単元のパスと表示中のステップ番号を埋めたIssueテンプレートを開く", async ({ page }) => {
   await page.goto("/units/bookkeeping-basics/five-elements");

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = { title: "プライバシーポリシー" };
 
 // 運営者名と問い合わせ先は正式名称の決定(#76)で置き換える。法的な文言は運営者が最終確認する
-const ISSUES_URL = "https://github.com/Soyutron/openboki/issues";
+const ISSUES_URL = "https://github.com/openboki/openboki/issues";
 
 export default function PrivacyPage() {
   return (

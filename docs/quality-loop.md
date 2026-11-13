@@ -132,7 +132,7 @@ Monkeyテスト(人格: …)で検出。操作履歴: logs/monkey/<session>/hist
 
 ラベル: `bug` + `needs-triage` + `p1`〜`p3` + 領域(`area:ide` / `area:content` / `area:progress` / `area:ui`)。
 スクリーンショットは`gh`ではIssueに添付できないので、初期はローカルパスの参照に留める。必要になったら
-orphanブランチ`evidence`にpushして`blob/evidence/...?raw=true`でリンクする(private repoなのでログイン中の本人だけ見える)。
+orphanブランチ`evidence`にpushして`blob/evidence/...?raw=true`でリンクする(publicリポジトリなので誰でも見える。学習者の情報や秘密が写っていないことを確かめてからpushする)。
 
 ### 4.3 ② 自動トリアージ(新設。TaxForgeでは人手)
 
