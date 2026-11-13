@@ -30,7 +30,7 @@ import { HelpDialog } from "./help-dialog";
 import { HelpControlsContext, HelpIcon } from "./help-icon";
 import { FirstTimeNote } from "./first-time-note";
 import { Spotlight } from "./spotlight";
-import { type HelpContext, type HelpTopic, firstTimeTopic } from "@/lib/help-topics";
+import { type HelpContext, type HelpTopic, SANDBOX_NOT_SAVED, firstTimeTopic } from "@/lib/help-topics";
 import { FIRST_UNIT_AFTER_TUTORIAL, TUTORIAL_UNIT_ID, markSeen, updateTutorial, useTutorialState } from "@/lib/tutorial-store";
 import { REPO_URL } from "@/lib/repo";
 
@@ -987,7 +987,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
               }}
             >
               <h3 className="text-sm font-semibold">自由に試す</h3>
-              <p className="text-xs text-muted-foreground">好きな取引を記帳して、結果の財務諸表がどう動くか確かめてみましょう。</p>
+              <p className="text-xs text-muted-foreground">好きな取引を記帳して、結果の財務諸表がどう動くか確かめてみましょう。{SANDBOX_NOT_SAVED}</p>
               <JournalEditor accounts={accounts} value={draft} onChange={setDraft} />
               <Button type="submit" variant="outline" disabled={!canPostFreely} aria-describedby={sideHint ? "free-side-hint" : draftReady && !freeBalanced ? "free-post-hint" : undefined}>
                 記帳する
