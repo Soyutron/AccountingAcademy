@@ -205,10 +205,10 @@ accounts:
   - id: capital_stock
     name: 資本金
     reading: [しほんきん]
-    short: 会社の持ち主(株主)が出したお金
+    short: 会社の持ち主が出した元手
     element: equity
     why: 返す義務のない元手であり、資産から負債を引いた残りである純資産を構成するからです。
-    example: 会社を作るときに、株主が出資した300万円。
+    example: 会社を作るときに、持ち主が出した300万円。
     concepts: [equity]
   - id: retained_earnings
     name: 繰越利益剰余金
