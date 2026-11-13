@@ -60,7 +60,7 @@ test("390pxの仕分けボードで間違えた後も「次へ →」が画面�
   await post(page, "現金", "資本金");
   await solved();
   let work = await openWorkspace(page);
-  for (const n of ["資産", "負債", "純資産", "収益", "費用"]) await page.getByLabel(`${n}の予想`, { exact: true }).selectOption({ label: "変わらない" });
+  for (const n of ["資産"]) await page.getByLabel(`${n}の予想`, { exact: true }).selectOption({ label: "変わらない" });
   await work.getByRole("button", { name: "予想して記帳する" }).click();
   await solved();
   await post(page, "現金", "借入金", "300000");

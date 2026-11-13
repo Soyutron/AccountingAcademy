@@ -19,7 +19,7 @@ test("「← 前へ」で戻ったステップの財務諸表は、そのステ�
   await next(page);
   await post(page, "現金", "資本金", 1000000);
   await next(page);
-  for (const label of ["資産の予想", "負債の予想", "純資産の予想", "収益の予想", "費用の予想"]) {
+  for (const label of ["資産の予想"]) {
     await work(page).getByLabel(label, { exact: true }).selectOption({ label: "変わらない" });
   }
   await work(page).getByRole("button", { name: "予想して記帳する" }).click();

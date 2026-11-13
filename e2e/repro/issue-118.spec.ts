@@ -20,7 +20,7 @@ test("「次へ →」で進むと祝福の札が消え、次の正解でも札�
   await expect(page.getByText("ステップ3 / 10")).toBeVisible();
   await expect(card).toHaveCount(0, { timeout: 500 });
 
-  for (const n of ["資産", "負債", "純資産", "収益", "費用"]) await page.getByLabel(`${n}の予想`, { exact: true }).selectOption({ label: "変わらない" });
+  for (const n of ["資産"]) await page.getByLabel(`${n}の予想`, { exact: true }).selectOption({ label: "変わらない" });
   await work.getByRole("button", { name: "予想して記帳する" }).click();
   await expect(done).toBeVisible();
   await expect(card).toHaveCount(1);
