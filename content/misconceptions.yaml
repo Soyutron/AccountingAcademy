@@ -475,9 +475,9 @@ misconceptions:
     concepts: [personal_account, debit_credit]
     remediation: birth-of-double-entry/memorandum-and-personal-accounts
   - id: personal_account_by_cash_direction
-    name: 人名勘定の左右をお金の向きで決める
-    description: 「お金を受け取ったら左、払ったら右」と考えて人名勘定に写している
-    correct: 人名勘定の左右は、相手がこちらに負うか(左)、こちらが相手に負うか(右)で決まる。相手から受け取ると相手の負いが減るので右、相手に払うとこちらの負いが減るので左
+    name: 人名勘定の左右をお金や物の向きで決める
+    description: 「お金や物を受け取ったら左、渡したら右」と考えて人名勘定に写している
+    correct: 人名勘定の左右は、相手がこちらに負うか(左)、こちらが相手に負うか(右)で決まる。相手から受け取ると相手の負いが減るので右、相手に払うとこちらの負いが減るので左。物を売って渡しても、相手が負うので左
     concepts: [personal_account, debit_credit]
     remediation: birth-of-double-entry/memorandum-and-personal-accounts
   - id: balance_reads_one_side
@@ -497,4 +497,10 @@ misconceptions:
     description: 口のもうけを元手や利益と損失のページへ移すときに、相手を現金にしている
     correct: 現金は代金を受け取ったときにすでに動いている。もうけを移しても現金は動かず、積み上がるのは元手(または利益と損失)
     concepts: [venture_accounting, double_entry]
+    remediation: birth-of-double-entry/venture-profit-and-double-entry
+  - id: closing_side_confused
+    name: 残高を移す側を取り違える
+    description: 口や利益と損失のページの残りを元手などへ移すとき、残っている側と同じ側に書いて、残高を消すどころか倍にしてしまう
+    correct: 残高を消すには、残っている側の反対側に同じ額を書く。右に残っていれば左に書いて消し、移す先のページの右に同じ額を書く
+    concepts: [double_entry, venture_accounting]
     remediation: birth-of-double-entry/venture-profit-and-double-entry

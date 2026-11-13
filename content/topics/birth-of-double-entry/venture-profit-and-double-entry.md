@@ -85,7 +85,8 @@ answer:
   credit: [{ account: pepper_voyage, amount: 60 }]
 wrong_patterns:
   - match: { swapped: true }
-    feedback: 売ったのでジョヴァンニがこちらに負います。彼のページは左、胡椒のページは売った側の右です。
+    misconception: personal_account_by_cash_direction
+    feedback: 胡椒がジョヴァンニの手に渡ったからといって、彼のページが右にはなりません。売ったので彼がこちらに負い、彼のページは左、胡椒のページは売った側の右です。
   - match: { debit: [{ account: cash }] }
     feedback: 代金はまだ受け取っていません。いま増えたのは、ジョヴァンニがこちらに負う分です。
   - match: { unbalanced: true }
@@ -144,7 +145,8 @@ answer:
   credit: [{ account: owner_capital, amount: 30 }]
 wrong_patterns:
   - match: { swapped: true }
-    feedback: 胡椒のページは右に30残っています。それを消すには左に30を書き、相手の元手は右です。
+    misconception: closing_side_confused
+    feedback: 胡椒のページは右に30残っています。それを消すには反対の左に30を書き、相手の元手は右です。
   - match: { credit: [{ account: cash }] }
     misconception: profit_is_cash
     feedback: もうけは現金のページには書きません。現金は売った代金を受け取ったときに、すでに動いています。もうけが積み上がるのは元手です。
