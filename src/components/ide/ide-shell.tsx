@@ -890,7 +890,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
   const misIds = result && "misconceptions" in result ? result.misconceptions : result?.misconception ? [result.misconception] : [];
   const misList = misIds.flatMap((id) => misconceptions[id] ?? []);
   const classify = task.type === "classify" ? classifyBoard(task, accountMap) : null;
-  const helpCtx: HelpContext = { taskType: task.type, postedCount: visiblePosted.length, isLast, hasHint: Boolean(hint) };
+  const helpCtx: HelpContext = { taskType: task.type, postedCount: visiblePosted.length, isLast, hasHint: Boolean(hint), view: unit.view };
   const openHelpTopic = (id: string, returnTo: HTMLElement | null) => {
     helpReturnTo.current = returnTo;
     setHelpFocus(id);
@@ -915,7 +915,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
   const paneClass = (p: Pane) => `${pane === p ? "block" : "hidden"} lg:block min-h-0 min-w-0 lg:overflow-y-auto p-4`;
 
   return (
-    <HelpControlsContext value={{ openTopic: openHelpTopic, hidden: tourActive }}>
+    <HelpControlsContext value={{ openTopic: openHelpTopic, hidden: tourActive, ctx: helpCtx }}>
     <div className="flex flex-col lg:h-[calc(100dvh-49px)]">
       <div className="flex items-center gap-3 border-b px-4 py-2 text-sm">
         <span className="font-semibold truncate">{unit.title}</span>
@@ -1041,7 +1041,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
         </section>
 
         <section ref={workPane} id="pane-work" role="region" aria-label="ワークスペース" tabIndex={-1} className={`${paneClass("work")} bg-surface-work lg:border-r space-y-4 ${FOCUS_TARGET_CLASS}`}>
-          {showFirstTime && <FirstTimeNote topic={firstTime} onMore={(button) => openHelpTopic(firstTime.id, button)} onDismiss={() => {
+          {showFirstTime && <FirstTimeNote topic={firstTime} ctx={helpCtx} onMore={(button) => openHelpTopic(firstTime.id, button)} onDismiss={() => {
             // 入力欄へ移すとスマートフォンでキーボードが開くので、ペイン自体へ移す
             workPane.current?.focus();
             markSeen(firstTime.id);
@@ -1212,7 +1212,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
               )}
             </form>
           )}
-          {task.type === "observe" && isLast && (
+          {task.type === "observe" && isLast && unit.view !== "none" && (
             <form
               className="space-y-2"
               data-tour="task-sandbox"
@@ -1222,7 +1222,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
               }}
             >
               <h3 className="text-sm font-semibold">自由に試す</h3>
-              <p className="text-xs text-muted-foreground">好きな取引を記帳して、結果の財務諸表がどう動くか確かめてみましょう。{SANDBOX_NOT_SAVED}</p>
+              <p className="text-xs text-muted-foreground">好きな取引を記帳して、{unit.view === "ledger" ? "結果の試算と元帳" : "結果の財務諸表"}がどう動くか確かめてみましょう。{SANDBOX_NOT_SAVED}</p>
               <JournalEditor accounts={accounts} value={draft} onChange={setDraft} currency={unit.currency} />
               <Button type="submit" variant="outline" disabled={!canPostFreely} aria-describedby={sideHint ? "free-side-hint" : draftReady && !freeBalanced ? "free-post-hint" : undefined}>
                 記帳する
@@ -1240,6 +1240,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
             </form>
           )}
 
+          {unit.view !== "none" && (
           <Tabs defaultValue="journal">
             <TabsList data-tour="ledger">
               <TabsTrigger value="journal">仕訳帳(記帳済み)</TabsTrigger>
@@ -1262,6 +1263,7 @@ export function IdeShell({ unit, accounts, misconceptions, narratives, returnTit
             )}
             </TabsContent>
           </Tabs>
+          )}
         </section>
 
         <section id="pane-result" role="region" aria-label="結果" className={`${paneClass("result")} bg-surface-result`} data-tour="statements">

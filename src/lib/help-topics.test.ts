@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { HELP_CATEGORIES, HELP_TOPICS, currentTopics, helpTopic, topicBody } from "./help-topics";
+import { HELP_CATEGORIES, HELP_TOPICS, SANDBOX_NOT_SAVED, currentTopics, firstTimeTopic, helpTopic, topicBody, topicShort } from "./help-topics";
 
 // 「いまの画面でできること」は、現在のステップで画面に出ている機能だけに絞る(docs/help-design.md 4章)
 
-const base = { postedCount: 0, isLast: false, hasHint: false } as const;
+const base = { postedCount: 0, isLast: false, hasHint: false, view: "statements" } as const;
 
 describe("help topics", () => {
   it("idは重複せず、分類は登録済みのものだけ", () => {
@@ -22,7 +22,7 @@ describe("help topics", () => {
   });
 
   it("記帳が2件以上なら会社のかたちと帳簿をさかのぼるが加わり、ヒントがあればヒントも出る", () => {
-    const ids = currentTopics({ taskType: "post", postedCount: 2, isLast: false, hasHint: true }).map((t) => t.id);
+    const ids = currentTopics({ ...base, taskType: "post", postedCount: 2, hasHint: true }).map((t) => t.id);
     expect(ids).toEqual(["hint", "journal", "impact", "shape", "rewind"]);
   });
 
@@ -42,7 +42,7 @@ describe("help topics", () => {
 
   it("ペインは位置でなく名前で指す。タブ表示の画面に左右や中央は無い(Issue #148)", () => {
     for (const t of HELP_TOPICS) {
-      for (const text of [t.short, topicBody(t, { ...base, taskType: "post" })]) {
+      for (const text of [topicShort(t, { ...base, taskType: "post" }), topicBody(t, { ...base, taskType: "post" })]) {
         expect(text).not.toMatch(/左のガイド|右の表|右の「結果」|中央のタブ/);
       }
     }
@@ -50,7 +50,7 @@ describe("help topics", () => {
 
   it("calcの説明は表を読むとも読まないとも言わない。指示は本文に任せる(Issue #154)", () => {
     const calc = helpTopic("calc");
-    for (const text of [calc.short, topicBody(calc, { ...base, taskType: "calc" })]) expect(text).not.toContain("結果の表");
+    for (const text of [topicShort(calc, { ...base, taskType: "calc" }), topicBody(calc, { ...base, taskType: "calc" })]) expect(text).not.toContain("結果の表");
   });
 
   it("「記帳する」が不一致で押せないと言うのは、自由に試すのときだけ(Issue #199)", () => {
@@ -84,5 +84,23 @@ describe("first-time topics", () => {
     expect(canShowTarget(helpTopic("rewind"), { ...base, taskType: "post" })).toBe(false);
     expect(canShowTarget(helpTopic("rewind"), { ...base, taskType: "post", postedCount: 2 })).toBe(true);
     expect(canShowTarget(helpTopic("resume"), { ...base, taskType: "post" })).toBe(false);
+  });
+});
+
+describe("scenario.viewごとの自由に試す", () => {
+  const last = { ...base, taskType: "observe", isLast: true } as const;
+
+  it("view: noneでは記帳の場が無いので、自由に試すも初出の案内も出さない", () => {
+    expect(currentTopics({ ...last, view: "none" })).toEqual([]);
+    expect(firstTimeTopic({ ...last, view: "none" })).toBeNull();
+  });
+
+  it("view: ledgerでは財務諸表でなく試算と元帳を指す。statementsは従来の文言", () => {
+    const sandbox = helpTopic("sandbox");
+    for (const text of [topicShort(sandbox, { ...last, view: "ledger" }), topicBody(sandbox, { ...last, view: "ledger" })]) {
+      expect(text).toContain("結果の試算と元帳がどう動くか");
+      expect(text).not.toContain("財務諸表");
+    }
+    expect(topicShort(sandbox, last)).toBe(`最後のステップでは、好きな取引を記帳して財務諸表がどう動くか確かめられます。${SANDBOX_NOT_SAVED}`);
   });
 });

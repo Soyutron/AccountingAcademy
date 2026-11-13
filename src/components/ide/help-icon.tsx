@@ -4,7 +4,7 @@ import { CircleHelp } from "lucide-react";
 import { createContext, useContext, useRef, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useCloseWhenHidden } from "@/components/use-close-when-hidden";
-import { helpTopic } from "@/lib/help-topics";
+import { type HelpContext, helpTopic, topicShort } from "@/lib/help-topics";
 
 // 機能の見出し横の「?」。押すとその機能だけの短い説明を出す(docs/help-design.md 5.1)
 
@@ -13,6 +13,8 @@ export interface HelpControls {
   openTopic: (id: string, returnTo: HTMLElement | null) => void;
   // ツアー中はスポットライトと説明が重なるので出さない
   hidden: boolean;
+  // 単元によって文言が変わる話題のため
+  ctx: HelpContext;
 }
 
 // IDEの外(説明文中の仕訳エディタなど)では「使い方」が無いので、リンク無しで説明だけ出す
@@ -40,7 +42,7 @@ export function HelpIcon({ topic: id }: { topic: string }) {
       </PopoverTrigger>
       <PopoverContent align="start" className="w-72 space-y-2 text-sm" aria-label={topic.title}>
         <p className="font-semibold">{topic.title}</p>
-        <p>{topic.short}</p>
+        <p>{controls ? topicShort(topic, controls.ctx) : typeof topic.short === "string" && topic.short}</p>
         {controls && (
           <button
             type="button"
