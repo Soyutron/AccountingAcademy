@@ -43,7 +43,7 @@ const STEPS: TourStep[] = [
   { target: "journal-credit", pane: "work", title: "貸方(右)に書く", body: "科目に「資本金」、金額に100000と入れます。", done: (c) => hasLine(c.credit, "capital_stock", 100000), waiting: "貸方に 資本金100,000を入れてください" },
   { target: "impact", pane: "work", title: "影響がその場で見える", body: "資産 +100,000、純資産 +100,000。借方と貸方の合計も一致しました。記帳する前に、何が動くかが分かります。" },
   { target: "post-button", pane: "work", title: "記帳する", body: "「記帳する」を押します(金額欄でEnterでも記帳できます)。", done: (c) => c.postedCount >= 1, waiting: "「記帳する」を押してください", autoAdvance: true },
-  { target: "statements", pane: "result", title: "ここは結果", body: "貸借対照表に現金と資本金が現れ、▲ が付きました。記帳のたびにここが動きます。科目名に触れると意味が出ます。" },
+  { target: "statements", pane: "result", title: "ここは結果", body: "貸借対照表に現金と資本金が現れ、増えた額が「+」付きで出ました。記帳のたびにここが動きます。科目名に触れると意味が出ます。" },
   { target: "shape", pane: "result", title: "会社のかたち", body: "上の帯は、左の資産が右の負債と純資産でまかなわれている様子です。帯の幅が記帳で変わっていきます。" },
   { target: "hint", pane: "guide", title: "迷ったら", body: "「ヒントを見る」で手がかりが出ます。答えを変えて2回間違えると「答えを見る」も使えます。" },
   { target: "help-button", title: "困ったら「使い方」", body: "右上の「使い方」と見出し横の ? で、いつでも説明を読めます。「使い方」からこのチュートリアルもやり直せます。" },
