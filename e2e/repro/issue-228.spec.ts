@@ -10,10 +10,19 @@ test("スマホ幅の予想のselectは、他の入力欄と同じ16px以上で�
   await next.tap();
   await expect(page.getByText(/ステップ2 \//).first()).toBeVisible();
   await page.getByRole("tablist", { name: "ペインの切り替え" }).getByRole("tab", { name: "ワークスペース" }).tap();
-  await page.getByPlaceholder("金額(円)").first().fill("110000");
+  await page.getByPlaceholder("金額(円)").first().fill("125000");
   await page.getByRole("button", { name: "確認する" }).first().tap();
   await next.tap();
   await expect(page.getByText(/ステップ3 \//).first()).toBeVisible();
+  await page.getByRole("tablist", { name: "ペインの切り替え" }).getByRole("tab", { name: "ワークスペース" }).tap();
+  await page.getByLabel("借方の科目1").fill("仕入");
+  await page.getByLabel("借方の金額1").fill("15000");
+  await page.getByLabel("貸方の科目1").fill("繰越商品");
+  await page.getByLabel("貸方の金額1").fill("15000");
+  await page.getByRole("button", { name: "記帳する" }).tap();
+  await expect(page.getByRole("status").getByText("できました")).toBeVisible();
+  await next.tap();
+  await expect(page.getByText(/ステップ4 \//).first()).toBeVisible();
   await page.getByRole("tablist", { name: "ペインの切り替え" }).getByRole("tab", { name: "ワークスペース" }).tap();
   for (const label of ["資産", "負債", "純資産", "収益", "費用"]) {
     const select = page.getByLabel(`${label}の予想`, { exact: true });

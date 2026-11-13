@@ -37,13 +37,13 @@ const hasLine = (lines: JournalLine[], account: string, amount: number) => lines
 
 const STEPS: TourStep[] = [
   { title: "会計IDEへようこそ", body: "2分で使い方を体験します。実際に1件記帳してみましょう。いつでもスキップできます。" },
-  { target: "guide", pane: "guide", title: "ここはガイド", body: "物語と「やること」を読む場所です。ステップごとに2〜4文だけなので、読んだらすぐ手を動かします。" },
+  { target: "guide", pane: "guide", title: "ここはガイド", body: "物語と「やること」を読む場所です。ステップごとに短い説明を読んだら、すぐ手を動かします。" },
   { target: "next-button", title: "次へ進む", body: "「次へ →」を押して、最初の課題に進みましょう。", done: (c) => c.stepIndex >= 1, waiting: "「次へ →」を押してください", autoAdvance: true },
   { target: "journal-debit", pane: "work", title: "借方(左)に書く", body: "科目に「現金」、金額に100000と入れます。科目は途中まで打つと候補が出ます。", done: (c) => hasLine(c.debit, "cash", 100000), waiting: "借方に 現金100,000を入れてください" },
   { target: "journal-credit", pane: "work", title: "貸方(右)に書く", body: "科目に「資本金」、金額に100000と入れます。", done: (c) => hasLine(c.credit, "capital_stock", 100000), waiting: "貸方に 資本金100,000を入れてください" },
   { target: "impact", pane: "work", title: "影響がその場で見える", body: "資産 +100,000、純資産 +100,000。借方と貸方の合計も一致しました。記帳する前に、何が動くかが分かります。" },
   { target: "post-button", pane: "work", title: "記帳する", body: "「記帳する」を押します(金額欄でEnterでも記帳できます)。", done: (c) => c.postedCount >= 1, waiting: "「記帳する」を押してください", autoAdvance: true },
-  { target: "statements", pane: "result", title: "ここは結果", body: "貸借対照表に現金と資本金が現れ、▲ が付きました。記帳のたびにここが動きます。科目名に触れると意味が出ます。" },
+  { target: "statements", pane: "result", title: "ここは結果", body: "貸借対照表に現金と資本金が現れ、増えた額が「+」付きで出ました。記帳のたびにここが動きます。科目名に触れると意味が出ます。" },
   { target: "shape", pane: "result", title: "会社のかたち", body: "上の帯は、左の資産が右の負債と純資産でまかなわれている様子です。帯の幅が記帳で変わっていきます。" },
   { target: "hint", pane: "guide", title: "迷ったら", body: "「ヒントを見る」で手がかりが出ます。答えを変えて2回間違えると「答えを見る」も使えます。" },
   { target: "help-button", title: "困ったら「使い方」", body: "右上の「使い方」と見出し横の ? で、いつでも説明を読めます。「使い方」からこのチュートリアルもやり直せます。" },
@@ -148,7 +148,12 @@ export function TutorialTour({
         </div>
         <p id="tutorial-tour-title" className="font-semibold">{step.title}</p>
         <p id="tutorial-tour-body">{step.body}</p>
-        {!satisfied && step.waiting && <p className="text-xs text-primary">{step.waiting}</p>}
+        {/* 入力の段は自動で進まないので、済んだことと、画面下の「次へ →」ではなくカードの「次へ」を押すことを示す(Issue #166) */}
+        {step.waiting && (
+          <p className="text-xs text-primary" aria-live="polite">
+            {satisfied ? "できました。このカードの「次へ」で進みます" : step.waiting}
+          </p>
+        )}
         {awayPane && (
           <div className="flex items-center justify-between gap-2 rounded-md bg-muted/60 p-2 text-xs">
             <span>「{paneLabels[awayPane]}」のタブに戻ると続けられます</span>

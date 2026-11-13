@@ -1,13 +1,21 @@
 import { type Page, expect, test } from "@playwright/test";
 
-// 売れ残りと売上原価のステップ7(仕分けボード)まで正解で進める
+// 売れ残りと売上原価のステップ6(仕分けボード)まで正解で進める
 async function openBoard(page: Page) {
   await page.goto("/units/merchandise/cost-of-goods-sold");
   const next = () => page.getByRole("button", { name: "次へ →" }).click();
   const ok = () => expect(page.getByRole("status").getByText("できました")).toBeVisible();
+  const work = page.getByRole("region", { name: "ワークスペース" });
   await next();
-  await page.getByPlaceholder("金額(円)").fill("110000");
+  await page.getByPlaceholder("金額(円)").fill("125000");
   await page.getByRole("button", { name: "確認する" }).click();
+  await ok();
+  await next();
+  await work.getByLabel("借方の科目1").fill("仕入");
+  await work.getByLabel("借方の金額1").fill("15000");
+  await work.getByLabel("貸方の科目1").fill("繰越商品");
+  await work.getByLabel("貸方の金額1").fill("15000");
+  await page.getByRole("button", { name: "記帳する" }).click();
   await ok();
   await next();
   const pred: Record<string, string> = { 資産: "増える", 負債: "変わらない", 純資産: "増える", 収益: "変わらない", 費用: "減る" };
@@ -19,20 +27,10 @@ async function openBoard(page: Page) {
   await page.getByRole("button", { name: "予想して記帳する" }).click();
   await ok();
   await next();
-  await page.getByPlaceholder("金額(円)").fill("93500");
+  await page.getByPlaceholder("金額(円)").fill("78500");
   await page.getByRole("button", { name: "確認する" }).click();
   await ok();
   await next();
-  const work = page.getByRole("region", { name: "ワークスペース" });
-  for (const [cr, amount] of [["繰越商品", "22000"], ["買掛金", "20000"]]) {
-    await work.getByLabel("借方の科目1").fill("仕入");
-    await work.getByLabel("借方の金額1").fill(amount);
-    await work.getByLabel("貸方の科目1").fill(cr);
-    await work.getByLabel("貸方の金額1").fill(amount);
-    await page.getByRole("button", { name: "記帳する" }).click();
-    await ok();
-    await next();
-  }
   const board = page.getByRole("group", { name: "仕分けボード" });
   const putIn = (box: string) => board.getByRole("button", { name: `${box} ← ここに入れる`, exact: true }).click();
   const place = async (account: string, box: string) => {

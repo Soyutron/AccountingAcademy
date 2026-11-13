@@ -63,7 +63,7 @@ success: 結果の表に車両運搬具1,200,000が現れ、現金が同じだ�
 
 ## 1年分を決める
 軽バンの1,200,000円を、何年に分けるか。この「何年使えるか」の見積もりを[[useful_life|耐用年数]]と呼びます。
-([[acquisition_cost|取得原価]] − [[residual_value|残存価額]])÷ 耐用年数 で毎年同じ金額を費用にする方法が[[straight_line_method|定額法]]です。耐用年数を動かして、1年分の[[depreciation_expense|減価償却費]]が200,000円になる年数を探してみましょう。
+([[acquisition_cost|取得原価]] − [[residual_value|残存価額]])÷ 耐用年数 で毎年同じ金額を費用にする方法が[[straight_line_method|定額法]]です。軽バンを毎年同じように使い、同じように価値が減ると見なす考え方です。耐用年数を動かして、1年分の[[depreciation_expense|減価償却費]]が200,000円になる年数を探してみましょう。
 
 ```figure
 type: timeline
@@ -87,7 +87,7 @@ success: (取得原価 − 残存価額)÷ 耐用年数 で、1年分が200,000�
 ```
 
 ## 最後に残る価値
-6年乗った軽バンでも、中古車として300,000円くらいで売れそうです。使い終わったときに残る見込みの価値を[[residual_value|残存価額]]と呼び、この分は費用にしません。
+6年乗った軽バンでも、中古車として300,000円くらいで売れそうです。使い終わったときに残る見込みの価値を[[residual_value|残存価額]]と呼び、この分は費用にしません。売って取り戻せる見込みの分は、使って消えたものではないからです。
 残存価額を動かして、1年分の減価償却費が150,000円になる金額を探してみましょう。
 
 ```task
@@ -104,7 +104,7 @@ success: 配分するのは、取得原価から残存価額を引いた分で�
 
 ## 使った月の分だけ
 ここから先は、残存価額ゼロ・耐用年数6年で進めます。1年分は200,000円ですが、軽バンを買ったのは10月1日。決算の3月31日までは6か月しか使っていません。
-使った月数の分だけ費用にする計算を[[monthly_proration|月割り計算]]と呼びます。初年度の減価償却費はいくらでしょう。
+10月に買ったなら、4〜9月の分はまだ使っていないので今期の費用ではありません。[[cost_allocation|費用配分]]は使った期間に分けるので、使った月数の分だけ費用にします。この計算を[[monthly_proration|月割り計算]]と呼びます。初年度の減価償却費はいくらでしょう。
 
 ```task
 type: calc
@@ -132,14 +132,14 @@ success: 初年度は100,000円。買った日から決算日まで数えるの�
 
 ## 予想してから記帳する
 軽バンの減価償却費100,000円を記帳します。その前に、5つの要素がどう動くか予想してみましょう。
-右に書く[[accumulated_depreciation|減価償却累計額]]が、負債ではなかったことを思い出してください。
+右には、軽バンの価値の減りを積む[[accumulated_depreciation_vehicle|車両運搬具減価償却累計額]]を書きます。累計額は資産ごとに分けて積みます。[[accumulated_depreciation|減価償却累計額]]が負債ではなかったことも思い出してください。
 
 ```task
 type: predict
 transaction: 決算にあたり、軽バン(車両運搬具)の減価償却費100,000円を間接法で計上した
 entry:
   debit: [{ account: depreciation_expense, amount: 100000 }]
-  credit: [{ account: accumulated_depreciation, amount: 100000 }]
+  credit: [{ account: accumulated_depreciation_vehicle, amount: 100000 }]
 answer: { asset: decrease, liability: none, equity: decrease, revenue: none, expense: increase }
 wrong_patterns:
   - match: { liability: increase }
@@ -160,12 +160,12 @@ success: 資産が減り、費用が増え、利益が減りました。現金�
 
 ## マシンの分も記帳する
 2号店のコーヒーマシン600,000円も、10月1日に買ったものです。耐用年数6年、残存価額ゼロなら1年分は100,000円。こちらも使ったのは6か月です。
-マシン(備品)の減価償却を、自分で計算して記帳してみましょう。累計額は「備品減価償却累計額」と書いても構いません。
+マシン(備品)の減価償却を、自分で計算して記帳してみましょう。累計額は資産ごとに分けて積むので、マシンの減りは軽バンの累計額ではなく[[accumulated_depreciation_equipment|備品減価償却累計額]]に積みます。総称の「減価償却累計額」と書いても構いません。
 
 ```figure
 type: taccount
-alt: 減価償却累計額のT勘定。右側に軽バンの100,000円がすでに積まれていて、マシンの分がこの下に加わる
-account: accumulated_depreciation
+alt: 車両運搬具減価償却累計額のT勘定。右側に軽バンの100,000円が積まれている。マシンの分はここに加えず、備品減価償却累計額という別の勘定に積む
+account: accumulated_depreciation_vehicle
 credit:
   - { label: 軽バン(6か月分), amount: 100000 }
 ```
@@ -175,17 +175,29 @@ type: post
 transaction: 決算にあたり、コーヒーマシン(備品)の減価償却費を間接法で計上した(取得原価600,000円、耐用年数6年、残存価額ゼロ、10月1日取得)
 answer:
   debit: [{ account: depreciation_expense, amount: 50000 }]
-  credit: [{ account: accumulated_depreciation, amount: 50000 }]
+  credit: [{ account: accumulated_depreciation_equipment, amount: 50000 }]
+alternatives:
+  - debit: [{ account: depreciation_expense, amount: 50000 }]
+    credit: [{ account: accumulated_depreciation, amount: 50000 }]
 wrong_patterns:
   - match: { swapped: true }
     misconception: debit_means_increase
     feedback: 減価償却費は費用なので左で増えます。左右を入れ替えてみましょう。
+  - match: { debit: [{ account: accumulated_depreciation }], credit: [{ account: depreciation_expense }] }
+    misconception: debit_means_increase
+    feedback: 減価償却費は費用なので左で増えます。左右を入れ替えてみましょう。
+  - match: { credit: [{ account: accumulated_depreciation_vehicle }] }
+    misconception: accumulated_depreciation_any_asset
+    feedback: 車両運搬具減価償却累計額は、軽バンの価値の減りを積む科目です。累計額は資産ごとに分けて積み、その資産の取得原価から引いて帳簿価額を出します。マシンの減りは備品減価償却累計額に積みましょう。
+  - match: { credit: [{ account: accumulated_depreciation_building }] }
+    misconception: accumulated_depreciation_any_asset
+    feedback: 建物減価償却累計額は、建物の価値の減りを積む科目です。累計額は資産ごとに分けて積み、その資産の取得原価から引いて帳簿価額を出します。マシンの減りは備品減価償却累計額に積みましょう。
   - match: { debit: [{ account: depreciation_expense, amount: 100000 }] }
     misconception: forgot_monthly_proration
     feedback: 1年分は100,000ですが、使ったのは6か月です。月割りしてみましょう。
   - match: { credit: [{ account: equipment }] }
     misconception: direct_writeoff_vs_contra
-    feedback: 備品はそのまま残し、減った分は減価償却累計額に積みます。
+    feedback: 備品はそのまま残し、減った分は備品減価償却累計額に積みます。
   - match: { credit: [{ account: cash }] }
     misconception: depreciation_as_cash_outflow
     feedback: 現金はマシンを買ったときにもう減っています。減価償却ではお金は動きません。
@@ -206,13 +218,13 @@ wrong_patterns:
     feedback: 消耗品費は、文房具のようにすぐ使い切る物の費用です。何年も使うマシンの使った分には、減価償却のための費用の科目があります。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。
-hint: 600,000 ÷ 6年 = 100,000。それを6か月分にすると50,000です。
-success: 累計額は軽バンの分と合わせて150,000になりました。減価償却費は合計150,000、当期純利益は50,000です。
+hint: 600,000 ÷ 6年 = 100,000。それを6か月分にすると50,000です。右は備品減価償却累計額です。
+success: マシンの減り50,000は、軽バンの累計額100,000とは別の行に積まれました。減価償却費は合計150,000、当期純利益は50,000です。
 ```
 
 ## 2年目の終わりの価値
 2年目の決算では、軽バンを4月から3月まで丸1年使います。月割りは要らないので、2年目の減価償却費は1年分の200,000円です。
-2年目の決算が終わったとき、軽バンの[[book_value|帳簿価額]]はいくらになっているでしょう。取得原価1,200,000から、1年目と2年目の減価償却費の合計を引いてみましょう。
+2年目の決算が終わったとき、軽バンの[[book_value|帳簿価額]]はいくらになっているでしょう。取得原価1,200,000から、車両運搬具減価償却累計額に積んだ1年目と2年目の減価償却費の合計を引いてみましょう。
 
 ```task
 type: calc
@@ -227,9 +239,9 @@ wrong_patterns:
   - match: 1100000
     feedback: それは1年目の決算を終えたときの帳簿価額です。2年目の分も引きましょう。
   - match: 1050000
-    feedback: 結果の累計額150,000は、コーヒーマシンの50,000も入った1年目の終わりの合計で、2年目の分はまだ入っていません。軽バンの分だけ、100,000 + 200,000を引きましょう。
+    feedback: 1年目の累計額を、コーヒーマシンの50,000まで合わせた150,000で引いています。マシンの分は備品の累計額で、軽バンの帳簿価額には関係しません。軽バンの分だけ、100,000 + 200,000を引きましょう。
   - match: 850000
-    feedback: 結果の累計額150,000には、コーヒーマシンの50,000も入っています。軽バンの1年目は100,000なので、100,000 + 200,000を引きましょう。
+    feedback: コーヒーマシンの50,000まで引いています。マシンの分は備品の累計額で、軽バンの帳簿価額には関係しません。軽バンの累計額は1年目100,000 + 2年目200,000です。
 hint: 1,200,000 − (100,000 + 200,000)。
 success: 帳簿価額は900,000円。この先は毎年200,000ずつ減り、あと4年半、取得から6年(耐用年数どおり)でゼロになります。
 ```

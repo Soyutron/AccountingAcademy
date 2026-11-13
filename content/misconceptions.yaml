@@ -60,6 +60,12 @@ misconceptions:
     correct: 減価償却累計額は資産のマイナスを表す評価勘定。誰かに支払う義務ではないので負債ではなく、貸借対照表では資産から控除して表示する
     concepts: [contra_account, indirect_method]
     remediation: depreciation/what-is-depreciation
+  - id: accumulated_depreciation_any_asset
+    name: 累計額はどの資産の分でもよい
+    description: 減価償却累計額は資産の種類を問わず、建物・車両・備品のどの累計額に積んでも同じだと思っている
+    correct: 累計額は資産ごとに分けて積み、その資産の取得原価から引いて帳簿価額を出す。備品の減りは備品減価償却累計額に積み、建物や車両の累計額には混ぜない
+    concepts: [contra_account, book_value]
+    remediation: depreciation/what-is-depreciation
   - id: contra_increase_as_asset_increase
     name: 累計額が増えると資産が増える
     description: 減価償却累計額の金額が増えるのを見て、資産の合計も増えると思っている
@@ -171,7 +177,13 @@ misconceptions:
   - id: purchases_equal_cogs
     name: 仕入の合計がそのまま売上原価
     description: 1年に仕入れた金額の全部が、売った商品の原価だと思っている
-    correct: 売れ残った商品の分は、まだ費用ではない。仕入の合計から期末の商品を引いた金額が売上原価で、売れ残りは繰越商品(資産)として次の期に持ち越す
+    correct: 売れ残った商品の分は、まだ費用ではない。期首の商品と仕入の合計から期末の商品を引いた金額が売上原価で、売れ残りは繰越商品(資産)として次の期に持ち越す
+    concepts: [cost_of_goods_sold, ending_inventory]
+    remediation: merchandise/cost-of-goods-sold
+  - id: beginning_inventory_forgotten
+    name: 期首の商品を売上原価に入れ忘れる
+    description: 前の期から持ち越した商品(期首の商品)を忘れ、この期の仕入から売れ残りを引いただけで売上原価を求めてしまう
+    correct: 期首の商品もこの期に売る商品の一部。売上原価は期首の商品 + 当期の仕入 − 期末の売れ残りで、決算では「仕入 / 繰越商品」で期首の商品を仕入に入れてから売れ残りを取り出す
     concepts: [cost_of_goods_sold, ending_inventory]
     remediation: merchandise/cost-of-goods-sold
   - id: inventory_transfer_as_transaction

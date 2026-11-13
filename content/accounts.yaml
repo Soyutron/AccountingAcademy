@@ -132,13 +132,40 @@ accounts:
     concepts: [asset, tangible_fixed_assets]
   - id: accumulated_depreciation
     name: 減価償却累計額
-    aliases: [建物減価償却累計額, 備品減価償却累計額, 車両運搬具減価償却累計額]
     reading: [げんかしょうきゃくるいけいがく]
-    short: これまでに計上した減価償却費の合計。固定資産の価値がどれだけ減ったかを表す
+    short: これまでに計上した減価償却費の合計。固定資産の価値がどれだけ減ったかを表す。建物減価償却累計額のように資産ごとに分けた科目の総称
     element: asset
     contra: true
     why: 固定資産の勘定の金額(取得原価)を直接減らさず、取得原価と減価の累計を別々に見せるための「資産のマイナス」項目だからです。支払う義務ではないので負債ではありません。
     example: 100万円のトラックを毎年20万円ずつ償却して2年たったときの40万円。トラックの帳簿価額は60万円になる。
+    concepts: [contra_account, depreciation, indirect_method]
+  - id: accumulated_depreciation_building
+    name: 建物減価償却累計額
+    reading: [たてものげんかしょうきゃくるいけいがく]
+    short: 建物について、これまでに計上した減価償却費の合計
+    element: asset
+    contra: true
+    why: 建物の取得原価から差し引いて、建物の帳簿価額を出すための「資産のマイナス」項目だからです。どの固定資産の価値の減りかを分けて積むので、建物以外の減りはここに入れません。
+    example: 2,000万円の店舗を毎年50万円ずつ償却して4年たったときの200万円。店舗の帳簿価額は1,800万円になる。
+    concepts: [contra_account, depreciation, indirect_method]
+  - id: accumulated_depreciation_equipment
+    name: 備品減価償却累計額
+    reading: [びひんげんかしょうきゃくるいけいがく]
+    short: 備品について、これまでに計上した減価償却費の合計
+    element: asset
+    contra: true
+    why: 備品の取得原価から差し引いて、備品の帳簿価額を出すための「資産のマイナス」項目だからです。どの固定資産の価値の減りかを分けて積むので、車や建物の減りはここに入れません。
+    example: 60万円のコーヒーマシンを毎年10万円ずつ償却して2年たったときの20万円。マシンの帳簿価額は40万円になる。
+    concepts: [contra_account, depreciation, indirect_method]
+  - id: accumulated_depreciation_vehicle
+    name: 車両運搬具減価償却累計額
+    aliases: [車両減価償却累計額]
+    reading: [しゃりょううんぱんぐげんかしょうきゃくるいけいがく]
+    short: 車両運搬具について、これまでに計上した減価償却費の合計
+    element: asset
+    contra: true
+    why: 車両運搬具の取得原価から差し引いて、車の帳簿価額を出すための「資産のマイナス」項目だからです。どの固定資産の価値の減りかを分けて積むので、備品や建物の減りはここに入れません。
+    example: 120万円の軽バンを毎年20万円ずつ償却して3年たったときの60万円。軽バンの帳簿価額は60万円になる。
     concepts: [contra_account, depreciation, indirect_method]
   - id: accounts_payable
     name: 買掛金
