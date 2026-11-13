@@ -62,7 +62,7 @@ export function GlossarySearch({ entries, domainTitles, domainOf, urlQuery = "" 
               <div key={e.id} id={e.id} className="rounded-md border p-3 scroll-mt-20">
                 <dt className="font-medium flex items-center gap-2">
                   {e.name}
-                  {e.element && <ElementBadge element={e.element} contra={e.contra} size="xs" />}
+                  {e.element && <ElementBadge element={e.element} contra={e.contra} temporary={e.temporary} size="xs" />}
                 </dt>
                 <dd className="mt-1 text-sm space-y-1">
                   {e.aliases.length > 0 && <p className="text-xs text-muted-foreground">別名: {e.aliases.join("、")}</p>}
