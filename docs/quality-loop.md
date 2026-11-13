@@ -24,7 +24,7 @@ AccountingAcademyに移植した。§1〜§3は調査の記録、§4以降が設
 | 無人ループ | `scripts/monkey-loop.sh`(約110行) | 終了時刻まで人格をランダムに選んで`claude -p`を反復。stopファイル、3連続失敗で停止、利用上限はリセットまで待機 |
 | 環境起動 | `scripts/monkey-services.sh` | Supabase / スタブ / LangGraph / Nextをまとめてup / down / status |
 | 利用上限 | `scripts/claude-usage-limit.sh` | ログの文言で上限を検知し、10分ごとにhaikuへ疎通して解除を待つ |
-| Issue修正 | `scripts/issue-agent.sh`(約330行)+ `scripts/issue-agent/*.md`(work / gate / review / recheck / fix / plan)+ `*.schema.json` | 1 IssueをworktreeでOpusが調査・計画・実装 → スクリプトの関門(未コミット無し・差分あり・保護パス・`make check`)→ Fableが読み取り専用でレビュー(`must`があれば差し戻し、最大2ラウンド)→ `feature`へ`--no-ff`マージ → push。ラベル`agent:in-progress` / `agent:done` / `agent:needs-human`で状態を持つ |
+| Issue修正 | `scripts/issue-agent.sh`(約330行)+ `scripts/issue-agent/*.md`(work / gate / review / recheck / fix / plan)+ `*.schema.json` | 1 Issueをworktreeで実装側のモデル(コードはOpus、`area:content`はFable)が調査・計画・実装 → スクリプトの関門(未コミット無し・差分あり・保護パス・`make check`)→ Fableが読み取り専用でレビュー(`must`があれば差し戻し、最大2ラウンド)→ `feature`へ`--no-ff`マージ → push。ラベル`agent:in-progress` / `agent:done` / `agent:needs-human`で状態を持つ |
 | Issueループ | `scripts/issue-loop.sh` | `ready-for-agent`のIssueを古い順に`issue-agent.sh`へ渡す。終了コードで継続可否を決める(環境の問題だけ停止) |
 | トリアージ | `.claude/skills/triage/`(人が`/triage`で起動) | `needs-triage` → `ready-for-agent`へ。Agent Briefを書く。**ここは人手** |
 | ラベル語彙 | `docs/agents/triage-labels.md`、`make issue-labels` | needs-triage / needs-info / ready-for-agent / ready-for-human / wontfix + `agent:*` |
@@ -158,7 +158,7 @@ TaxForgeの流れをそのまま使い、次の点を変える。
 | 回帰テストの必須化 | 推奨 | **必須**。Issueの再現スクリプトを`e2e/repro/issue-<n>.spec.ts`かVitestに昇格させ、修正前に失敗・修正後に成功することを`work.md`で求める。レビューは「振る舞いを変えたのにテストが無い」を`must`にする(既存と同じ) |
 | 保護パス | migrations、`.github`、`Makefile`、`scripts/issue-*`、`.env` | `supabase/migrations/`、`.github/`、`.githooks/`、`scripts/`、`.claude/`、`Makefile`、`velite.config.ts`のスキーマ変更、`.env*`。`content/`は **許可**(コンテンツの不具合が主戦場) |
 | 禁止ツール | TaxForgeのMCP群 | `mcp__next-devtools`以外のMCP、`Bash(supabase:*)`、`Bash(gh issue edit|close:*)`、gitのpush / merge / checkout / worktree。加えてPreToolUseフックで`git push`を含むBash文字列を拒否 |
-| モデル | 実装opus / レビューfable | 同じ(実績あり) |
+| モデル | 実装opus / レビューfable | コードの修正はopus、`area:content`(解説・採点・誤解・用語・図)の実装はfable(`ISSUE_CONTENT_MODEL`)、レビューはfable。コンテンツの作成と品質に直接関わる作業はFable、トリアージやバグ修正はopusという方針(2026-11-14決定) |
 | 統合モード | 直統合 | `ISSUE_MODE=merge`(既定)と`ISSUE_MODE=pr`(`gh pr create`で止める)。**導入初期は`pr`で5件ほど人が見てから`merge`に切り替える**(TaxForge §8と同じ段階導入) |
 
 コンテンツの修正で注意する境界(CLAUDE.md): 誤解IDを省略しない、試験固有の情報を単元に書かない、5節テンプレートを省略しない。`review.md`のStandardsにこの3点を明記する。
