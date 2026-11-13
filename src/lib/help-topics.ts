@@ -36,6 +36,9 @@ export const HELP_CATEGORIES: { id: HelpCategory; label: string }[] = [
 
 const canWrite = (c: HelpContext) => c.taskType === "post" || (c.taskType === "observe" && c.isLast);
 
+/** 「自由に試す」の記帳は保存しない(永続化はroadmapのサンドボックス機能で決める。Issue #160)。見出しの下にも出す */
+export const SANDBOX_NOT_SAVED = "ここで記帳した仕訳はこのページを開いている間だけ残り、再読み込みすると消えます。";
+
 export const HELP_TOPICS: HelpTopic[] = [
   {
     id: "guide",
@@ -181,8 +184,8 @@ export const HELP_TOPICS: HelpTopic[] = [
     title: "自由に試す",
     target: "task-sandbox",
     pane: "work",
-    short: "最後のステップでは、好きな取引を記帳して財務諸表がどう動くか確かめられます。",
-    body: "最後のステップでは、好きな取引を記帳して財務諸表がどう動くか確かめられます。採点はありません。借方と貸方の合計がそろえば記帳できます。",
+    short: `最後のステップでは、好きな取引を記帳して財務諸表がどう動くか確かめられます。${SANDBOX_NOT_SAVED}`,
+    body: `最後のステップでは、好きな取引を記帳して財務諸表がどう動くか確かめられます。採点はありません。${SANDBOX_NOT_SAVED}借方と貸方の合計がそろえば記帳できます。`,
     when: (c) => c.taskType === "observe" && c.isLast,
   },
   {
