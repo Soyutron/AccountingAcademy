@@ -25,7 +25,7 @@ scenario:
   accounts:
     - { id: giovanni, name: ジョヴァンニ, element: asset, why: 彼がこちらに負う残高を置く人名勘定です。 }
     - { id: niccolo, name: ニッコロ, element: liability, why: こちらが彼に負う残高を置く人名勘定です。 }
-    - { id: cloth_venture, name: 布(フランドル航海), element: asset, why: 航海1口にかかった額と売った額を集める口別の勘定です。 }
+    - { id: cloth_venture, name: 絹(フランドル航海), element: asset, why: 航海1口にかかった額と売った額を集める口別の勘定です。 }
     - { id: pepper_voyage, name: 胡椒(アレクサンドリア航海), element: asset, why: 航海1口にかかった額と売った額を集める口別の勘定です。 }
     - { id: profit_and_loss, name: 利益と損失, element: equity, why: 口ごとのもうけと損を1つのページに集め、帳簿を閉じるときに元手へ移します。 }
     - { id: owner_capital, name: 元手, element: equity, why: 商人が店に入れた財産と、そこに積み上がったもうけです。 }
@@ -42,7 +42,7 @@ scenario:
 
 ## 3つの帳簿
 『スンマ』が最初に書くのは、帳簿を3冊に分けることです。[[three_books|3帳簿]]と呼びましょう。
-1冊目は[[memorandum_book|覚え書き]]。起きたことを起きた順に、誰でも書けるように文章で書きます。2冊目は仕訳帳(giornale)。覚え書きの1行を、「Per(借方のページ)// A(貸方のページ)」の形に直して、額を1つ添えます。3冊目は元帳(quaderno)。仕訳帳の1行を、借方のページと貸方のページへ写します。
+1冊目は[[memorandum_book|覚え書き]]。起きたことを起きた順に、誰でも書けるように文章で書きます。2冊目は仕訳帳(giornale)。覚え書きの1行を、「Per(借方のページ)// A(貸方のページ)」の形に直して、額を1つ添えます。3冊目は[[t_account|元帳]](quaderno)。仕訳帳の1行を、借方のページと貸方のページへ写します。
 いまの会計IDEの仕訳帳は、この2冊目そのものです。あなたが前の単元で「左にジョヴァンニ、右に胡椒」と入れた形は、『スンマ』では「Per ジョヴァンニ // A 胡椒」と書かれています。
 
 ```figure
@@ -53,67 +53,67 @@ highlight: 1
 ```
 
 ## 仕訳帳に書く
-フランドルへ送る布20反を、ニッコロから100ドゥカートで買いました。代金は後で払います。仕訳帳で、左に「布(フランドル航海)100」、右に「ニッコロ100」と入れて記帳してみましょう。ニッコロのページは、こちらが彼に負う側の右です。
+フランドルへ送る絹20反を、ニッコロから100ドゥカートで買いました。代金は後で払います。仕訳帳で、左に「絹(フランドル航海)100」、右に「ニッコロ100」と入れて記帳してみましょう。ニッコロのページは、こちらが彼に負う側の右です。
 
 ```task
 type: post
-transaction: ニッコロから布20反を100ドゥカートで買った。代金は後で払う
+transaction: ニッコロから絹20反を100ドゥカートで買った。代金は後で払う
 answer:
   debit: [{ account: cloth_venture, amount: 100 }]
   credit: [{ account: niccolo, amount: 100 }]
 wrong_patterns:
   - match: { swapped: true }
     misconception: credit_purchase_as_claim
-    feedback: 買ったので、布の口にかかった額が左です。ニッコロはこちらが彼に負う側なので右です。
+    feedback: 買ったので、絹の口にかかった額が左です。ニッコロはこちらが彼に負う側なので右です。
   - match: { credit: [{ account: cash }] }
     feedback: 代金はまだ払っていません。いま増えたのは、こちらがニッコロに負う分です。
   - match: { unbalanced: true }
     feedback: 借方と貸方には同じ額を書きます。どちらも100にしましょう。
-hint: 「Per 布 // A ニッコロ、100」。Perが左、Aが右です。
-success: 記帳できました。元帳では布のページの左と、ニッコロのページの右に100が写っています。
+hint: 「Per 絹 // A ニッコロ、100」。Perが左、Aが右です。
+success: 記帳できました。元帳では絹のページの左と、ニッコロのページの右に100が写っています。
 ```
 
 ## フランドルからの便り
-秋、フランドルから便りが来ました。布20反は130ドゥカートで売れ、代金はジョヴァンニが立て替えてこちらに負う形になっています。仕訳帳には「Per ジョヴァンニ // A 布、130」と書かれ、元帳に写されました。
+秋、フランドルから便りが来ました。絹20反は130ドゥカートで売れ、代金はジョヴァンニが立て替えてこちらに負う形になっています。仕訳帳には「Per ジョヴァンニ // A 絹、130」と書かれ、元帳に写されました。
 
 ```task
 type: observe
 entries:
-  - { memo: フランドルで布20反が130ドゥカートで売れた。代金はジョヴァンニがこちらに負う, debit: [{ account: giovanni, amount: 130 }], credit: [{ account: cloth_venture, amount: 130 }] }
+  - { memo: フランドルで絹20反が130ドゥカートで売れた。代金はジョヴァンニがこちらに負う, debit: [{ account: giovanni, amount: 130 }], credit: [{ account: cloth_venture, amount: 130 }] }
 ```
 
-## 布の口のもうけ
-布のページは左100、右130です。この口のもうけはいくらでしょう。
+## 絹の口のもうけ
+絹のページは左100、右130です。この口のもうけはいくらでしょう。
 
 ```task
 type: calc
-question: 布(フランドル航海)の口のもうけはいくらか(ドゥカート)
+question: 絹(フランドル航海)の口のもうけはいくらか(ドゥカート)
 answer: 30
 wrong_patterns:
   - match: 130
     misconception: venture_sales_as_profit
-    feedback: 130は売れた額です。布にかかった100を引いたものが、この口のもうけです。
+    feedback: 130は売れた額です。絹にかかった100を引いたものが、この口のもうけです。
   - match: 100
     feedback: 100はかかった額です。売れた130から引きましょう。
-hint: 布のページの右の合計から左の合計を引きます。
+hint: 絹のページの右の合計から左の合計を引きます。
 success: 30ドゥカートです。祖父の時代と同じ口別計算です。
 ```
 
 ## 利益と損失のページ
 祖父は口のもうけを、そのまま元手へ移していました。『スンマ』はもう1枚、ページを挟みます。「利益と損失(pro e danno)」のページです。口が閉じるたびに、もうけは右へ、損は左へ、すべてこの1ページに集めます。[[profit_and_loss_account|利益と損失の勘定]]です。
 こうすると、今年どの口でいくらもうけ、どの口でいくら損をしたかが、1ページで読めます。あなたが最初の単元で見た[[income_statement|損益計算書]]は、このページの子孫です。
-布の口のもうけ30を、利益と損失へ移しましょう。左に「布(フランドル航海)30」、右に「利益と損失30」です。
+絹の口のもうけ30を、利益と損失へ移しましょう。左に「絹(フランドル航海)30」、右に「利益と損失30」です。
 
 ```task
 type: post
-transaction: 布の口のもうけ30ドゥカートを利益と損失のページへ移した
+transaction: 絹の口のもうけ30ドゥカートを利益と損失のページへ移した
 answer:
   debit: [{ account: cloth_venture, amount: 30 }]
   credit: [{ account: profit_and_loss, amount: 30 }]
 wrong_patterns:
   - match: { swapped: true }
     misconception: closing_side_confused
-    feedback: 布のページは右に30残っています。消すには反対の左に30を書き、利益と損失の右へ移します。
+    feedback: 絹のページは右に30残っています。消すには反対の左に30を書き、利益と損失の右へ移します。
   - match: { credit: [{ account: owner_capital }] }
     feedback: 祖父のやり方ならそれで合っています。『スンマ』の手順では、いったん利益と損失のページに集めてから元手へ移します。
   - match: { credit: [{ account: cash }] }
@@ -122,7 +122,7 @@ wrong_patterns:
   - match: { unbalanced: true }
     feedback: 借方と貸方には同じ額を書きます。どちらも30にしましょう。
 hint: 口のもうけは利益と損失の右へ。損なら左へ。
-success: 布のページが0になり、利益と損失の右に30が入りました。
+success: 絹のページが0になり、利益と損失の右に30が入りました。
 ```
 
 ## 損も同じページへ
@@ -149,7 +149,7 @@ wrong_patterns:
     misconception: closing_side_confused
     feedback: 利益と損失のページは右に20残っています。消すには反対の左に20を書き、元手の右へ移します。
   - match: { debit: [{ amount: 30 }] }
-    feedback: 30は布のもうけだけです。胡椒の損10を引いた20が、今年のもうけです。
+    feedback: 30は絹のもうけだけです。胡椒の損10を引いた20が、今年のもうけです。
   - match: { credit: [{ account: cash }] }
     misconception: profit_is_cash
     feedback: もうけを元手に移しても、現金は動きません。現金は代金を受け取ったときに、すでに動いています。
