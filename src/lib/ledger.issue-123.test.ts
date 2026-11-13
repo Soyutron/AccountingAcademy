@@ -51,6 +51,9 @@ describe("貸借対照表の行順", () => {
       "equipment",
       "vehicle",
       "accumulated_depreciation",
+      "accumulated_depreciation_building",
+      "accumulated_depreciation_equipment",
+      "accumulated_depreciation_vehicle",
     ]);
     expect(of("liability")).toEqual(["accounts_payable", "accounts_payable_other", "advance_received", "deposits_received", "suspense_receipt", "bank_overdraft", "loans_payable"]);
   });

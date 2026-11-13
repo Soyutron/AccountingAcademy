@@ -80,12 +80,12 @@ label: コーヒーマシンの取得原価
 ```
 
 ## 減価償却を記帳する
-1年分の100,000円を、「[[depreciation_expense|減価償却費]]」という費用として左に書きます。右には「備品」ではなく、「[[accumulated_depreciation|減価償却累計額]]」という[[account_title|勘定科目]]を使ってみましょう。
-備品の600,000円はそのまま残し、減った分を別の科目に積んでいく書き方を[[indirect_method|間接法]]と呼びます。減価償却累計額のような「資産のマイナス」を表す科目が[[contra_account|評価勘定]]です。
+1年分の100,000円を、「[[depreciation_expense|減価償却費]]」という費用として左に書きます。右には「備品」ではなく、「[[accumulated_depreciation_equipment|備品減価償却累計額]]」という[[account_title|勘定科目]]を使ってみましょう。
+備品の600,000円はそのまま残し、減った分を別の科目に積んでいく書き方を[[indirect_method|間接法]]と呼びます。減った分を積む科目は資産ごとに分け、備品なら備品減価償却累計額、建物なら[[accumulated_depreciation_building|建物減価償却累計額]]です。資産の種類を問わずに呼ぶときは[[accumulated_depreciation|減価償却累計額]]と言い、仕訳にこの総称を書いても構いません。こうした「資産のマイナス」を表す科目が[[contra_account|評価勘定]]です。
 
 ```figure
 type: compare
-alt: 直接法では備品そのものを減らすが、間接法では備品はそのままにして、減価償却累計額という資産のマイナスを資産の箱に置く
+alt: 直接法では備品そのものを減らすが、間接法では備品はそのままにして、備品減価償却累計額という資産のマイナスを資産の箱に置く
 left:
   title: 直接法(備品を直接減らす)
   figure:
@@ -97,10 +97,10 @@ right:
   title: 間接法(累計額を別に積む)
   figure:
     type: elements
-    alt: 備品はそのままで、減価償却累計額が資産の箱にマイナスとして並ぶ
+    alt: 備品はそのままで、備品減価償却累計額が資産の箱にマイナスとして並ぶ
     items:
       - { account: equipment }
-      - { account: accumulated_depreciation, highlight: true }
+      - { account: accumulated_depreciation_equipment, highlight: true }
 ```
 
 ```task
@@ -108,14 +108,26 @@ type: post
 transaction: 決算にあたり、コーヒーマシン(備品)の1年分の減価償却費100,000円を間接法で計上した
 answer:
   debit: [{ account: depreciation_expense, amount: 100000 }]
-  credit: [{ account: accumulated_depreciation, amount: 100000 }]
+  credit: [{ account: accumulated_depreciation_equipment, amount: 100000 }]
+alternatives:
+  - debit: [{ account: depreciation_expense, amount: 100000 }]
+    credit: [{ account: accumulated_depreciation, amount: 100000 }]
 wrong_patterns:
   - match: { swapped: true }
     misconception: debit_means_increase
     feedback: 減価償却費は費用なので左で増えます。左右を入れ替えてみましょう。
+  - match: { debit: [{ account: accumulated_depreciation }], credit: [{ account: depreciation_expense }] }
+    misconception: debit_means_increase
+    feedback: 減価償却費は費用なので左で増えます。左右を入れ替えてみましょう。
+  - match: { credit: [{ account: accumulated_depreciation_building }] }
+    misconception: accumulated_depreciation_any_asset
+    feedback: 建物減価償却累計額は、建物の価値の減りを積む科目です。累計額は資産ごとに分けて積み、その資産の取得原価から引いて帳簿価額を出します。マシンの減りは備品減価償却累計額に積みましょう。
+  - match: { credit: [{ account: accumulated_depreciation_vehicle }] }
+    misconception: accumulated_depreciation_any_asset
+    feedback: 車両運搬具減価償却累計額は、車の価値の減りを積む科目です。累計額は資産ごとに分けて積み、その資産の取得原価から引いて帳簿価額を出します。マシンの減りは備品減価償却累計額に積みましょう。
   - match: { credit: [{ account: equipment }] }
     misconception: direct_writeoff_vs_contra
-    feedback: 備品の600,000はそのまま残します。減った分は減価償却累計額という別の科目に積んでみましょう。
+    feedback: 備品の600,000はそのまま残します。減った分は備品減価償却累計額という別の科目に積んでみましょう。
   - match: { credit: [{ account: cash }] }
     misconception: depreciation_as_cash_outflow
     feedback: 現金はマシンを買ったときにもう減っています。減価償却ではお金は動きません。
@@ -136,28 +148,28 @@ wrong_patterns:
     feedback: 消耗品費は、文房具のようにすぐ使い切る物の費用です。何年も使うマシンの使った分には、減価償却のための費用の科目があります。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも100,000にしましょう。
-hint: 左に減価償却費100,000、右に減価償却累計額100,000です。
-success: 結果の表では、備品600,000の下に減価償却累計額 −100,000が並びました。費用が増えて、当期純利益は240,000になりました。
+hint: 左に減価償却費100,000、右に備品減価償却累計額100,000です。
+success: 結果の表では、備品600,000の下に累計額 −100,000が並びました。費用が増えて、当期純利益は240,000になりました。
 ```
 
 ## 累計額はどの箱?
-減価償却累計額は右(貸方)に書きました。右で増えるのは負債や収益でしたね。では、累計額は負債でしょうか。
+備品減価償却累計額は右(貸方)に書きました。右で増えるのは負債や収益でしたね。では、累計額は負債でしょうか。
 支払う相手はいませんし、返す義務もありません。マシンの価値がどれだけ減ったかを示す、資産のマイナスです。4つの科目を箱に分けてみましょう。
 
 ```task
 type: classify
-accounts: [accumulated_depreciation, depreciation_expense, equipment, loans_payable]
+accounts: [accumulated_depreciation_equipment, depreciation_expense, equipment, loans_payable]
 misconceptions:
-  accumulated_depreciation:
+  accumulated_depreciation_equipment:
     liability: contra_as_liability
   depreciation_expense:
     liability: expense_as_liability
-hint: 減価償却累計額は資産のマイナス、減価償却費は費用、備品は資産、借入金は負債です。
-success: 右で増える科目でも、負債とは限りません。減価償却累計額は資産の箱に入り、資産を減らす向きに働きます。
+hint: 備品減価償却累計額は資産のマイナス、減価償却費は費用、備品は資産、借入金は負債です。
+success: 右で増える科目でも、負債とは限りません。備品減価償却累計額は資産の箱に入り、資産を減らす向きに働きます。
 ```
 
 ## マシンのいまの価値
-結果の[[balance_sheet|貸借対照表]]で、備品600,000と減価償却累計額 −100,000が並んでいます。取得原価から累計額を引いた金額が、帳簿の上でのマシンのいまの価値、[[book_value|帳簿価額]]です。
+結果の[[balance_sheet|貸借対照表]]で、備品600,000と累計額 −100,000が並んでいます。取得原価から累計額を引いた金額が、帳簿の上でのマシンのいまの価値、[[book_value|帳簿価額]]です。
 マシンの帳簿価額はいくらでしょう。
 
 ```task
@@ -179,8 +191,8 @@ success: 帳簿価額は500,000円。「元は600,000で、いまは500,000」�
 
 ```figure
 type: taccount
-alt: 減価償却累計額のT勘定。右側に1年目の決算の100,000円が積まれていて、2年目の分がこの下に加わる
-account: accumulated_depreciation
+alt: 備品減価償却累計額のT勘定。右側に1年目の決算の100,000円が積まれていて、2年目の分がこの下に加わる
+account: accumulated_depreciation_equipment
 credit:
   - { label: 1年目の決算, amount: 100000 }
 ```
@@ -190,14 +202,26 @@ type: post
 transaction: 2年目の決算にあたり、コーヒーマシン(備品)の1年分の減価償却費100,000円を間接法で計上した
 answer:
   debit: [{ account: depreciation_expense, amount: 100000 }]
-  credit: [{ account: accumulated_depreciation, amount: 100000 }]
+  credit: [{ account: accumulated_depreciation_equipment, amount: 100000 }]
+alternatives:
+  - debit: [{ account: depreciation_expense, amount: 100000 }]
+    credit: [{ account: accumulated_depreciation, amount: 100000 }]
 wrong_patterns:
   - match: { swapped: true }
     misconception: debit_means_increase
     feedback: 減価償却費は費用なので左で増えます。左右を入れ替えてみましょう。
+  - match: { debit: [{ account: accumulated_depreciation }], credit: [{ account: depreciation_expense }] }
+    misconception: debit_means_increase
+    feedback: 減価償却費は費用なので左で増えます。左右を入れ替えてみましょう。
+  - match: { credit: [{ account: accumulated_depreciation_building }] }
+    misconception: accumulated_depreciation_any_asset
+    feedback: 建物減価償却累計額は、建物の価値の減りを積む科目です。累計額は資産ごとに分けて積み、その資産の取得原価から引いて帳簿価額を出します。マシンの減りは備品減価償却累計額に積みましょう。
+  - match: { credit: [{ account: accumulated_depreciation_vehicle }] }
+    misconception: accumulated_depreciation_any_asset
+    feedback: 車両運搬具減価償却累計額は、車の価値の減りを積む科目です。累計額は資産ごとに分けて積み、その資産の取得原価から引いて帳簿価額を出します。マシンの減りは備品減価償却累計額に積みましょう。
   - match: { credit: [{ account: equipment }] }
     misconception: direct_writeoff_vs_contra
-    feedback: 備品はそのまま残し、減った分は減価償却累計額に積みます。
+    feedback: 備品はそのまま残し、減った分は備品減価償却累計額に積みます。
   - match: { credit: [{ account: cash }] }
     misconception: depreciation_as_cash_outflow
     feedback: 現金はマシンを買ったときにもう減っています。減価償却ではお金は動きません。
@@ -217,12 +241,12 @@ wrong_patterns:
     feedback: 消耗品費は、文房具のようにすぐ使い切る物の費用です。何年も使うマシンの使った分には、減価償却のための費用の科目があります。
   - match: { unbalanced: true }
     feedback: 左の合計と右の合計がそろっていません。どちらも100,000にしましょう。
-hint: 1年目とまったく同じ仕訳です。
+hint: 1年目とまったく同じ仕訳です。右は備品減価償却累計額です。
 success: 累計額が200,000になり、帳簿価額は400,000に。毎年100,000ずつ、6年かけてゼロに近づいていきます。
 ```
 
 ## ふりかえり
 長く使う財産は、買ったときに全部費用にせず、使う年数に分けて費用にする。これが減価償却です。
-ポイントは3つ。お金が動くのは買ったときだけで、減価償却ではお金は動かない。備品の金額はそのまま残し、減った分は減価償却累計額に積む(間接法)。取得原価から累計額を引いたものが帳簿価額。
+ポイントは3つ。お金が動くのは買ったときだけで、減価償却ではお金は動かない。備品の金額はそのまま残し、減った分は備品減価償却累計額のように資産ごとの累計額に積む(間接法)。取得原価から累計額を引いたものが帳簿価額。
 減価償却累計額は右(貸方)で増えますが、負債ではなく資産のマイナスです。「右で増える = 負債」とは限らないことも覚えておきましょう。
 次の単元では、「1年分はいくらか」を決める計算方法(定額法)を、条件を動かしながら確かめます。

@@ -60,6 +60,12 @@ misconceptions:
     correct: 減価償却累計額は資産のマイナスを表す評価勘定。誰かに支払う義務ではないので負債ではなく、貸借対照表では資産から控除して表示する
     concepts: [contra_account, indirect_method]
     remediation: depreciation/what-is-depreciation
+  - id: accumulated_depreciation_any_asset
+    name: 累計額はどの資産の分でもよい
+    description: 減価償却累計額は資産の種類を問わず、建物・車両・備品のどの累計額に積んでも同じだと思っている
+    correct: 累計額は資産ごとに分けて積み、その資産の取得原価から引いて帳簿価額を出す。備品の減りは備品減価償却累計額に積み、建物や車両の累計額には混ぜない
+    concepts: [contra_account, book_value]
+    remediation: depreciation/what-is-depreciation
   - id: contra_increase_as_asset_increase
     name: 累計額が増えると資産が増える
     description: 減価償却累計額の金額が増えるのを見て、資産の合計も増えると思っている
