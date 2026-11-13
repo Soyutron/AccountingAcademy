@@ -28,28 +28,20 @@ test("売れ残りと売上原価の自然な誤答に、汎用文でない説�
   };
 
   await next.click();
-  await calc("110000");
+  await calc("125000");
   await next.click();
-  // ステップ3: 振替を逆向きに予想する
+  // ステップ3: 期首の商品の振替
+  for (const [debit, credit, word] of [["仕入", "現金", "お金"], ["現金", "繰越商品", "お金"], ["売上", "繰越商品", "取り消す"]]) {
+    await post(debit, credit, "15000");
+    await expectSpecific(word);
+  }
+  await post("仕入", "繰越商品", "15000");
+  await expect(status.getByText("できました")).toBeVisible();
+  await next.click();
+  // ステップ4: 振替を逆向きに予想する
   for (const [label, value] of [["資産", "減る"], ["負債", "変わらない"], ["純資産", "減る"], ["収益", "変わらない"], ["費用", "増える"]]) {
     await work.getByLabel(`${label}の予想`, { exact: true }).selectOption({ label: value });
   }
   await work.getByRole("button", { name: "予想して記帳する" }).click();
   await expectSpecific("売れ残り");
-  await next.click();
-  await calc("93500");
-  await next.click();
-  // ステップ5: 翌期首の振替
-  for (const [debit, credit, word] of [["仕入", "現金", "お金"], ["現金", "繰越商品", "お金"], ["売上", "繰越商品", "売って"]]) {
-    await post(debit, credit, "22000");
-    await expectSpecific(word);
-  }
-  await post("仕入", "繰越商品", "22000");
-  await expect(status.getByText("できました")).toBeVisible();
-  await next.click();
-  // ステップ6: 掛けの仕入
-  for (const [debit, credit, word] of [["仕入", "現金", "まだ払っていません"], ["仕入", "未払金", "未払金"]]) {
-    await post(debit, credit, "20000");
-    await expectSpecific(word);
-  }
 });
