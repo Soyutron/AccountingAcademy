@@ -40,7 +40,7 @@ export function HelpIcon({ topic: id }: { topic: string }) {
           <CircleHelp className="size-4" aria-hidden />
         </button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-72 space-y-2 text-sm" aria-label={topic.title}>
+      <PopoverContent align="start" collisionPadding={16} className="w-72 space-y-2 text-sm" aria-label={topic.title}>
         <p className="font-semibold">{topic.title}</p>
         <p>{controls ? topicShort(topic, controls.ctx) : typeof topic.short === "string" && topic.short}</p>
         {controls && (
