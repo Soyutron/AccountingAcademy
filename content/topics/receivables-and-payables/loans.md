@@ -139,6 +139,12 @@ wrong_patterns:
   - match: 36000
     misconception: interest_months_not_divided
     feedback: 36,000円は6か月をそのまま掛けた金額です。年利率は1年分の率なので、6ではなく6/12を掛けます。
+  - match: 30000
+    misconception: percent_off_by_ten
+    feedback: 30,000円は年利率2%を0.2として掛けた金額です。2%は0.02なので、0.2で掛けると10倍になります。300,000 × 0.02 × 6/12で計算し直しましょう。
+  - match: -3000
+    misconception: expense_as_negative_amount
+    feedback: 利息は払う金額そのもので、マイナスの符号は付けません。お金が出ていくことは、仕訳で普通預金を右に書くことで表します。符号を外して答え直しましょう。
 hint: 300,000 × 2% × 6/12。
 success: 300,000 × 0.02 × 6/12 = 3,000円。利息は元本・年利率・期間の3つで決まります。
 ```
@@ -160,6 +166,9 @@ wrong_patterns:
   - match: { credit: [{ account: loans_receivable, amount: 100000 }, { account: interest_income }] }
     misconception: repayment_includes_interest
     feedback: 貸付金を100,000減らせているのは合っています。利息の2,000円は、先に受け取って記録済みの別の入金です。今回の入金は元本の100,000円だけなので、受取利息の行は要りません。
+  - match: { credit: [{ account: loans_receivable }, { account: interest_income }] }
+    misconception: repayment_includes_interest
+    feedback: 貸付金を減らしているのは合っています。ただ、入金の100,000円はすべて元本の返済です。利息の2,000円は先に受け取って記録済みなので、元本から振り分けずに貸付金を100,000減らします。
   - match: { credit: [{ account: interest_income }] }
     misconception: principal_is_revenue
     feedback: 返ってきたのは元本です。もうけではないので、受取利息ではなく貸付金を減らします。
