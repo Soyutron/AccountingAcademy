@@ -123,7 +123,8 @@ accounts:
     concepts: [asset, tangible_fixed_assets]
   - id: vehicle
     name: 車両運搬具
-    aliases: [車両]
+    # 輌・輛は両の異体字。古い教科書や帳簿の表記で入力しても同じ科目として読む
+    aliases: [車両, 車輌運搬具, 車輛運搬具, 車輌, 車輛]
     reading: [しゃりょううんぱんぐ]
     short: 会社が持っているトラックや営業車
     element: asset
@@ -159,7 +160,7 @@ accounts:
     concepts: [contra_account, depreciation, indirect_method]
   - id: accumulated_depreciation_vehicle
     name: 車両運搬具減価償却累計額
-    aliases: [車両減価償却累計額]
+    aliases: [車両減価償却累計額, 車輌運搬具減価償却累計額, 車輛運搬具減価償却累計額, 車輌減価償却累計額, 車輛減価償却累計額]
     reading: [しゃりょううんぱんぐげんかしょうきゃくるいけいがく]
     short: 車両運搬具について、これまでに計上した減価償却費の合計
     element: asset
@@ -274,6 +275,8 @@ accounts:
     concepts: [expense]
   - id: salaries_expense
     name: 給料
+    # 給与明細・源泉徴収票の語。給料と同じものを指す言い換えなので別名に置く
+    aliases: [給与]
     reading: [きゅうりょう]
     short: 従業員に支払う給料
     element: expense
