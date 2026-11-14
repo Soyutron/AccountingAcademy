@@ -40,8 +40,21 @@ function revealIfCovered(el: HTMLElement) {
   const r = el.getBoundingClientRect();
   if (r.height >= window.innerHeight) return;
   // 前の段の位置に残っているカードは、これから動くので隠れとして数えない
-  const hit = document.elementsFromPoint(r.left + r.width / 2, r.top + r.height / 2).find((e) => !e.closest("[data-tour-card]"));
-  if (!hit || !el.contains(hit)) el.scrollIntoView({ block: "center" });
+  const hitAt = (y: number) => document.elementsFromPoint(r.left + r.width / 2, y).find((e) => !e.closest("[data-tour-card]"));
+  const center = hitAt(r.top + r.height / 2);
+  if (!center || !el.contains(center)) return el.scrollIntoView({ block: "center" });
+  // 中心が見えていても下半分が下の固定バーに隠れることがある(#269)。バーの上端まで持ち上げるが、
+  // 上端が画面外か上の固定バーに入るなら(結果ペインのように上下のバーの間に収まらない対象)動かさない
+  const barAt = (y: number) => {
+    let e = hitAt(y) ?? null;
+    if (e && el.contains(e)) return null;
+    while (e && !["fixed", "sticky"].includes(getComputedStyle(e).position)) e = e.parentElement;
+    return e?.getBoundingClientRect() ?? null;
+  };
+  const delta = r.bottom - (barAt(Math.min(r.bottom, window.innerHeight) - 1)?.top ?? window.innerHeight) + 8;
+  if (delta <= 8) return;
+  const top = r.top - delta;
+  if (top >= 0 && !barAt(top)) window.scrollBy({ top: delta });
 }
 
 export function SpotlightRing({ rect }: { rect: DOMRect }) {
