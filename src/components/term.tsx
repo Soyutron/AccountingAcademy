@@ -83,8 +83,10 @@ export function Term({ entry, children }: { entry: GlossaryEntry; children: Reac
       </PopoverTrigger>
       <PopoverContent
         ref={content}
+        // 既定(0)では端の用語でカードが画面の縁に付き、角と枠が切れて見える。ページの左右の余白に揃える(Issue #270)
+        collisionPadding={16}
         // 横向きのスマホでは上下どちらにも展開後の高さが無い。上限が無いと先頭が画面の外に切れて読めない(Issue #225)
-        className="w-80 max-h-(--radix-popover-content-available-height) overflow-y-auto overscroll-contain text-sm space-y-2"
+        className="w-80 max-w-(--radix-popover-content-available-width) max-h-(--radix-popover-content-available-height) overflow-y-auto overscroll-contain text-sm space-y-2"
         onOpenAutoFocus={(e) => {
           if (byHover.current) e.preventDefault();
         }}
