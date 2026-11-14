@@ -139,6 +139,12 @@ wrong_patterns:
   - match: 36000
     misconception: interest_months_not_divided
     feedback: 36,000円は6か月をそのまま掛けた金額です。年利率は1年分の率なので、6ではなく6/12を掛けます。
+  - match: 30000
+    misconception: percent_off_by_ten
+    feedback: 30,000円は年利率2%を0.2として掛けた金額です。2%は0.02なので、0.2で掛けると10倍になります。300,000 × 0.02 × 6/12で計算し直しましょう。
+  - match: -3000
+    misconception: expense_as_negative_amount
+    feedback: 利息は払う金額そのもので、マイナスの符号は付けません。お金が出ていくことは、仕訳で普通預金を右に書くことで表します。符号を外して答え直しましょう。
 hint: 300,000 × 2% × 6/12。
 success: 300,000 × 0.02 × 6/12 = 3,000円。利息は元本・年利率・期間の3つで決まります。
 ```

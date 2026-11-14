@@ -300,6 +300,18 @@ misconceptions:
     correct: 年利は1年分の率。利息は 元本 × 年利率 × 月数 ÷ 12で、月数は12で割って年に直してから掛ける
     concepts: [interest]
     remediation: receivables-and-payables/loans
+  - id: percent_off_by_ten
+    name: "%を小数に直すときの桁違い"
+    description: 2%を0.2と読むように、%を小数に直すときに桁を1つ間違えて、利息を10倍に計算してしまう
+    correct: 1%は100分の1。2%は2 ÷ 100 = 0.02で、0.2なら20%になる。小数に直したら、1%が0.01になっているかで確かめる
+    concepts: [interest]
+    remediation: receivables-and-payables/loans
+  - id: expense_as_negative_amount
+    name: 払う金額にマイナスを付ける
+    description: お金が出ていくことを表そうとして、利息のように払う金額にマイナスの符号を付けて答えてしまう
+    correct: 金額は払う額そのもので、符号は付けない。お金が出ていくことは、仕訳で普通預金を右(貸方)に書くことで表す
+    concepts: [interest, expense]
+    remediation: receivables-and-payables/loans
   - id: interest_is_loan_return
     name: 利息も貸したお金の戻り
     description: 受け取った利息を、貸付金が戻ってきた分として貸付金を減らしてしまう
