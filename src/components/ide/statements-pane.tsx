@@ -6,6 +6,7 @@ import { type Balances, type StatementLine, buildStatements } from "@/lib/ledger
 import { ELEMENT_STYLE } from "@/lib/elements";
 import { AccountName } from "@/components/account-name";
 import { ElementBadge } from "@/components/element-badge";
+import { useEffect, useRef } from "react";
 import { HelpIcon } from "./help-icon";
 
 // 結果ペイン: 会社のかたち(資産vs負債 + 純資産の帯)、貸借対照表、損益計算書。前のステップからの差分を「+」「−」の符号で示す(▲△は日本の会計でマイナスの印なので使わない)
@@ -30,9 +31,35 @@ export function StatementsPane({ accounts, balances, diff, company }: Props) {
   changedElements.set("equity", (changedElements.get("equity") ?? 0) + netIncomeDelta);
   for (const [el, d] of [...changedElements]) if (d === 0) changedElements.delete(el);
   const empty = balances.size === 0 || [...balances.values()].every((v) => v === 0);
+  const root = useRef<HTMLDivElement>(null);
+  const active = useRef<string | null>(null);
+
+  // 科目名はroving tabindexでTab停止を1つにまとめ、矢印キーで移る。科目の数だけTabで通ると「次へ →」が遠い(Issue #265)
+  const terms = () => [...(root.current?.querySelectorAll<HTMLButtonElement>("[data-account] button.term") ?? [])];
+  useEffect(() => {
+    const list = terms();
+    const current = list.find((b) => b.closest("[data-account]")?.getAttribute("data-account") === active.current) ?? list[0];
+    for (const b of list) b.tabIndex = b === current ? 0 : -1;
+  });
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    // ポップオーバーの中身はポータル越しにイベントが届くので、科目名そのものの打鍵だけを扱う
+    const list = terms();
+    const i = list.indexOf(e.target as HTMLButtonElement);
+    if (i < 0) return;
+    const next = { ArrowDown: i + 1, ArrowRight: i + 1, ArrowUp: i - 1, ArrowLeft: i - 1, Home: 0, End: list.length - 1 }[e.key];
+    if (next === undefined) return;
+    e.preventDefault();
+    const target = list[Math.min(Math.max(next, 0), list.length - 1)];
+    for (const b of list) b.tabIndex = b === target ? 0 : -1;
+    target.focus();
+  };
+  const onFocus = (e: React.FocusEvent) => {
+    if (!terms().includes(e.target as HTMLButtonElement)) return;
+    active.current = e.target.closest("[data-account]")?.getAttribute("data-account") ?? null;
+  };
 
   return (
-    <div className="space-y-5 text-sm">
+    <div ref={root} className="space-y-5 text-sm" onKeyDown={onKeyDown} onFocus={onFocus}>
       {empty && <p className="text-muted-foreground">まだ何も記録されていません。記帳すると、ここに会社の姿が現れます。</p>}
 
       {!empty && <ShapeBars st={st} />}
