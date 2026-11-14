@@ -166,6 +166,9 @@ wrong_patterns:
   - match: { credit: [{ account: loans_receivable, amount: 100000 }, { account: interest_income }] }
     misconception: repayment_includes_interest
     feedback: 貸付金を100,000減らせているのは合っています。利息の2,000円は、先に受け取って記録済みの別の入金です。今回の入金は元本の100,000円だけなので、受取利息の行は要りません。
+  - match: { credit: [{ account: loans_receivable }, { account: interest_income }] }
+    misconception: repayment_includes_interest
+    feedback: 貸付金を減らしているのは合っています。ただ、入金の100,000円はすべて元本の返済です。利息の2,000円は先に受け取って記録済みなので、元本から振り分けずに貸付金を100,000減らします。
   - match: { credit: [{ account: interest_income }] }
     misconception: principal_is_revenue
     feedback: 返ってきたのは元本です。もうけではないので、受取利息ではなく貸付金を減らします。
